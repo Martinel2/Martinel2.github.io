@@ -44,11 +44,16 @@ try {
         assert.equal(images.length, 4);
         assert.ok(images.every(img => img.loaded && img.alt.length > 10));
         assert.ok(await page.$('#fruition-jev-routing'));
+        assert.equal(await page.$eval('h1', el => el.textContent), '프로젝트 포트폴리오');
+        assert.equal(await page.$$eval('.experience-index li', els => els.length), 7);
+        assert.equal(await page.$$eval('.highlights, .hero', els => els.length), 0);
+        assert.equal(await page.$$eval('.project-context', els => els.length), 2);
         for (const id of ['fruition-document', 'fruition-jev-decisions', 'fruition-ingest']) assert.ok(await page.$(`#${id} .comparison`));
         assert.ok(!(await page.$eval('body', el => el.textContent)).includes('edit_goal'));
         assert.ok(await page.$('#fruition-jev-evidence .comparison'));
         assert.equal(await page.$$eval('.writings a[href*="velog.io"]', els => els.length), 3);
-        await page.$eval('.project-previews', el => el.scrollIntoView({ behavior: 'instant' }));
+        await page.$$eval('.project-context details', els => els.forEach(el => { el.open = true; }));
+        await page.$eval('.project-context', el => el.scrollIntoView({ behavior: 'instant' }));
         await page.screenshot({ path: `artifacts/projects-${width}.png` });
         if (width === 1440) {
           const popup = new Promise(resolve => page.once('popup', resolve));

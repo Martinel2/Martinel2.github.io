@@ -33,7 +33,7 @@ def page(title, description, body, resume=False):
 <header class="header"><a class="identity" href="./"><span class="monogram">JH<span>.</span></span><span>김재형 <small>JAEHYEONG KIM</small></span></a>
 <nav aria-label="주 메뉴"><a href="./" {'aria-current="page"' if not resume else ''}>포트폴리오</a><a href="resume.html" {'aria-current="page"' if resume else ''}>이력서</a><a class="nav-contact" href="#contact">연락하기 <span aria-hidden="true">↗</span></a></nav></header>
 <main id="main">{body}</main>
-<footer id="contact"><div><span class="eyebrow">LET’S CONNECT</span><h2>함께 풀어갈 문제를 기다립니다.</h2><a class="email" href="mailto:kkuldangi2@gmail.com">kkuldangi2@gmail.com <span aria-hidden="true">↗</span></a></div><div class="footer-links"><a href="https://github.com/Martinel2">GitHub ↗</a><a href="https://velog.io/@kkuldangi3/posts">Blog ↗</a><a href="resume.html">이력서 보기 ↗</a><a href="#top">맨 위로 ↑</a></div><div class="footer-bottom"><span>© 2026 김재형</span><span>Backend & AI Application Developer · Updated {DATA['updated']}</span></div></footer>
+<footer id="contact"><div><span class="eyebrow">LET’S CONNECT</span><h2>김재형 · 연락처</h2><a class="email" href="mailto:kkuldangi2@gmail.com">kkuldangi2@gmail.com <span aria-hidden="true">↗</span></a></div><div class="footer-links"><a href="https://github.com/Martinel2">GitHub ↗</a><a href="https://velog.io/@kkuldangi3/posts">Blog ↗</a><a href="resume.html">이력서 보기 ↗</a><a href="#top">맨 위로 ↑</a></div><div class="footer-bottom"><span>© 2026 김재형</span><span>Backend & AI Application Developer · Updated {DATA['updated']}</span></div></footer>
 </body></html>'''
 
 
@@ -58,18 +58,37 @@ def case_html(c, i):
 
 def portfolio():
     contents = ''.join(f'<a href="#{c["id"]}"><span>{i:02d}</span><span><small>{c["project"]}</small>{c["short"]}</span><span class="toc-arrow">↗</span></a>' for i, c in enumerate(DATA['cases'], 1))
-    projects = ''.join(f'<article class="project-preview"><p class="eyebrow">{p["label"]}</p><h3><a href="{p["href"]}">{p["name"]} <span>↗</span></a></h3><p>{p["description"]}</p>{picture(p["image"])}</article>' for p in DATA['projects'])
+    project_sections = []
+    seen = set()
+    for i, c in enumerate(DATA['cases'], 1):
+        if c['project'] not in seen:
+            project = next(p for p in DATA['projects'] if p['name'] == c['project'])
+            project_sections.append(f'<section class="project-context" aria-label="{project["name"]} 프로젝트 소개"><p class="eyebrow">PROJECT OVERVIEW</p><h2>{project["name"]}</h2><p>{project["description"]}</p><details><summary>서비스 참고 화면 보기</summary>{picture(project["image"])}</details></section>')
+            seen.add(c['project'])
+        project_sections.append(case_html(c, i))
     writings = ''.join(f'<a href="{w["url"]}"><span>{w["label"]} ↗</span><h3>{w["title"]}</h3><p>{w["description"]}</p></a>' for w in DATA['writings'])
-    body = f'''<section class="hero"><div class="hero-copy"><p class="eyebrow"><span class="status-dot"></span> BACKEND & AI APPLICATION DEVELOPER</p><h1>AI의 판단을,<br>검증 가능한<br><em>제품으로.</em></h1><p class="hero-description">안녕하세요, 개발자 <strong>김재형</strong>입니다.<br>문서·약품 데이터를 처리하고,<br>AI 검색과 편집 기능을 개발합니다.</p><div class="hero-actions"><a class="button primary" href="#work">프로젝트 살펴보기 <span>↓</span></a><a class="button" href="resume.html">이력서 보기 <span>↗</span></a></div></div>
-<aside class="profile-panel" aria-label="프로젝트와 담당 역할"><div class="panel-top"><span>PROJECTS & ROLE</span><span>김재형</span></div><h2>제가 만든 기능은<br>이런 곳에 쓰입니다.</h2><div class="principle"><span>01</span><div><h3>Fruition · 문서를 읽고 찾는 AI</h3><p>논문과 문서를 지식으로 정리하고,<br>질문에 맞는 원문 근거를 찾는 서비스입니다.</p></div></div><div class="principle"><span>02</span><div><h3>Pilltip · 개인 맞춤 복약 정보</h3><p>증상에 맞는 약품 정보를 찾고,<br>사용자의 복약 정보를 관리하는 서비스입니다.</p></div></div><div class="principle"><span>03</span><div><h3>제가 맡은 일</h3><p>문서·약품 데이터를 처리하고,<br>AI 검색과 편집 기능, 백엔드를 개발했습니다.</p></div></div><div class="panel-bottom"><span>Python · Java · Spring Boot</span><span>↗</span></div></aside></section>
-<section class="highlights" aria-label="대표 문제 해결 경험">
-<a href="#fruition-document"><span>FRUITION / 논문을 텍스트로 변환</span><strong>변환 중 깨지는<br>표와 수식을 복원</strong><p>텍스트만 고치는 대신 원본 이미지에서 표·수식을 따로 읽고, 원래 위치에 합쳤습니다.</p><p class="highlight-result">내부 원문 대조 평가 통과율<br><b>45.17% → 89.89%</b></p><small>같은 30페이지·445영역의 모델 평가</small><span class="highlight-link">손실 원인과 복원 과정 보기 ↗</span></a>
-<a href="#fruition-ingest"><span>FRUITION / 문서 분석 대기 줄이기</span><strong>한 문서씩 분석하느라<br>길어진 대기를 줄이기</strong><p>여러 작업자가 서로 다른 문서를 동시에 분석하도록 실험하고, 시간·메모리·내용 보존을 비교했습니다.</p><p class="highlight-result">작업자 1개 → 4개의 분석 완료시간<br><b>282.11초 → 73.89초</b></p><small>4문서·조건별 1회 · 저장·후처리 제외<br>메모리 사용 증가, 품질 차이도 관찰</small><span class="highlight-link">병목 분석과 검증 범위 보기 ↗</span></a>
-<a href="#pilltip-data"><span>PILLTIP / 약품 데이터 변환 비용</span><strong>예산 때문에 줄일 뻔한<br>약품 정보 범위를 유지</strong><p>약 4만 4천 건의 반복 문장을 한 번만 AI로 변환하고, 같은 문장을 쓰는 약품에 결과를 재사용했습니다.</p><p class="highlight-result">원문 전체 처리 예상 약 $200 대비<br><b>실제 API 지출 $11.18</b></p><small>중복 제거·일괄 처리 적용 · 인건비 제외</small><span class="highlight-link">중복 분석과 비용 절감 과정 보기 ↗</span></a>
-</section>
-<section class="work-intro" id="work"><div><p class="eyebrow">SELECTED WORK</p><h2>문제에서 시작해,<br>선택과 결과까지.</h2></div><p>두 프로젝트의 {len(DATA['cases'])}가지 엔지니어링 사례.<br>무엇을 만들었는지와 함께,<br>왜 그렇게 만들었는지를 기록했습니다.</p></section>
-<section class="project-previews" aria-label="프로젝트 제품 화면">{projects}</section>
-<div class="work-layout"><aside class="toc"><div class="toc-inner"><p class="eyebrow">CASE INDEX <span>{len(DATA['cases']):02d}</span></p><nav aria-label="프로젝트 목차">{contents}</nav><div class="toc-foot"><span>READING GUIDE</span><p>문제 상황<br>해결 옵션과 선택<br>구현과 구조<br>결과와 배운 점</p><a href="resume.html">경험 전체 보기 ↗</a></div></div></aside><div class="cases">{''.join(case_html(c, i) for i,c in enumerate(DATA['cases'],1))}</div></div>
+    body = f'''<section class="portfolio-overview" aria-labelledby="portfolio-title">
+<div class="overview-main"><p class="eyebrow">문서 처리 · AI 검색과 편집 · 백엔드 개발</p><h1 id="portfolio-title">프로젝트 포트폴리오</h1>
+<p class="overview-description">문서를 검색 가능한 지식으로 정리하는 Fruition과 개인 맞춤 복약 정보를 제공하는 Pilltip에서 맡은 작업을 정리했습니다. 각 사례에 문제 상황, 검토한 대안, 선택 이유, 구현 구조와 검증 결과를 담았습니다.</p>
+<dl class="overview-facts"><div><dt>프로젝트 / 상세 사례</dt><dd>2개 / {len(DATA['cases'])}개</dd></div><div><dt>주요 기술</dt><dd>Python · Java<br>Spring Boot · PostgreSQL</dd></div><div><dt>주요 경험</dt><dd>문서 변환 · AI 품질 평가<br>검색 · 비동기 처리</dd></div></dl>
+<h2 class="overview-label">주요 개발 경험</h2><ol class="experience-index">
+<li><a href="#fruition-document">논문의 표·수식 손실을 분석하고 AnyDoc·AI를 결합한 문서 변환 흐름 설계</a></li>
+<li><a href="#fruition-agent">사용자의 수정 목적을 유지하고 검증·승인 후 반영하는 문서 편집 Agent 구현</a></li>
+<li><a href="#fruition-retrieval">질문의 의미를 보존하는 검색 입력과 키워드·의미 검색의 순위 계산 개선</a></li>
+<li><a href="#fruition-jev-decisions">Jev의 요청 분류·근거 선택·개념 병합을 기존 방식과 비교 평가</a></li>
+<li><a href="#fruition-ingest">Kafka 기반 문서 분석의 동시 처리와 메모리·임베딩 병목 검증</a></li>
+<li><a href="#pilltip-data">의약품 약 4만 4천 건의 중복 문장을 정리하고 AI 변환 결과를 재사용하는 처리 흐름 구축</a></li>
+<li><a href="#pilltip-personalization">증상 의미 검색과 내부 프로필 판단을 분리한 복약 정보 개인화</a></li>
+</ol></div>
+<aside class="engineering-profile" aria-label="개발자 프로필"><p class="eyebrow">ENGINEERING PROFILE</p><h2>김재형</h2><p class="profile-role">Backend · AI Application Developer</p><a class="profile-email" href="mailto:kkuldangi2@gmail.com">kkuldangi2@gmail.com</a>
+<section class="working-method"><h3>프로젝트에서 문제를 푼 방식</h3><p>구현과 실험에서 내린 판단을 사례와 함께 정리했습니다.</p><div class="method-grid">
+<a href="#fruition-document"><h4>손실이 시작되는 입력부터 확인</h4><p>PDF 복원 실패를 추적해, AI에 전달하는 표·수식 이미지의 범위와 문맥을 조정했습니다.</p></a>
+<a href="#fruition-jev-decisions"><h4>비교 조건을 맞춘 뒤 모델 선택</h4><p>Jev의 초기 점수 차이를 단건 입력으로 재검증하고, 품질·시간·비용을 나눠 판단했습니다.</p></a>
+<a href="#fruition-ingest"><h4>단계별로 병목을 측정</h4><p>외부 API를 기다리는 문서 분석과 같은 장치를 쓰는 벡터 생성을 따로 측정했습니다.</p></a>
+<a href="#pilltip-data"><h4>반복되는 데이터는 한 번만 처리</h4><p>같은 약품 문장의 변환 결과를 재사용해 정보 범위를 유지하면서 호출량을 줄였습니다.</p></a>
+</div></section><a class="profile-resume" href="resume.html">이력서 보기 ↗</a></aside></section>
+<div id="work" class="work-anchor"></div>
+<div class="work-layout"><aside class="toc"><div class="toc-inner"><p class="eyebrow">목차 <span>{len(DATA['cases']):02d}</span></p><nav aria-label="프로젝트 목차">{contents}</nav><div class="toc-foot"><span>READING GUIDE</span><p>문제 상황<br>해결 옵션과 선택<br>구현과 구조<br>결과와 배운 점</p><a href="resume.html">경험 전체 보기 ↗</a></div></div></aside><div class="cases">{''.join(project_sections)}</div></div>
 <section class="more-work"><span class="eyebrow">BEYOND THE PROJECTS</span><h2>코드 밖에서도 이어지는 경험</h2><div class="more-grid"><a href="https://github.com/edwardkim/rhwp/pull/1213"><span>OPEN SOURCE ↗</span><h3>Rhwp · HWPX 저장 오류 수정</h3><p>textFlow 속성 보존 오류를 수정한 PR #1213 병합. 이슈 분석부터 구현, 테스트와 CI 대응까지 기여했습니다.</p></a><a href="resume.html#activities"><span>COMMUNITY ↗</span><h3>APPTIVE · 백엔드 멘토링</h3><p>멘티 경험을 교육 개선으로 연결했습니다. 멘티 12명을 대상으로 6회의 멘토링과 코드 리뷰를 진행했습니다.</p></a></div></section>
 <section class="more-work writings"><span class="eyebrow">ENGINEERING JOURNAL</span><h2>선택 뒤에 남긴 기록</h2><div class="more-grid">{writings}</div><a class="text-link" href="https://velog.io/@kkuldangi3/posts">블로그 글 전체 보기 ↗</a></section>'''
     (SITE / 'index.html').write_text(page('포트폴리오', '김재형의 Backend · AI 응용 개발 포트폴리오. Fruition과 Pilltip의 문제, 기술 선택, Mermaid 구조도, 평가 결과를 소개합니다.', body))
