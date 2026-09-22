@@ -188,6 +188,22 @@ footer h2{font-size:25px;letter-spacing:-.5px;margin:12px 0 17px}
 .resume-end{text-align:center;padding:40px 0 0}
 .resume-end p{font-size:13px;color:var(--muted);margin-bottom:18px}
 
+.project-previews{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-bottom:48px}
+.project-preview{min-width:0}
+.project-preview h3{font-size:25px;margin:9px 0}
+.project-preview h3 span{font-size:18px;color:var(--blue)}
+.project-preview>p:not(.eyebrow){font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.85}
+.project-figure{margin:0 0 26px}
+.project-figure>a{display:block;position:relative;border:1px solid var(--line);border-radius:7px;overflow:hidden;background:white;cursor:zoom-in}
+.project-figure img{display:block;width:100%;height:auto}
+.image-expand{position:absolute;bottom:10px;right:10px;padding:4px 9px;border-radius:4px;background:#14243eee;color:white;font-size:10px;line-height:1.7}
+.project-figure figcaption{font-size:11px;line-height:1.8;color:var(--muted);margin-top:10px}
+.comparison{margin-top:24px}
+.case-part>.comparison-note{font-size:11px;line-height:1.85;color:var(--muted);margin-top:11px}
+.writings{padding-top:0}
+.footer-links{flex-wrap:wrap}
+@media(max-width:680px){.project-previews{grid-template-columns:1fr;gap:14px;margin-bottom:30px}.project-preview h3{font-size:23px}.image-expand{font-size:9px;padding:3px 7px}.project-figure figcaption{font-size:10px}}
+@media print{.project-figure{break-inside:avoid}.image-expand{display:none}}
 @media(min-width:1500px){:root{--max:1240px}
 .hero{gap:115px;padding-top:90px;padding-bottom:80px}
 .hero h1{font-size:70px}

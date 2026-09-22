@@ -11,7 +11,7 @@ const server = createServer(async (req, res) => {
     const file = resolve(root, `.${pathname.endsWith('/') ? `${pathname}index.html` : pathname}`);
     if (!file.startsWith(`${root}/`)) throw new Error('Invalid path');
     const data = await readFile(file);
-    res.setHeader('Content-Type', { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.png': 'image/png' }[extname(file)] || 'application/octet-stream');
+    res.setHeader('Content-Type', { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg' }[extname(file)] || 'application/octet-stream');
     res.end(data);
   } catch { res.writeHead(404).end(); }
 });
@@ -35,7 +35,27 @@ try {
       assert.deepEqual(broken, []);
       if (route === '/') {
         await page.waitForFunction(() => document.documentElement.dataset.diagrams === 'ready', { timeout: 60000 });
-        assert.equal(await page.$$eval('.mermaid svg', els => els.length), 4);
+        assert.equal(await page.$$eval('.mermaid svg', els => els.length), 6);
+        const images = await page.$$eval('.project-figure img', async imgs => {
+          for (const img of imgs) img.loading = 'eager';
+          await Promise.all(imgs.map(img => img.decode()));
+          return imgs.map(img => ({ loaded: img.naturalWidth > 0, alt: img.alt }));
+        });
+        assert.equal(images.length, 6);
+        assert.ok(images.every(img => img.loaded && img.alt.length > 10));
+        assert.ok(await page.$('#fruition-jev-routing'));
+        assert.ok(await page.$('#fruition-jev-evidence .comparison'));
+        assert.equal(await page.$$eval('.writings a[href*="velog.io"]', els => els.length), 3);
+        await page.$eval('.project-previews', el => el.scrollIntoView({ behavior: 'instant' }));
+        await page.screenshot({ path: `artifacts/projects-${width}.png` });
+        if (width === 1440) {
+          const popup = new Promise(resolve => page.once('popup', resolve));
+          await page.click('.project-figure > a');
+          const imagePage = await popup;
+          await imagePage.waitForFunction(() => document.querySelector('img')?.naturalWidth > 0);
+          assert.ok(imagePage.url().endsWith('fruition-workspace.jpg'));
+          await imagePage.close();
+        }
         await page.click('.toc a[href="#pilltip-data"]');
         await page.waitForFunction(() => location.hash === '#pilltip-data');
         await page.waitForFunction(() => document.querySelector('.toc a[href="#pilltip-data"]').getAttribute('aria-current') === 'location');
@@ -57,7 +77,7 @@ try {
   }
   await page.setJavaScriptEnabled(false);
   await page.goto(base);
-  assert.equal(await page.$$eval('.case', els => els.length), 4, 'Core content must not require JS');
+  assert.equal(await page.$$eval('.case', els => els.length), 6, 'Core content must not require JS');
   const context = await browser.createBrowserContext();
   const offline = await context.newPage();
   await offline.setRequestInterception(true);
@@ -67,7 +87,7 @@ try {
   assert.ok(await offline.$eval('.mermaid', el => el.textContent.includes('flowchart TD')));
   await context.close();
   assert.deepEqual(errors, []);
-  console.log('PASS: desktop/mobile (1440/390/320), 4 Mermaid diagrams, anchors, reading index, print, no-JS content and CDN fallback.');
+  console.log('PASS: desktop/mobile (1440/390/320), 6 Mermaid diagrams, 6 project images, full-size image links, Jev cases, blog links, anchors, reading index, print, no-JS content and CDN fallback.');
 } finally {
   await browser.close();
   await new Promise(resolve => server.close(resolve));

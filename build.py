@@ -12,6 +12,12 @@ def tags(items):
     return '<div class="tags">' + ''.join(f'<span>{escape(x)}</span>' for x in items) + '</div>'
 
 
+def picture(item):
+    return f'''<figure class="project-figure"><a href="{escape(item['src'])}" target="_blank" rel="noopener" aria-label="{escape(item['alt'])} · 원본 크기로 보기, 새 탭">
+<img src="{escape(item['src'])}" alt="{escape(item['alt'])}" width="{item['width']}" height="{item['height']}" loading="lazy" decoding="async"><span class="image-expand">원본 크기로 보기 ↗</span></a>
+<figcaption>{escape(item['caption'])}</figcaption></figure>'''
+
+
 def page(title, description, body, resume=False):
     path = 'resume.html' if resume else ''
     return f'''<!doctype html>
@@ -27,30 +33,41 @@ def page(title, description, body, resume=False):
 <header class="header"><a class="identity" href="./"><span class="monogram">JH<span>.</span></span><span>김재형 <small>JAEHYEONG KIM</small></span></a>
 <nav aria-label="주 메뉴"><a href="./" {'aria-current="page"' if not resume else ''}>포트폴리오</a><a href="resume.html" {'aria-current="page"' if resume else ''}>이력서</a><a class="nav-contact" href="#contact">연락하기 <span aria-hidden="true">↗</span></a></nav></header>
 <main id="main">{body}</main>
-<footer id="contact"><div><span class="eyebrow">LET’S CONNECT</span><h2>함께 풀어갈 문제를 기다립니다.</h2><a class="email" href="mailto:kkuldangi2@gmail.com">kkuldangi2@gmail.com <span aria-hidden="true">↗</span></a></div><div class="footer-links"><a href="https://github.com/Martinel2">GitHub ↗</a><a href="resume.html">이력서 보기 ↗</a><a href="#top">맨 위로 ↑</a></div><div class="footer-bottom"><span>© 2026 김재형</span><span>Backend & AI Application Developer · Updated {DATA['updated']}</span></div></footer>
+<footer id="contact"><div><span class="eyebrow">LET’S CONNECT</span><h2>함께 풀어갈 문제를 기다립니다.</h2><a class="email" href="mailto:kkuldangi2@gmail.com">kkuldangi2@gmail.com <span aria-hidden="true">↗</span></a></div><div class="footer-links"><a href="https://github.com/Martinel2">GitHub ↗</a><a href="https://velog.io/@kkuldangi3/posts">Blog ↗</a><a href="resume.html">이력서 보기 ↗</a><a href="#top">맨 위로 ↑</a></div><div class="footer-bottom"><span>© 2026 김재형</span><span>Backend & AI Application Developer · Updated {DATA['updated']}</span></div></footer>
 </body></html>'''
 
 
 def case_html(c, i):
     rows = ''.join('<tr>' + ''.join(f'<td>{escape(v)}</td>' for v in row) + '</tr>' for row in c['options'])
     metrics = ''.join(f'<div><span>{escape(label)}</span><strong>{escape(value)}</strong><small>{escape(note)}</small></div>' for label, value, note in c['metrics'])
+    links = ''.join(f'<a class="text-link" href="{escape(link["url"])}">{escape(link["label"])} ↗</a>' for link in c.get('links', []))
+    comparison = ''
+    if 'comparison' in c:
+        table = c['comparison']
+        headers = ''.join(f'<th scope="col">{escape(label)}</th>' for label in table['columns'])
+        values = ''.join('<tr>' + ''.join(f'<td>{escape(value)}</td>' for value in row) + '</tr>' for row in table['rows'])
+        comparison = f'<div class="table-scroll comparison" tabindex="0" role="region" aria-label="{c["short"]} 결과 비교"><table><thead><tr>{headers}</tr></thead><tbody>{values}</tbody></table></div><p class="comparison-note">{escape(table["note"])}</p>'
     return f'''<article class="case" id="{c['id']}" aria-labelledby="{c['id']}-title">
 <header class="case-header"><div class="case-kicker"><span>CASE {i:02d}</span><span>{c['project']} / {c['category']}</span></div><h2 id="{c['id']}-title">{c['title']}</h2><p class="case-summary">{c['summary']}</p><p class="case-meta">{c['period']}<br>{c['role']}</p>{tags(c['tags'])}</header>
 <section class="case-part"><h3><span>01</span> 문제 상황</h3><p>{c['problem']}</p><div class="ownership"><strong>내가 맡은 부분</strong><p>{c['ownership']}</p></div></section>
 <section class="case-part"><h3><span>02</span> 해결 옵션과 선택</h3><p class="table-note">구현에 사용한 접근과 대안의 장단점을 정리했습니다.</p><div class="table-scroll" tabindex="0" role="region" aria-label="{c['short']} 해결 옵션 비교"><table><thead><tr><th scope="col">옵션</th><th scope="col">얻는 것</th><th scope="col">감수할 것</th><th scope="col">판단</th></tr></thead><tbody>{rows}</tbody></table></div><div class="decision"><span class="eyebrow">WHY THIS APPROACH</span><p>{c['decision']}</p></div></section>
-<section class="case-part"><h3><span>03</span> 구현과 구조</h3><ul>{''.join(f'<li>{x}</li>' for x in c['implementation'])}</ul><figure class="diagram"><figcaption><span>ARCHITECTURE</span><span>Mermaid diagram</span></figcaption><div class="diagram-scroll" tabindex="0" role="region" aria-label="{c['short']} 구조도"><pre class="mermaid">{escape(c['diagram'])}</pre></div><p class="diagram-caption">{c['diagramCaption']}</p><details><summary>Mermaid 원문 보기</summary><pre class="diagram-source">{escape(c['diagram'])}</pre></details></figure></section>
-<section class="case-part"><h3><span>04</span> 결과와 배운 점</h3><h4>{c['resultTitle']}</h4><p>{c['result']}</p>{f'<div class="result-metrics">{metrics}</div>' if metrics else ''}<div class="limits"><strong>결과의 범위 · 트레이드오프</strong><p>{c['tradeoff']}</p></div><p class="next"><strong>다음 검증</strong> {c['next']}</p><p class="source">근거 · {c['source']}</p></section>
+<section class="case-part"><h3><span>03</span> 구현과 구조</h3><ul>{''.join(f'<li>{x}</li>' for x in c['implementation'])}</ul>{picture(c['image']) if 'image' in c else ''}<figure class="diagram"><figcaption><span>ARCHITECTURE</span><span>Mermaid diagram</span></figcaption><div class="diagram-scroll" tabindex="0" role="region" aria-label="{c['short']} 구조도"><pre class="mermaid">{escape(c['diagram'])}</pre></div><p class="diagram-caption">{c['diagramCaption']}</p><details><summary>Mermaid 원문 보기</summary><pre class="diagram-source">{escape(c['diagram'])}</pre></details></figure></section>
+<section class="case-part"><h3><span>04</span> 결과와 배운 점</h3><h4>{c['resultTitle']}</h4><p>{c['result']}</p>{f'<div class="result-metrics">{metrics}</div>' if metrics else ''}{comparison}<div class="limits"><strong>결과의 범위 · 트레이드오프</strong><p>{c['tradeoff']}</p></div><p class="next"><strong>다음 검증</strong> {c['next']}</p><p class="source">근거 · {c['source']}</p>{links}</section>
 </article>'''
 
 
 def portfolio():
     contents = ''.join(f'<a href="#{c["id"]}"><span>{i:02d}</span><span><small>{c["project"]}</small>{c["short"]}</span><span class="toc-arrow">↗</span></a>' for i, c in enumerate(DATA['cases'], 1))
+    projects = ''.join(f'<article class="project-preview"><p class="eyebrow">{p["label"]}</p><h3><a href="{p["href"]}">{p["name"]} <span>↗</span></a></h3><p>{p["description"]}</p>{picture(p["image"])}</article>' for p in DATA['projects'])
+    writings = ''.join(f'<a href="{w["url"]}"><span>{w["label"]} ↗</span><h3>{w["title"]}</h3><p>{w["description"]}</p></a>' for w in DATA['writings'])
     body = f'''<section class="hero"><div class="hero-copy"><p class="eyebrow"><span class="status-dot"></span> BACKEND & AI APPLICATION DEVELOPER</p><h1>AI의 판단을,<br>검증 가능한<br><em>제품으로.</em></h1><p class="hero-description">안녕하세요, 개발자 <strong>김재형</strong>입니다.<br>모델과 코드의 역할을 나누고,<br>선택의 근거를 데이터로 확인합니다.</p><div class="hero-actions"><a class="button primary" href="#work">프로젝트 살펴보기 <span>↓</span></a><a class="button" href="resume.html">이력서 보기 <span>↗</span></a></div></div>
 <aside class="profile-panel" aria-label="개발 관점"><div class="panel-top"><span>ENGINEERING NOTES</span><span>01 — 03</span></div><h2>작동하는 것을 넘어,<br>설명할 수 있도록.</h2><div class="principle"><span>01</span><div><h3>경계를 설계합니다</h3><p>AI의 판단과 코드의 검증,<br>제안과 실행의 책임을 나눕니다.</p></div></div><div class="principle"><span>02</span><div><h3>비교하고 선택합니다</h3><p>복잡한 기술을 더하기 전에<br>입력과 처리 흐름부터 살펴봅니다.</p></div></div><div class="principle"><span>03</span><div><h3>결과의 범위를 밝힙니다</h3><p>평가 조건과 분모를 함께 기록하고<br>남아 있는 한계를 설명합니다.</p></div></div><div class="panel-bottom"><span>Python · Java · Spring Boot</span><span>↗</span></div></aside></section>
 <section class="highlights" aria-label="대표 성과"><a href="#fruition-agent"><span>FRUITION / 편집 회귀 평가</span><strong>94 <i>→</i> 104<small> / 114건</small></strong><p>동일 초안 재생 · 코드 검사 + 별도 평가</p></a><a href="#fruition-retrieval"><span>FRUITION / 검색 순위</span><strong>50 <i>→</i> 57<small> / 110개</small></strong><p>고정 질의 · 로컬 정답 1위 적중</p></a><a href="#pilltip-data"><span>PILLTIP / 데이터 변환</span><strong>$11.18<small> 실제 API 지출</small></strong><p>원문 처리 예상 약 $200 · 인건비 제외</p></a></section>
-<section class="work-intro" id="work"><div><p class="eyebrow">SELECTED WORK</p><h2>문제에서 시작해,<br>선택과 결과까지.</h2></div><p>두 프로젝트의 네 가지 엔지니어링 사례.<br>무엇을 만들었는지와 함께,<br>왜 그렇게 만들었는지를 기록했습니다.</p></section>
-<div class="work-layout"><aside class="toc"><div class="toc-inner"><p class="eyebrow">CASE INDEX <span>04</span></p><nav aria-label="프로젝트 목차">{contents}</nav><div class="toc-foot"><span>READING GUIDE</span><p>문제 상황<br>해결 옵션과 선택<br>구현과 구조<br>결과와 배운 점</p><a href="resume.html">경험 전체 보기 ↗</a></div></div></aside><div class="cases">{''.join(case_html(c, i) for i,c in enumerate(DATA['cases'],1))}</div></div>
-<section class="more-work"><span class="eyebrow">BEYOND THE PROJECTS</span><h2>코드 밖에서도 이어지는 경험</h2><div class="more-grid"><a href="https://github.com/edwardkim/rhwp/pull/1213"><span>OPEN SOURCE ↗</span><h3>Rhwp · HWPX 저장 오류 수정</h3><p>textFlow 속성 보존 오류를 수정한 PR #1213 병합. 이슈 분석부터 구현, 테스트와 CI 대응까지 기여했습니다.</p></a><a href="resume.html#activities"><span>COMMUNITY ↗</span><h3>APPTIVE · 백엔드 멘토링</h3><p>멘티 경험을 교육 개선으로 연결했습니다. 멘티 12명을 대상으로 6회의 멘토링과 코드 리뷰를 진행했습니다.</p></a></div></section>'''
+<section class="work-intro" id="work"><div><p class="eyebrow">SELECTED WORK</p><h2>문제에서 시작해,<br>선택과 결과까지.</h2></div><p>두 프로젝트의 {len(DATA['cases'])}가지 엔지니어링 사례.<br>무엇을 만들었는지와 함께,<br>왜 그렇게 만들었는지를 기록했습니다.</p></section>
+<section class="project-previews" aria-label="프로젝트 제품 화면">{projects}</section>
+<div class="work-layout"><aside class="toc"><div class="toc-inner"><p class="eyebrow">CASE INDEX <span>{len(DATA['cases']):02d}</span></p><nav aria-label="프로젝트 목차">{contents}</nav><div class="toc-foot"><span>READING GUIDE</span><p>문제 상황<br>해결 옵션과 선택<br>구현과 구조<br>결과와 배운 점</p><a href="resume.html">경험 전체 보기 ↗</a></div></div></aside><div class="cases">{''.join(case_html(c, i) for i,c in enumerate(DATA['cases'],1))}</div></div>
+<section class="more-work"><span class="eyebrow">BEYOND THE PROJECTS</span><h2>코드 밖에서도 이어지는 경험</h2><div class="more-grid"><a href="https://github.com/edwardkim/rhwp/pull/1213"><span>OPEN SOURCE ↗</span><h3>Rhwp · HWPX 저장 오류 수정</h3><p>textFlow 속성 보존 오류를 수정한 PR #1213 병합. 이슈 분석부터 구현, 테스트와 CI 대응까지 기여했습니다.</p></a><a href="resume.html#activities"><span>COMMUNITY ↗</span><h3>APPTIVE · 백엔드 멘토링</h3><p>멘티 경험을 교육 개선으로 연결했습니다. 멘티 12명을 대상으로 6회의 멘토링과 코드 리뷰를 진행했습니다.</p></a></div></section>
+<section class="more-work writings"><span class="eyebrow">ENGINEERING JOURNAL</span><h2>선택 뒤에 남긴 기록</h2><div class="more-grid">{writings}</div><a class="text-link" href="https://velog.io/@kkuldangi3/posts">블로그 글 전체 보기 ↗</a></section>'''
     (SITE / 'index.html').write_text(page('포트폴리오', '김재형의 Backend · AI 응용 개발 포트폴리오. Fruition과 Pilltip의 문제, 기술 선택, Mermaid 구조도, 평가 결과를 소개합니다.', body))
 
 
@@ -65,6 +82,7 @@ def resume():
 <div class="contact-line">
 <a href="mailto:kkuldangi2@gmail.com">kkuldangi2@gmail.com</a>
 <a href="https://github.com/Martinel2">GitHub ↗</a>
+<a href="https://velog.io/@kkuldangi3/posts">Blog ↗</a>
 </div>
 </div>
 <button class="button print-button" type="button">이력서 PDF 저장 ↓</button>
@@ -103,12 +121,16 @@ def resume():
 <li>Router의 편집 목적 전달, 코드·LLM 평가, 최대 1회 재생성과 사용자 승인 흐름 구현.</li>
 <li>동일 초안 114개 재생 평가에서 기준 94건 → 최종 104건 통과. 환산 평균 시간은 11.11초 → 18.92초로 증가.</li>
 <li>원문 질문 중심 의미 검색과 검색 점수 계산 개선. 같은 77개 개념·정답 질의 110개의 로컬 순위 평가에서 Hit@1 50/110 → 57/110.</li>
+<li>Jev 라우팅 비교: 모델 판단 98문항에서 기존 JSON 77건, Jev 81건 전체 필드 일치. 중앙값 8.967초 → 0.658초를 관찰한 단일 실행 비교.</li>
+<li>Jev 근거 선택: 9개 논문·100문항에서 후보 수와 병렬도를 조정해 Jev 500후보 순차 대비 300후보·4병렬의 후보 준비 포함 중앙값 9.090초 → 2.251초. 기존 선택기보다 빠르다는 의미는 아님.</li>
 <li>PoC 참여자 1명의 피드백을 반영해 생성 문서의 원문 출처 링크 구현.</li>
 <li>문서 처리 서비스와 데이터 소유권을 분리하고 Kafka·Transactional Outbox 기반 비동기 처리 구조 설계·구현.</li>
 </ul>
 <p class="scope-note">편집은 개발 회귀셋, 검색은 로컬 순위 계산 결과입니다. 운영 사용자 정확도나 서비스 전체 지연 측정이 아닙니다.</p>
 <a class="text-link" href="./#fruition-agent">편집 Agent 사례 ↗</a>
 <a class="text-link" href="./#fruition-retrieval">검색 평가 사례 ↗</a>
+<a class="text-link" href="./#fruition-jev-routing">Jev 라우팅 비교 ↗</a>
+<a class="text-link" href="./#fruition-jev-evidence">Jev 근거 선택 최적화 ↗</a>
 </article>
 <article class="resume-project">
 <div class="resume-project-title">
@@ -139,7 +161,7 @@ def resume():
 </div>
 <div>
 <strong>AI & Search</strong>
-<p>LangChain · LangGraph · RAG · LLM Evaluation<br>Elasticsearch · Weaviate · BGE-M3 · BM25</p>
+<p>LangChain · LangGraph · RAG · LLM Evaluation · Jev<br>Elasticsearch · Weaviate · BGE-M3 · BM25</p>
 </div>
 <div>
 <strong>Data & Infra</strong>
