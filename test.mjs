@@ -21,6 +21,7 @@ const browser = await puppeteer.launch({ headless: true });
 await mkdir('artifacts', { recursive: true });
 try {
   const page = await browser.newPage();
+  await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
   for (const width of [1440, 390, 320]) {
@@ -41,7 +42,7 @@ try {
         await page.$eval('.diagram details', el => { el.open = true; });
         assert.ok(await page.$eval('.diagram-source', el => el.textContent.includes('flowchart TD')));
         await page.$eval('.diagram details', el => { el.open = false; });
-        await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; window.scrollTo(0, 0); });
+        await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; window.scrollTo({ top: 0, behavior: 'instant' }); });
         await page.screenshot({ path: `artifacts/portfolio-${width}.png` });
         if (width === 1440) await page.$eval('#fruition-agent', el => el.scrollIntoView({ behavior: 'instant' }));
         if (width === 1440) await page.screenshot({ path: 'artifacts/case-desktop.png', fullPage: false });
