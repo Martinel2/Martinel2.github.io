@@ -291,35 +291,31 @@ a{color:inherit}
 /* Portfolio overview, profile, contents and project case studies. */
 .portfolio-page{background:linear-gradient(135deg,#e9f2f9 0%,#f5f8fb 45%,#edf6f3 100%)}
 .portfolio-page .header{height:auto;min-height:64px;margin-top:30px;margin-bottom:28px;padding:14px 24px;border:1px solid var(--line);border-radius:20px;background:#ffffffd9}
-.portfolio-overview{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,.9fr);gap:30px;padding:32px;border:1px solid var(--line);border-radius:26px;background:#ffffffb8;margin-bottom:32px;align-items:stretch}
+.portfolio-overview{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,.8fr);gap:40px;padding:32px;border:1px solid var(--line);border-radius:26px;background:#ffffffb8;margin-bottom:32px;align-items:start}
 .overview-main{min-width:0}
 .portfolio-overview h1{font-size:42px;letter-spacing:-1.8px;margin:16px 0 18px}
 .overview-description{font-size:15px;line-height:1.95;color:#4c5a70}
-.overview-facts{display:grid;grid-template-columns:.8fr 1.15fr 1.15fr;gap:10px;margin:25px 0}
-.overview-facts>div{border:1px solid var(--line);border-radius:14px;background:#f8fafd;padding:15px;min-width:0}
-.overview-facts dt{font-size:10px;color:var(--muted);margin-bottom:10px}
-.overview-facts dd{font-size:12px;font-weight:600;margin:0;line-height:1.8}
-.overview-facts>div:first-child dd{font-size:20px}
+
+
+
+
+
 .overview-label{font-size:14px;margin:25px 0 12px}
-.experience-index{list-style:none;counter-reset:experience;display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0;padding:0}
-.experience-index li{counter-increment:experience;margin:0;padding:0;min-width:0}
-.experience-index a{display:flex;align-items:flex-start;gap:10px;border:1px solid var(--line);border-radius:14px;padding:15px;background:#f8fbfd;font-size:13px;line-height:1.9;height:100%}
-.experience-index a:before{content:counter(experience,decimal-leading-zero);flex-shrink:0;color:var(--blue);font-weight:650;font-size:10px;line-height:25px}
-.experience-index a:hover{border-color:var(--blue)}
-.engineering-profile{border-radius:22px;background:var(--night);color:white;padding:26px;min-width:0}
-.engineering-profile .eyebrow{color:#b3cbe4;font-size:10px}
+.experience-index{list-style:disc;margin:0;padding-left:20px}
+.experience-index li{margin:0;padding:17px 0 17px 4px;border-bottom:1px solid var(--line)}
+.experience-index li:last-child{border-bottom:0}
+.experience-index li::marker{color:var(--blue)}
+.experience-index a{display:block;font-size:14px;line-height:1.85}
+.experience-index strong{display:block;font-size:16px}
+.experience-index span{display:block;color:var(--muted);margin-top:5px}
+.experience-index a:hover strong{color:var(--blue)}
+.profile-summary{font-size:13px;line-height:1.9;margin:24px 0;color:#4c5a70}
+.engineering-profile{border-left:1px solid var(--line);padding:12px 0 12px 28px;min-width:0}
+.engineering-profile .eyebrow{color:var(--blue);font-size:10px}
 .engineering-profile h2{font-size:26px;margin:13px 0 4px}
-.profile-role,.profile-email{font-size:12px;color:#c0ccdd}
+.profile-role,.profile-email{font-size:12px;color:var(--muted)}
 .profile-email{display:inline-block;margin-top:8px}
-.working-method{margin:24px 0;border:1px solid #ffffff20;border-radius:18px;padding:18px;background:#ffffff08}
-.working-method h3{font-size:13px;color:#bdd5ed}
-.working-method>p{font-size:12px;line-height:1.9;color:#c0ccdd;margin:8px 0 18px}
-.method-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.method-grid>a{padding:14px;border:1px solid #ffffff20;border-radius:14px;background:#ffffff09}
-.method-grid h4{font-size:13px;line-height:1.6}
-.method-grid p{font-size:12px;line-height:1.85;color:#c0ccdd;margin-top:8px}
-.method-grid>a:hover{background:#ffffff15}
-.profile-resume{font-size:12px;color:#d7e8fc;text-decoration:underline;text-underline-offset:4px}
+.profile-resume{font-size:12px;color:var(--blue);text-decoration:underline;text-underline-offset:4px}
 .work-anchor{scroll-margin-top:24px}
 .project-context{padding:25px 30px;border:1px solid var(--line);background:#fff;border-radius:14px;margin-bottom:20px}
 .project-context h2{font-size:27px;margin:8px 0}
@@ -327,6 +323,6 @@ a{color:inherit}
 .project-context details{margin-top:15px;font-size:12px;color:var(--blue)}
 .project-context .project-figure{margin:16px 0 0}
 .portfolio-page .toc-inner{padding:20px 14px;border:1px solid var(--line);border-radius:14px;background:#ffffffb8;max-height:calc(100vh - 60px);overflow-y:auto}
-@media(max-width:1000px){.portfolio-overview{grid-template-columns:1fr}.method-grid{grid-template-columns:repeat(2,1fr)}.portfolio-page .toc-inner{max-height:none}.portfolio-overview h1{font-size:38px}}
-@media(max-width:680px){.portfolio-page .header{margin-top:16px;margin-bottom:18px;padding:12px 14px;border-radius:14px}.portfolio-page .identity small{display:none}.portfolio-page .monogram{font-size:23px}.portfolio-page .header nav{gap:12px;font-size:11px}.portfolio-overview{padding:20px 16px;gap:22px;border-radius:18px}.portfolio-overview h1{font-size:29px;letter-spacing:-1.1px}.overview-description{font-size:13px}.overview-facts{grid-template-columns:1fr;margin:18px 0;gap:8px}.overview-facts>div{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px}.overview-facts dt{margin:0;flex-shrink:0}.overview-facts dd{text-align:right;font-size:11px}.overview-facts>div:first-child dd{font-size:17px}.experience-index{grid-template-columns:1fr;gap:8px}.experience-index a{padding:12px;font-size:12px}.engineering-profile{padding:20px 16px;border-radius:16px}.working-method{padding:14px}.method-grid{grid-template-columns:1fr}.project-context{padding:20px}.project-context>p:not(.eyebrow){font-size:13px}}
+@media(max-width:1000px){.portfolio-overview{grid-template-columns:1fr}.engineering-profile{border-left:0;border-top:1px solid var(--line);padding:24px 0 0}.portfolio-page .toc-inner{max-height:none}.portfolio-overview h1{font-size:38px}}
+@media(max-width:680px){.portfolio-page .header{margin-top:16px;margin-bottom:18px;padding:12px 14px;border-radius:14px}.portfolio-page .identity small{display:none}.portfolio-page .monogram{font-size:23px}.portfolio-page .header nav{gap:12px;font-size:11px}.portfolio-overview{padding:20px 16px;gap:22px;border-radius:18px}.portfolio-overview h1{font-size:29px;letter-spacing:-1.1px}.overview-description{font-size:13px}.experience-index a{font-size:13px}.experience-index strong{font-size:14px}.engineering-profile{padding:20px 0 0;border-left:0;border-top:1px solid var(--line)}.project-context{padding:20px}.project-context>p:not(.eyebrow){font-size:13px}}
 @media print{.portfolio-overview{display:block}.engineering-profile{color:#111;background:white}.working-method p,.method-grid p,.profile-role,.profile-email{color:#333}.portfolio-page .header{margin:0}.project-context details{display:none}}

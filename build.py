@@ -70,23 +70,13 @@ def portfolio():
     body = f'''<section class="portfolio-overview" aria-labelledby="portfolio-title">
 <div class="overview-main"><p class="eyebrow">문서 처리 · AI 검색과 편집 · 백엔드 개발</p><h1 id="portfolio-title">프로젝트 포트폴리오</h1>
 <p class="overview-description">문서를 검색 가능한 지식으로 정리하는 Fruition과 개인 맞춤 복약 정보를 제공하는 Pilltip에서 맡은 작업을 정리했습니다. 각 사례에 문제 상황, 검토한 대안, 선택 이유, 구현 구조와 검증 결과를 담았습니다.</p>
-<dl class="overview-facts"><div><dt>프로젝트 / 상세 사례</dt><dd>2개 / {len(DATA['cases'])}개</dd></div><div><dt>주요 기술</dt><dd>Python · Java<br>Spring Boot · PostgreSQL</dd></div><div><dt>주요 경험</dt><dd>문서 변환 · AI 품질 평가<br>검색 · 비동기 처리</dd></div></dl>
-<h2 class="overview-label">주요 개발 경험</h2><ol class="experience-index">
-<li><a href="#fruition-document">논문의 표·수식 손실을 분석하고 AnyDoc·AI를 결합한 문서 변환 흐름 설계</a></li>
-<li><a href="#fruition-agent">사용자의 수정 목적을 유지하고 검증·승인 후 반영하는 문서 편집 Agent 구현</a></li>
-<li><a href="#fruition-retrieval">질문의 의미를 보존하는 검색 입력과 키워드·의미 검색의 순위 계산 개선</a></li>
-<li><a href="#fruition-jev-decisions">Jev의 요청 분류·근거 선택·개념 병합을 기존 방식과 비교 평가</a></li>
-<li><a href="#fruition-ingest">Kafka 기반 문서 분석의 동시 처리와 메모리·임베딩 병목 검증</a></li>
-<li><a href="#pilltip-data">의약품 약 4만 4천 건의 중복 문장을 정리하고 AI 변환 결과를 재사용하는 처리 흐름 구축</a></li>
-<li><a href="#pilltip-personalization">증상 의미 검색과 내부 프로필 판단을 분리한 복약 정보 개인화</a></li>
-</ol></div>
+<h2 class="overview-label">주요 경험</h2><ul class="experience-index">
+<li><a href="#fruition-document"><strong>논문 변환 과정의 표·수식 손실 개선</strong><span>원본 영역을 나눠 읽고 다시 조립하는 문서 변환 흐름 설계·검증</span></a></li>
+<li><a href="#fruition-ingest"><strong>AI 문서 처리의 품질·속도·비용 비교</strong><span>Jev의 판단 품질 비교, 문서 분석 병렬화, 임베딩 병목 검증</span></a></li>
+<li><a href="#pilltip-data"><strong>약품 데이터 중복 제거로 변환 비용 절감</strong><span>약 4만 4천 건의 반복 문장을 한 번만 변환하고 약품별로 결과 재사용</span></a></li>
+</ul></div>
 <aside class="engineering-profile" aria-label="개발자 프로필"><p class="eyebrow">ENGINEERING PROFILE</p><h2>김재형</h2><p class="profile-role">Backend · AI Application Developer</p><a class="profile-email" href="mailto:kkuldangi2@gmail.com">kkuldangi2@gmail.com</a>
-<section class="working-method"><h3>프로젝트에서 문제를 푼 방식</h3><p>구현과 실험에서 내린 판단을 사례와 함께 정리했습니다.</p><div class="method-grid">
-<a href="#fruition-document"><h4>손실이 시작되는 입력부터 확인</h4><p>PDF 복원 실패를 추적해, AI에 전달하는 표·수식 이미지의 범위와 문맥을 조정했습니다.</p></a>
-<a href="#fruition-jev-decisions"><h4>비교 조건을 맞춘 뒤 모델 선택</h4><p>Jev의 초기 점수 차이를 단건 입력으로 재검증하고, 품질·시간·비용을 나눠 판단했습니다.</p></a>
-<a href="#fruition-ingest"><h4>단계별로 병목을 측정</h4><p>외부 API를 기다리는 문서 분석과 같은 장치를 쓰는 벡터 생성을 따로 측정했습니다.</p></a>
-<a href="#pilltip-data"><h4>반복되는 데이터는 한 번만 처리</h4><p>같은 약품 문장의 변환 결과를 재사용해 정보 범위를 유지하면서 호출량을 줄였습니다.</p></a>
-</div></section><a class="profile-resume" href="resume.html">이력서 보기 ↗</a></aside></section>
+<p class="profile-summary">문서와 약품 데이터를 처리하고,<br>AI 검색·편집 기능과 백엔드를 개발합니다.</p><a class="profile-resume" href="resume.html">이력서 보기 ↗</a></aside></section>
 <div id="work" class="work-anchor"></div>
 <div class="work-layout"><aside class="toc"><div class="toc-inner"><p class="eyebrow">목차 <span>{len(DATA['cases']):02d}</span></p><nav aria-label="프로젝트 목차">{contents}</nav><div class="toc-foot"><span>READING GUIDE</span><p>문제 상황<br>해결 옵션과 선택<br>구현과 구조<br>결과와 배운 점</p><a href="resume.html">경험 전체 보기 ↗</a></div></div></aside><div class="cases">{''.join(project_sections)}</div></div>
 <section class="more-work"><span class="eyebrow">BEYOND THE PROJECTS</span><h2>코드 밖에서도 이어지는 경험</h2><div class="more-grid"><a href="https://github.com/edwardkim/rhwp/pull/1213"><span>OPEN SOURCE ↗</span><h3>Rhwp · HWPX 저장 오류 수정</h3><p>textFlow 속성 보존 오류를 수정한 PR #1213 병합. 이슈 분석부터 구현, 테스트와 CI 대응까지 기여했습니다.</p></a><a href="resume.html#activities"><span>COMMUNITY ↗</span><h3>APPTIVE · 백엔드 멘토링</h3><p>멘티 경험을 교육 개선으로 연결했습니다. 멘티 12명을 대상으로 6회의 멘토링과 코드 리뷰를 진행했습니다.</p></a></div></section>

@@ -45,7 +45,7 @@ try {
         assert.ok(images.every(img => img.loaded && img.alt.length > 10));
         assert.ok(await page.$('#fruition-jev-routing'));
         assert.equal(await page.$eval('h1', el => el.textContent), '프로젝트 포트폴리오');
-        assert.equal(await page.$$eval('.experience-index li', els => els.length), 7);
+        assert.equal(await page.$$eval('.experience-index li', els => els.length), 3);
         assert.equal(await page.$$eval('.highlights, .hero', els => els.length), 0);
         assert.equal(await page.$$eval('.project-context', els => els.length), 2);
         for (const id of ['fruition-document', 'fruition-jev-decisions', 'fruition-ingest']) assert.ok(await page.$(`#${id} .comparison`));
