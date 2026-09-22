@@ -56,10 +56,14 @@ main,footer,.header{max-width:var(--max);margin-inline:auto}
 .highlights>a:first-child{padding-left:0}
 .highlights>a:last-child{border:0}
 .highlights>a>span{color:var(--muted);font-size:10px;letter-spacing:.7px;font-weight:600}
-.highlights strong{display:block;font-size:35px;letter-spacing:-1px;line-height:1.6}
+.highlights strong{display:block;font-size:22px;letter-spacing:-.6px;line-height:1.5;margin:12px 0}
 .highlights strong i{font-style:normal;color:#a6b4ce;font-size:23px;margin:0 6px}
 .highlights small{font-weight:450;font-size:13px;letter-spacing:0;color:var(--muted)}
-.highlights p{font-size:11px;color:var(--muted)}
+.highlights p{font-size:14px;color:var(--muted);line-height:1.8}
+.highlights .highlight-result{margin:18px 0 6px;color:var(--ink)}
+.highlights .highlight-result b{font-size:19px}
+.highlights small{display:block;line-height:1.7}
+.highlights .highlight-link{display:block;margin-top:18px;color:var(--blue);font-size:12px}
 .highlights a:hover strong{color:var(--blue)}
 .work-intro{display:flex;align-items:flex-end;justify-content:space-between;margin:85px 0 42px;gap:32px}
 .work-intro h2{font-size:34px;letter-spacing:-1px;margin-top:13px}
@@ -214,7 +218,7 @@ footer h2{font-size:25px;letter-spacing:-.5px;margin:12px 0 17px}
 .hero h1{font-size:58px}
 .work-layout{grid-template-columns:215px minmax(0,1fr);gap:24px}
 .case-header,.case-part{padding-inline:30px}
-.highlights strong{font-size:30px}
+.highlights strong{font-size:21px}
 }
 
 @media(max-width:1000px){.hero{gap:35px;grid-template-columns:1.1fr 1fr}
@@ -263,8 +267,8 @@ main,footer,.header{margin-inline:22px}
 .panel-bottom{margin-top:18px}
 .highlights{grid-template-columns:1fr;padding:0}
 .highlights>a,.highlights>a:first-child{padding:19px 0;border-right:0;border-bottom:1px solid var(--line)}
-.highlights strong{font-size:30px;line-height:1.4;margin-top:5px}
-.highlights small{display:inline;font-size:12px}
+.highlights strong{font-size:22px;line-height:1.5;margin-top:8px}
+.highlights small{display:block;font-size:12px}
 .highlights p{margin-top:5px}
 .work-intro{display:block;margin:47px 0 28px}
 .work-intro h2{font-size:29px}
