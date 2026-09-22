@@ -50,7 +50,7 @@ def case_html(c, i):
     return f'''<article class="case" id="{c['id']}" aria-labelledby="{c['id']}-title">
 <header class="case-header"><div class="case-kicker"><span>CASE {i:02d}</span><span>{c['project']} / {c['category']}</span></div><h2 id="{c['id']}-title">{c['title']}</h2><p class="case-summary">{c['summary']}</p><p class="case-meta">{c['period']}<br>{c['role']}</p>{tags(c['tags'])}</header>
 <section class="case-part"><h3><span>01</span> 문제 상황</h3><p>{c['problem']}</p><div class="ownership"><strong>내가 맡은 부분</strong><p>{c['ownership']}</p></div></section>
-<section class="case-part"><h3><span>02</span> 해결 옵션과 선택</h3><p class="table-note">구현에 사용한 접근과 대안의 장단점을 정리했습니다.</p><div class="table-scroll" tabindex="0" role="region" aria-label="{c['short']} 해결 옵션 비교"><table><thead><tr><th scope="col">옵션</th><th scope="col">얻는 것</th><th scope="col">감수할 것</th><th scope="col">판단</th></tr></thead><tbody>{rows}</tbody></table></div><div class="decision"><span class="eyebrow">WHY THIS APPROACH</span><p>{c['decision']}</p></div></section>
+<section class="case-part"><h3><span>02</span> 해결 옵션과 선택</h3><p class="table-note">같은 문제를 해결하는 접근들을 비교하고, 선택 또는 추가 검증의 이유를 정리했습니다.</p><div class="table-scroll" tabindex="0" role="region" aria-label="{c['short']} 해결 옵션 비교"><table><thead><tr><th scope="col">옵션</th><th scope="col">얻는 것</th><th scope="col">감수할 것</th><th scope="col">판단</th></tr></thead><tbody>{rows}</tbody></table></div><div class="decision"><span class="eyebrow">WHY THIS APPROACH</span><p>{c['decision']}</p></div></section>
 <section class="case-part"><h3><span>03</span> 구현과 구조</h3><ul>{''.join(f'<li>{x}</li>' for x in c['implementation'])}</ul>{picture(c['image']) if 'image' in c else ''}<figure class="diagram"><figcaption><span>ARCHITECTURE</span><span>Mermaid diagram</span></figcaption><div class="diagram-scroll" tabindex="0" role="region" aria-label="{c['short']} 구조도"><pre class="mermaid">{escape(c['diagram'])}</pre></div><p class="diagram-caption">{c['diagramCaption']}</p><details><summary>Mermaid 원문 보기</summary><pre class="diagram-source">{escape(c['diagram'])}</pre></details></figure></section>
 <section class="case-part"><h3><span>04</span> 결과와 배운 점</h3><h4>{c['resultTitle']}</h4><p>{c['result']}</p>{f'<div class="result-metrics">{metrics}</div>' if metrics else ''}{comparison}<div class="limits"><strong>결과의 범위 · 트레이드오프</strong><p>{c['tradeoff']}</p></div><p class="next"><strong>다음 검증</strong> {c['next']}</p><p class="source">근거 · {c['source']}</p>{links}</section>
 </article>'''
@@ -62,7 +62,7 @@ def portfolio():
     writings = ''.join(f'<a href="{w["url"]}"><span>{w["label"]} ↗</span><h3>{w["title"]}</h3><p>{w["description"]}</p></a>' for w in DATA['writings'])
     body = f'''<section class="hero"><div class="hero-copy"><p class="eyebrow"><span class="status-dot"></span> BACKEND & AI APPLICATION DEVELOPER</p><h1>AI의 판단을,<br>검증 가능한<br><em>제품으로.</em></h1><p class="hero-description">안녕하세요, 개발자 <strong>김재형</strong>입니다.<br>모델과 코드의 역할을 나누고,<br>선택의 근거를 데이터로 확인합니다.</p><div class="hero-actions"><a class="button primary" href="#work">프로젝트 살펴보기 <span>↓</span></a><a class="button" href="resume.html">이력서 보기 <span>↗</span></a></div></div>
 <aside class="profile-panel" aria-label="개발 관점"><div class="panel-top"><span>ENGINEERING NOTES</span><span>01 — 03</span></div><h2>작동하는 것을 넘어,<br>설명할 수 있도록.</h2><div class="principle"><span>01</span><div><h3>경계를 설계합니다</h3><p>AI의 판단과 코드의 검증,<br>제안과 실행의 책임을 나눕니다.</p></div></div><div class="principle"><span>02</span><div><h3>비교하고 선택합니다</h3><p>복잡한 기술을 더하기 전에<br>입력과 처리 흐름부터 살펴봅니다.</p></div></div><div class="principle"><span>03</span><div><h3>결과의 범위를 밝힙니다</h3><p>평가 조건과 분모를 함께 기록하고<br>남아 있는 한계를 설명합니다.</p></div></div><div class="panel-bottom"><span>Python · Java · Spring Boot</span><span>↗</span></div></aside></section>
-<section class="highlights" aria-label="대표 성과"><a href="#fruition-agent"><span>FRUITION / 편집 회귀 평가</span><strong>94 <i>→</i> 104<small> / 114건</small></strong><p>동일 초안 재생 · 코드 검사 + 별도 평가</p></a><a href="#fruition-retrieval"><span>FRUITION / 검색 순위</span><strong>50 <i>→</i> 57<small> / 110개</small></strong><p>고정 질의 · 로컬 정답 1위 적중</p></a><a href="#pilltip-data"><span>PILLTIP / 데이터 변환</span><strong>$11.18<small> 실제 API 지출</small></strong><p>원문 처리 예상 약 $200 · 인건비 제외</p></a></section>
+<section class="highlights" aria-label="대표 성과"><a href="#fruition-document"><span>FRUITION / 문서 정보 보존</span><strong>45.17 <i>→</i> 89.89<small>%</small></strong><p>같은 30페이지 · 445영역 내부 모델 평가</p></a><a href="#fruition-jev-decisions"><span>FRUITION / 판단 방식 검증</span><strong>71 <i>↔</i> 72<small> / 76건</small></strong><p>단건 통제 후 품질 차이 재검증 · 시간·비용 별도 비교</p></a><a href="#pilltip-data"><span>PILLTIP / 데이터 변환</span><strong>$11.18<small> 실제 API 지출</small></strong><p>원문 처리 예상 약 $200 · 인건비 제외</p></a></section>
 <section class="work-intro" id="work"><div><p class="eyebrow">SELECTED WORK</p><h2>문제에서 시작해,<br>선택과 결과까지.</h2></div><p>두 프로젝트의 {len(DATA['cases'])}가지 엔지니어링 사례.<br>무엇을 만들었는지와 함께,<br>왜 그렇게 만들었는지를 기록했습니다.</p></section>
 <section class="project-previews" aria-label="프로젝트 제품 화면">{projects}</section>
 <div class="work-layout"><aside class="toc"><div class="toc-inner"><p class="eyebrow">CASE INDEX <span>{len(DATA['cases']):02d}</span></p><nav aria-label="프로젝트 목차">{contents}</nav><div class="toc-foot"><span>READING GUIDE</span><p>문제 상황<br>해결 옵션과 선택<br>구현과 구조<br>결과와 배운 점</p><a href="resume.html">경험 전체 보기 ↗</a></div></div></aside><div class="cases">{''.join(case_html(c, i) for i,c in enumerate(DATA['cases'],1))}</div></div>
@@ -93,12 +93,12 @@ def resume():
 <div class="resume-content">
 <ul class="profile-list">
 <li>
-<strong>AI 품질과 실행 경계</strong>
-<p>문서 편집 Agent에 코드 검사·LLM 평가·제한된 재시도·사용자 승인 흐름을 구현했습니다.</p>
+<strong>문서의 정보 손실을 추적하고 복원</strong>
+<p>표·수식이 깨지는 원인을 분석해 원본 배치에 맞춘 변환 흐름을 설계했습니다. 같은 30페이지·445영역의 내부 모델 평가에서 실사용 기준 통과율 45.17% → 89.89%를 확인했습니다.</p>
 </li>
 <li>
-<strong>검색의 선택 근거</strong>
-<p>검색 구성과 실제 코드 변경 효과를 구분해 비교하고, 동일 로컬 평가셋의 정답 1위 적중을 50/110에서 57/110으로 늘렸습니다.</p>
+<strong>모델과 처리 방식의 선택을 검증</strong>
+<p>Jev의 라우팅·근거 선택·개념 병합을 비교하고 입력 조건을 통제해 재평가했습니다. 문서 분석의 동시성과 벡터 생성의 자원 경합도 따로 측정해 품질·시간·비용을 함께 판단했습니다.</p>
 </li>
 <li>
 <strong>예산 안에서 유지한 기능</strong>
@@ -118,7 +118,10 @@ def resume():
 </div>
 <p class="role">LLM Wiki 기반 AI 워크스페이스 · AI SW 마에스트로 17기<br>팀 프로젝트 / AI 응용 개발</p>
 <ul>
-<li>Router의 편집 목적 전달, 코드·LLM 평가, 최대 1회 재생성과 사용자 승인 흐름 구현.</li>
+<li>AnyDoc·Docling의 정보 손실을 비교하고 본문·표·수식·그림을 구분해 원래 위치에 복원하는 흐름 설계·검증. 30페이지 원문 대조와 별도 415페이지 확장 평가 수행.</li>
+<li>Jev 개념 병합의 초기 품질 차이를 단건 통제로 재검증: 정답 71/76 대 72/76, 단건 중앙값 8.162초 대 0.254초. 정확도와 시간·비용의 결론을 분리.</li>
+<li>문서 분석 작업자 1 → 4개 비교에서 4문서 처리 282.11초 → 73.89초 관측. 메모리 증가·추출 품질과 별도 벡터 생성의 장치 경합을 함께 검증.</li>
+<li>사용자가 요청한 수정 목적을 편집 단계까지 유지하고, 형식·의미 검사와 최대 한 번의 재작성 후 사용자 승인을 받아 저장하는 흐름 구현.</li>
 <li>동일 초안 114개 재생 평가에서 기준 94건 → 최종 104건 통과. 환산 평균 시간은 11.11초 → 18.92초로 증가.</li>
 <li>원문 질문 중심 의미 검색과 검색 점수 계산 개선. 같은 77개 개념·정답 질의 110개의 로컬 순위 평가에서 Hit@1 50/110 → 57/110.</li>
 <li>Jev 라우팅 비교: 모델 판단 98문항에서 기존 JSON 77건, Jev 81건 전체 필드 일치. 중앙값 8.967초 → 0.658초를 관찰한 단일 실행 비교.</li>
@@ -126,7 +129,10 @@ def resume():
 <li>PoC 참여자 1명의 피드백을 반영해 생성 문서의 원문 출처 링크 구현.</li>
 <li>문서 처리 서비스와 데이터 소유권을 분리하고 Kafka·Transactional Outbox 기반 비동기 처리 구조 설계·구현.</li>
 </ul>
-<p class="scope-note">편집은 개발 회귀셋, 검색은 로컬 순위 계산 결과입니다. 운영 사용자 정확도나 서비스 전체 지연 측정이 아닙니다.</p>
+<p class="scope-note">문서 변환은 내부 모델 평가, 편집은 개발 회귀셋, 검색은 로컬 순위 계산 결과입니다. 동시성 비교는 조건별 1회이며 전체 저장·후처리를 제외했습니다. 운영 사용자 정확도나 서비스 전체 지연 측정이 아닙니다.</p>
+<a class="text-link" href="./#fruition-document">문서 변환 사례 ↗</a>
+<a class="text-link" href="./#fruition-jev-decisions">Jev 판단 비교 ↗</a>
+<a class="text-link" href="./#fruition-ingest">문서 처리 병목 검증 ↗</a>
 <a class="text-link" href="./#fruition-agent">편집 Agent 사례 ↗</a>
 <a class="text-link" href="./#fruition-retrieval">검색 평가 사례 ↗</a>
 <a class="text-link" href="./#fruition-jev-routing">Jev 라우팅 비교 ↗</a>

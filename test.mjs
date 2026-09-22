@@ -35,15 +35,17 @@ try {
       assert.deepEqual(broken, []);
       if (route === '/') {
         await page.waitForFunction(() => document.documentElement.dataset.diagrams === 'ready', { timeout: 60000 });
-        assert.equal(await page.$$eval('.mermaid svg', els => els.length), 6);
+        assert.equal(await page.$$eval('.mermaid svg', els => els.length), 9);
         const images = await page.$$eval('.project-figure img', async imgs => {
           for (const img of imgs) img.loading = 'eager';
           await Promise.all(imgs.map(img => img.decode()));
           return imgs.map(img => ({ loaded: img.naturalWidth > 0, alt: img.alt }));
         });
-        assert.equal(images.length, 6);
+        assert.equal(images.length, 4);
         assert.ok(images.every(img => img.loaded && img.alt.length > 10));
         assert.ok(await page.$('#fruition-jev-routing'));
+        for (const id of ['fruition-document', 'fruition-jev-decisions', 'fruition-ingest']) assert.ok(await page.$(`#${id} .comparison`));
+        assert.ok(!(await page.$eval('body', el => el.textContent)).includes('edit_goal'));
         assert.ok(await page.$('#fruition-jev-evidence .comparison'));
         assert.equal(await page.$$eval('.writings a[href*="velog.io"]', els => els.length), 3);
         await page.$eval('.project-previews', el => el.scrollIntoView({ behavior: 'instant' }));
@@ -77,7 +79,7 @@ try {
   }
   await page.setJavaScriptEnabled(false);
   await page.goto(base);
-  assert.equal(await page.$$eval('.case', els => els.length), 6, 'Core content must not require JS');
+  assert.equal(await page.$$eval('.case', els => els.length), 9, 'Core content must not require JS');
   const context = await browser.createBrowserContext();
   const offline = await context.newPage();
   await offline.setRequestInterception(true);
@@ -87,7 +89,7 @@ try {
   assert.ok(await offline.$eval('.mermaid', el => el.textContent.includes('flowchart TD')));
   await context.close();
   assert.deepEqual(errors, []);
-  console.log('PASS: desktop/mobile (1440/390/320), 6 Mermaid diagrams, 6 project images, full-size image links, Jev cases, blog links, anchors, reading index, print, no-JS content and CDN fallback.');
+  console.log('PASS: desktop/mobile (1440/390/320), 9 Mermaid diagrams, 4 project images, full-size image links, Jev cases, blog links, anchors, reading index, print, no-JS content and CDN fallback.');
 } finally {
   await browser.close();
   await new Promise(resolve => server.close(resolve));

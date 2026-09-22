@@ -2,7 +2,7 @@
 
 GitHub Pages용 정적 사이트. 공개 사이트: https://Martinel2.github.io/
 
-- `site/index.html`: 포트폴리오, 목차, 여섯 가지 사례와 Mermaid 구조도
+- `site/index.html`: 포트폴리오, 목차, 아홉 가지 사례와 Mermaid 구조도
 - `site/resume.html`: 이력서, 브라우저 인쇄를 통한 PDF 저장
 - `content.json`: 프로젝트별 본문과 Mermaid 원문
 - `build.py`: 본문을 HTML로 생성. Python 표준 라이브러리만 사용
@@ -66,3 +66,13 @@ GitHub 저장소 `Martinel2/Martinel2.github.io`의 Settings → Pages → Sourc
 - [GitHub Pages 안내](https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-github-pages-site)
 
 레퍼런스의 코드·이미지·개인 경력은 복제하지 않았습니다.
+
+## 추가 사례의 평가 근거
+
+- AnyDoc: `anydoc_product_baseline_vs_l107_445_2026-08-08/results.md`, `anydoc_415_blind_2026-08-08/practical_results.md`, `risk_accuracy_reanalysis.md`, `pdf_timing_30p_2026-09-10/results.md`. 30페이지 전후 비교, 415페이지 확장, 기존 판정 조합 추정, 별도 시간 재측정을 구분합니다.
+- Jev 개념 병합·연결: `latest-four/04_concept_judgment_jev-vs-llm_final.md`, `03_connection_evidence_judgment_existing-vs-jev.md`. 단건 품질 71/76 대 72/76. 연결 판단 시간 합계를 전체 처리시간으로 쓰지 않습니다.
+- 문서 처리 병목: `02_ingest-concurrency-memory-kafka.md`, `03_ingest-concurrency-quality-review.md`. 실제 API 표본, 응답 재생, 임베딩 실험을 구분하고 품질이 동일하다고 주장하지 않습니다.
+- 내부 변수명 대신 사용자의 요청·문제·처리 효과를 본문과 구조도에 설명합니다.
+
+- 편집 Agent의 스킬 설정 화면과 검색 순위 사례의 Wiki 편집 화면은 사례와 직접 연결되지 않아 제거했습니다. 제품 소개 화면과 데이터 처리·챗봇 구조 이미지는 해당 맥락에서 유지합니다.
+- 해결 옵션은 같은 문제에 대한 대안을 비교합니다. 실험 조건(모델·후보 수·동시 요청 수)은 검증 절차와 결과에서 설명합니다.
