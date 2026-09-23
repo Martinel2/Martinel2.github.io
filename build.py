@@ -81,7 +81,7 @@ def portfolio():
 <p class="overview-description">{escape(DATA['overview']['description'])}</p>
 <h2 class="overview-label">주요 경험</h2><ul class="experience-index">
 <li><a href="#fruition-document"><strong>{escape(DATA['overview']['experience1Title'])}</strong><span>{escape(DATA['overview']['experience1Description'])}</span></a></li>
-<li><a href="#fruition-jev-decisions"><strong>{escape(DATA['overview']['experience2Title'])}</strong><span>{escape(DATA['overview']['experience2Description'])}</span></a></li>
+<li><a href="#fruition-jev-evidence"><strong>{escape(DATA['overview']['experience2Title'])}</strong><span>{escape(DATA['overview']['experience2Description'])}</span></a></li>
 <li><a href="#pilltip-data"><strong>{escape(DATA['overview']['experience3Title'])}</strong><span>{escape(DATA['overview']['experience3Description'])}</span></a></li>
 </ul></div>
 <aside class="engineering-profile" aria-label="개발자 프로필"><p class="eyebrow">ENGINEERING PROFILE</p><h2>김재형</h2><p class="profile-role">{escape(DATA['overview']['profileRole'])}</p><a class="profile-email" href="mailto:kkuldangi2@gmail.com">kkuldangi2@gmail.com</a>
