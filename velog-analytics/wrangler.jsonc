@@ -1,0 +1,15 @@
+{
+  "name": "jaehyeong-velog-regions",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-09-01",
+  "workers_dev": true,
+  "assets": { "directory": "public", "binding": "ASSETS", "run_worker_first": true, "html_handling": "none", "not_found_handling": "none" },
+  "observability": { "enabled": false },
+  "vars": { "POST_IDS": "test" },
+  "triggers": { "crons": ["0 18 * * *"] },
+  "d1_databases": [{
+    "binding": "DB",
+    "database_name": "velog-regions",
+    "database_id": "95e2a446-6134-42f3-80b7-5a34f904e424"
+  }]
+}
