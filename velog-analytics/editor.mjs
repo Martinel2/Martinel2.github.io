@@ -19,6 +19,17 @@ export function validate(next, previous, key = '') {
   } else if (next !== previous) throw Error('문자 내용만 수정할 수 있습니다.');
 }
 async function github(env, method = 'GET', data) {
+  if (method === 'GET' && !env.GITHUB_TOKEN) {
+    // Public read remains available before the repository-scoped token is connected.
+    const raw = await fetch('https://raw.githubusercontent.com/Martinel2/Martinel2.github.io/main/content.json', { headers: { 'Cache-Control': 'no-cache' } });
+    if (!raw.ok) return raw;
+    const bytes = new Uint8Array(await raw.arrayBuffer());
+    const prefix = new TextEncoder().encode(`blob ${bytes.length}\0`);
+    const blob = new Uint8Array(prefix.length + bytes.length); blob.set(prefix); blob.set(bytes, prefix.length);
+    const sha = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-1', blob)), b => b.toString(16).padStart(2, '0')).join('');
+    let binary = ''; for (const b of bytes) binary += String.fromCharCode(b);
+    return Response.json({ sha, content: btoa(binary) });
+  }
   return fetch(endpoint + (method === 'GET' ? '?ref=main' : ''), {
     method, headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'jaehyeong-portfolio-editor', 'X-GitHub-Api-Version': '2022-11-28',
       ...(env.GITHUB_TOKEN ? { Authorization: `Bearer ${env.GITHUB_TOKEN}` } : {}), ...(data ? { 'Content-Type': 'application/json' } : {}) },

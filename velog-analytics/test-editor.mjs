@@ -11,6 +11,7 @@ changed.cases[0].id=content.cases[0].id;changed.writings[0].url='javascript:aler
 let stored=structuredClone(content),sha='abc',writes=0,fail=false;
 const nativeFetch=globalThis.fetch;
 globalThis.fetch=async(url,options={})=>{
+ if(String(url).startsWith('https://raw.githubusercontent.com/'))return new Response(JSON.stringify(stored));
  assert.match(String(url),/^https:\/\/api.github.com\/repos\/Martinel2\/Martinel2.github.io\/contents\/content.json/);
  if(fail)return new Response('{}',{status:403});
  if(options.method==='PUT'){
@@ -30,6 +31,8 @@ const postHeaders={Authorization:auth,Origin:'https://editor.test','X-Editor-Act
 assert.equal((await call('/admin/api/content',{method:'POST',headers:postHeaders,body:JSON.stringify({sha:'stale',data:content})})).status,409);
 assert.equal(writes,0);
 const missing={...env,GITHUB_TOKEN:undefined};
+const readOnly=await worker.fetch(new Request('https://editor.test/admin/api/content',{headers:{Authorization:auth}}),missing,{});
+assert.equal(readOnly.status,200);const publicRead=await readOnly.json();assert.equal(publicRead.canSave,false);assert.match(publicRead.sha,/^[a-f0-9]{40}$/);assert.equal(publicRead.data.overview.title,content.overview.title);
 assert.equal((await worker.fetch(new Request('https://editor.test/admin/api/content',{method:'POST',headers:postHeaders,body:'{}'}),missing,{})).status,503);
 const server=createServer(async(req,res)=>{try{const chunks=[];for await(const c of req)chunks.push(c);const response=await worker.fetch(new Request('http://127.0.0.1:'+server.address().port+req.url,{method:req.method,headers:req.headers,...(!['GET','HEAD'].includes(req.method)?{body:Buffer.concat(chunks)}:{})}),env,{});res.writeHead(response.status,Object.fromEntries(response.headers));res.end(Buffer.from(await response.arrayBuffer()));}catch(e){res.writeHead(500);res.end(String(e));}});
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
