@@ -4,7 +4,7 @@
 </style><script src="/admin/editor.js" defer></script></head><body>
 <header><div><h1>포트폴리오 편집</h1><p id="dirty">내용을 불러오는 중입니다.</p></div><div class="actions"><a href="https://martinel2.github.io/" target="_blank" rel="noopener">사이트 보기 ↗</a><button id="reload" disabled>다시 불러오기</button><button id="backup" disabled>수정본 백업</button><button id="review" class="primary" disabled>변경 확인·저장</button></div></header>
 <p id="status" class="notice" role="status" aria-live="polite"></p>
-<details id="setup" hidden><summary>최초 1회: GitHub 저장 연결하기</summary><ol><li><a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub Fine-grained token 생성</a>에서 저장소를 <code>Martinel2.github.io</code> 하나만 선택하고, Repository permissions의 Contents를 Read and write로 설정합니다.</li><li><a href="https://dash.cloudflare.com/5e8c5364000ab2235fa4b21d94c97611/workers/services/view/jaehyeong-velog-regions/production/settings" target="_blank" rel="noopener">Cloudflare Worker 설정</a>의 Variables and Secrets에 <code>GITHUB_TOKEN</code> 이름으로 Secret을 추가하고 발급받은 값을 넣습니다.</li><li>이 화면을 다시 불러오면 저장 버튼이 활성화됩니다. 토큰은 비밀번호처럼 관리하고 공개 파일이나 채팅에 붙이지 마세요.</li></ol></details>
+
 <div class="layout"><nav id="menu" aria-label="편집할 내용"></nav><main><h2 id="section-title">내용 편집</h2><p class="help">문장을 수정한 뒤 변경 내용을 확인하고 저장하세요. 저장 후 사이트 반영까지 잠시 걸립니다. 기존 항목의 내용과 링크를 편집할 수 있습니다.</p><div id="fields"></div></main></div>
 <dialog id="review-dialog" aria-labelledby="review-title"><h2 id="review-title">변경 내용을 확인해 주세요</h2><p>아래 수정 내용을 저장하면 사이트 배포가 시작됩니다.</p><div id="changes"></div><div class="dialog-actions"><button id="cancel">계속 수정</button><button id="save" class="primary">저장하고 배포</button></div></dialog>
 </body></html>

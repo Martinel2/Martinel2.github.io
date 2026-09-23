@@ -23,7 +23,7 @@ python3 -m http.server 4173 --directory site
 
 내용은 `content.json`에서 수정한 후 빌드합니다. `overview`는 첫 화면 소개, `projects`는 프로젝트 소개, `cases`는 상세 경험, `resume`는 이력서 문구, `writings`는 블로그 링크입니다. 이력서의 HTML 구조는 `templates/resume.html`에 있습니다. 로컬에서 수정할 때는 생성된 HTML도 함께 커밋합니다.
 
-브라우저 편집은 [관리자 페이지](https://jaehyeong-velog-regions.velog-analytics.workers.dev/admin/)에서 합니다. 기존 통계 화면과 같은 관리자 계정으로 로그인합니다. 문장 수정 → 변경 확인 → 저장·배포 순서이며, 저장은 GitHub `content.json` 갱신과 Pages 자동 배포로 이어집니다. 토큰 최초 연결 방법은 관리자 화면의 안내 또는 `velog-analytics/README.md`를 참고하세요. 현재는 기존 항목의 문장·링크·Mermaid·사진 설명을 편집하며 항목 추가/삭제와 이미지 업로드는 지원하지 않습니다.
+브라우저 편집은 [관리자 페이지](https://jaehyeong-velog-regions.velog-analytics.workers.dev/admin/)에서 합니다. 기존 통계 화면과 같은 관리자 계정으로 로그인합니다. 문장 수정 → 변경 확인 → 저장·배포 순서이며, 저장은 GitHub `content.json` 갱신과 Pages 자동 배포로 이어집니다. 토큰 최초 연결 방법은 `velog-analytics/README.md`를 참고하세요. 현재는 기존 항목의 문장·링크·Mermaid·사진 설명을 편집하며 항목 추가/삭제와 이미지 업로드는 지원하지 않습니다.
 
 ```sh
 npm ci

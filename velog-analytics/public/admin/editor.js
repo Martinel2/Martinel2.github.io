@@ -39,7 +39,7 @@ function render(){sections=[{group:'포트폴리오',title:'첫 화면 소개',p
 async function load(){if(data&&changed().length&&!confirm('저장하지 않은 변경을 버리고 다시 불러올까요?'))return;busy=true;refresh();status('최신 내용을 불러오는 중입니다.');try{
  const res=await fetch('/admin/api/content',{cache:'no-store'});if(res.status===401)throw Error('로그인이 만료됐습니다. 새로고침해 다시 로그인해 주세요.');const body=await res.json();if(!res.ok)throw Error(body.error);
  if(!body.data.overview||!body.data.resume)throw Error('관리자 편집용 사이트 업데이트를 기다리고 있습니다. 잠시 후 다시 불러와 주세요.');
- data=body.data;original=structuredClone(data);sha=body.sha;canSave=body.canSave;$('#setup').hidden=canSave;render();status(canSave?'최신 내용을 불러왔습니다.':'내용 편집은 가능합니다. 저장하려면 위의 GitHub 연결을 한 번 완료해 주세요.');
+ data=body.data;original=structuredClone(data);sha=body.sha;canSave=body.canSave;render();status(canSave?'최신 내용을 불러왔습니다.':'내용 편집과 백업은 가능합니다. 저장 기능은 아직 연결되지 않았습니다.');
  }catch(e){status(e.message,true);}finally{busy=false;refresh();$('#reload').disabled=false;}}
 $('#reload').addEventListener('click',load);
 $('#backup').addEventListener('click',()=>{const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)+'\n'],{type:'application/json'}));const a=el('a');a.href=url;a.download='portfolio-content-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
