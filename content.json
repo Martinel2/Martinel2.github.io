@@ -970,12 +970,12 @@
     }
   ],
   "overview": {
-    "eyebrow": "문서 처리 · AI 검색과 편집 · 백엔드 개발",
-    "title": "프로젝트 포트폴리오",
-    "description": "문서를 검색 가능한 지식으로 정리하는 Fruition과 개인 맞춤 복약 정보를 제공하는 Pilltip에서 맡은 작업을 정리했습니다. 각 사례에 문제 상황, 검토한 대안, 선택 이유, 구현 구조와 검증 결과를 담았습니다.",
-    "experience1Title": "논문 변환 과정의 표·수식 손실 개선",
-    "experience1Description": "원본 영역을 나눠 읽고 다시 조립하는 문서 변환 흐름 설계·검증",
-    "experience2Title": "AI 문서 처리의 품질·속도·비용 비교",
+    "eyebrow": "AI Agent · Data Pipeline · Spring",
+    "title": "JH's PORTFOLIO",
+    "description": "각 프로젝트에 기여했던 부분에 대한 문제 상황, 검토한 대안, 선택 이유, 구현 구조와 검증 결과를 담았습니다.",
+    "experience1Title": "PDF->Markdown 변환 과정의 표·수식 손실 개선",
+    "experience1Description": "원본 영역을 분할하여 추출, 복원하여 다시 조립하는 문서 변환 흐름 설계 및 검증",
+    "experience2Title": "Jev를 활용해 라우팅, wiki 생성, 질의 개능 개선",
     "experience2Description": "Jev의 판단 품질 비교, 문서 분석 병렬화, 임베딩 병목 검증",
     "experience3Title": "약품 데이터 중복 제거로 변환 비용 절감",
     "experience3Description": "약 4만 4천 건의 반복 문장을 한 번만 변환하고 약품별로 결과 재사용",
