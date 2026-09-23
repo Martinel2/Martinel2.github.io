@@ -1,5 +1,7 @@
 """Generate static, readable pages. Run: python3 build.py"""
 import json
+import os
+import re
 from html import escape
 from pathlib import Path
 
@@ -20,6 +22,10 @@ def picture(item):
 
 def page(title, description, body, resume=False):
     path = 'resume.html' if resume else ''
+    measurement_id = os.environ.get('GA_MEASUREMENT_ID', '')
+    if measurement_id and not re.fullmatch(r'G-[A-Z0-9]+', measurement_id):
+        raise ValueError('GA_MEASUREMENT_ID must be a G- measurement ID')
+    analytics_meta = f'<meta name="ga-measurement-id" content="{measurement_id}">' if measurement_id else ''
     return f'''<!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{title} · 김재형</title><meta name="description" content="{description}">
@@ -27,7 +33,7 @@ def page(title, description, body, resume=False):
 <meta property="og:description" content="{description}"><meta property="og:type" content="website">
 <meta property="og:locale" content="ko_KR"><meta property="og:image" content="https://Martinel2.github.io/assets/og.png">
 <link rel="canonical" href="https://Martinel2.github.io/{path}"><link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="assets/style.css"><script defer src="assets/site.js"></script>
+{analytics_meta}<link rel="stylesheet" href="assets/style.css"><script defer src="assets/site.js"></script>
 </head><body id="top" class="{'resume-page' if resume else 'portfolio-page'}">
 <a class="skip" href="#main">본문으로 바로가기</a>
 <header class="header"><a class="identity" href="./"><span class="monogram">JH<span>.</span></span><span>김재형 <small>JAEHYEONG KIM</small></span></a>
@@ -63,7 +69,10 @@ def portfolio():
     for i, c in enumerate(DATA['cases'], 1):
         if c['project'] not in seen:
             project = next(p for p in DATA['projects'] if p['name'] == c['project'])
-            project_sections.append(f'<section class="project-context" aria-label="{project["name"]} 프로젝트 소개"><p class="eyebrow">PROJECT OVERVIEW</p><h2>{project["name"]}</h2><p>{project["description"]}</p><details><summary>서비스 참고 화면 보기</summary>{picture(project["image"])}</details></section>')
+            contributions = ''.join(f'<div><dt>{escape(title)}</dt><dd>{escape(description)}</dd></div>' for title, description in project['contributions'])
+            links = ''.join(f'<a class="text-link" href="{escape(link["url"])}">{escape(link["label"])} ↗</a>' for link in project.get('links', []))
+            gallery = ''.join(picture(item) for item in project['gallery'])
+            project_sections.append(f'<section class="project-context" aria-label="{project["name"]} 프로젝트 소개"><p class="eyebrow">PROJECT OVERVIEW</p><h2>{project["name"]}</h2><p>{project["description"]}</p><h3>담당 범위와 협업</h3><dl class="contribution-list">{contributions}</dl>{links}<h3>담당 기능과 서비스 화면</h3><p class="gallery-note">팀 발표 자료의 서비스 화면과 구조입니다. 각 설명에 제 담당 범위를 표시했습니다. 이미지를 누르면 원본 크기로 볼 수 있습니다.</p><div class="project-gallery">{gallery}</div></section>')
             seen.add(c['project'])
         project_sections.append(case_html(c, i))
     writings = ''.join(f'<a href="{w["url"]}"><span>{w["label"]} ↗</span><h3>{w["title"]}</h3><p>{w["description"]}</p></a>' for w in DATA['writings'])
@@ -76,7 +85,7 @@ def portfolio():
 <li><a href="#pilltip-data"><strong>약품 데이터 중복 제거로 변환 비용 절감</strong><span>약 4만 4천 건의 반복 문장을 한 번만 변환하고 약품별로 결과 재사용</span></a></li>
 </ul></div>
 <aside class="engineering-profile" aria-label="개발자 프로필"><p class="eyebrow">ENGINEERING PROFILE</p><h2>김재형</h2><p class="profile-role">Backend · AI Application Developer</p><a class="profile-email" href="mailto:kkuldangi2@gmail.com">kkuldangi2@gmail.com</a>
-<p class="profile-summary">문서와 약품 데이터를 처리하고,<br>AI 검색·편집 기능과 백엔드를 개발합니다.</p><a class="profile-resume" href="resume.html">이력서 보기 ↗</a></aside></section>
+<p class="profile-summary">Fruition의 AI 기능 전체를 리드하고,<br>Pilltip의 백엔드·AI 기능을 개발했습니다.</p><a class="profile-resume" href="resume.html">이력서 보기 ↗</a></aside></section>
 <div id="work" class="work-anchor"></div>
 <div class="work-layout"><aside class="toc"><div class="toc-inner"><p class="eyebrow">목차 <span>{len(DATA['cases']):02d}</span></p><nav aria-label="프로젝트 목차">{contents}</nav><div class="toc-foot"><span>READING GUIDE</span><p>문제 상황<br>해결 옵션과 선택<br>구현과 구조<br>결과와 배운 점</p><a href="resume.html">경험 전체 보기 ↗</a></div></div></aside><div class="cases">{''.join(project_sections)}</div></div>
 <section class="more-work"><span class="eyebrow">BEYOND THE PROJECTS</span><h2>코드 밖에서도 이어지는 경험</h2><div class="more-grid"><a href="https://github.com/edwardkim/rhwp/pull/1213"><span>OPEN SOURCE ↗</span><h3>Rhwp · HWPX 저장 오류 수정</h3><p>textFlow 속성 보존 오류를 수정한 PR #1213 병합. 이슈 분석부터 구현, 테스트와 CI 대응까지 기여했습니다.</p></a><a href="resume.html#activities"><span>COMMUNITY ↗</span><h3>APPTIVE · 백엔드 멘토링</h3><p>멘티 경험을 교육 개선으로 연결했습니다. 멘티 12명을 대상으로 6회의 멘토링과 코드 리뷰를 진행했습니다.</p></a></div></section>
@@ -129,7 +138,8 @@ def resume():
 <h3>Fruition</h3>
 <span>2026.05 — 현재</span>
 </div>
-<p class="role">LLM Wiki 기반 AI 워크스페이스 · AI SW 마에스트로 17기<br>팀 프로젝트 / AI 응용 개발</p>
+<p class="role">LLM Wiki 기반 AI 워크스페이스 · AI SW 마에스트로 17기<br>팀 프로젝트 / AI 기능 전체 리드</p>
+<p class="scope-note">프론트엔드·백엔드 개발은 팀원 담당. MSA는 제가 초기 설계를 제안하고 팀원·멘토와 논의해 최종 구조를 함께 완성했습니다.</p>
 <ul>
 <li>AnyDoc·Docling의 정보 손실을 비교하고 본문·표·수식·그림을 구분해 원래 위치에 복원하는 흐름 설계·검증. 30페이지 원문 대조와 별도 415페이지 확장 평가 수행.</li>
 <li>Jev 개념 병합의 초기 품질 차이를 단건 통제로 재검증: 정답 71/76 대 72/76, 단건 중앙값 8.162초 대 0.254초. 정확도와 시간·비용의 결론을 분리.</li>
@@ -140,7 +150,7 @@ def resume():
 <li>Jev 라우팅 비교: 모델 판단 98문항에서 기존 JSON 77건, Jev 81건 전체 필드 일치. 중앙값 8.967초 → 0.658초를 관찰한 단일 실행 비교.</li>
 <li>Jev 근거 선택: 9개 논문·100문항에서 후보 수와 병렬도를 조정해 Jev 500후보 순차 대비 300후보·4병렬의 후보 준비 포함 중앙값 9.090초 → 2.251초. 기존 선택기보다 빠르다는 의미는 아님.</li>
 <li>PoC 참여자 1명의 피드백을 반영해 생성 문서의 원문 출처 링크 구현.</li>
-<li>문서 처리 서비스와 데이터 소유권을 분리하고 Kafka·Transactional Outbox 기반 비동기 처리 구조 설계·구현.</li>
+<li>MSA 초기 설계 제안. 팀원·멘토와 데이터 소유권, 서비스 경계와 통신 방식을 논의해 최종 아키텍처 공동 설계.</li>
 </ul>
 <p class="scope-note">문서 변환은 내부 모델 평가, 편집은 개발 회귀셋, 검색은 로컬 순위 계산 결과입니다. 동시성 비교는 조건별 1회이며 전체 저장·후처리를 제외했습니다. 운영 사용자 정확도나 서비스 전체 지연 측정이 아닙니다.</p>
 <a class="text-link" href="./#fruition-document">문서 변환 사례 ↗</a>
@@ -158,10 +168,11 @@ def resume():
 </div>
 <p class="role">개인 맞춤 AI 안심 복약 솔루션 · 부산대학교<br>팀 프로젝트 / Backend · AI 응용 개발</p>
 <ul>
-<li>Java·Spring Boot 기반 의약품 DB 모델링, 검색과 복약 알림 기능 구현.</li>
-<li>약 4만 4천 건의 의약품 정보에서 문장 블록 중복을 정리하고 변환 결과를 원문에 매핑하는 파이프라인 구축.</li>
+<li>Java·Spring Boot 기반 의약품 DB 설계, 의약품 검색·자동완성과 복약 위험정보(DUR) 표출 구현.</li>
+<li>FCM을 활용한 복약 알림·복약 로그, 딥링크 기반 친구 초대, 가족 프로필 전환 기능 구현.</li>
+<li>약 4만 4천 건의 중복 문장을 정리하고 변환 결과를 재사용하는 데이터 정제 파이프라인 구축. 서비스 내 모든 의약품 정보를 친절한 구어체로 설명.</li>
 <li>변환 대상 1GB → 326MB. GPT Batch API를 사용해 예상 약 $200 대비 실제 API 지출 $11.18로 변환 수행.</li>
-<li>Weaviate 기반 증상 의미 검색과 프로필 판단 Tool을 분리. 임신 여부·복용약·기저질환 필드를 외부 LLM 입력에서 제외.</li>
+<li>RAG 검색과 DUR 확인 등 필요한 기능을 연결하는 AI 오케스트레이션 기반 챗봇 구현. Weaviate 증상 의미 검색과 내부 프로필 판단을 분리해 임신 여부·복용약·기저질환 필드를 외부 LLM 입력에서 제외.</li>
 <li>Notion에 API 문서, 회의록, ADR을 작성해 의사결정 내용 공유.</li>
 </ul>
 <p class="scope-note">비용은 예상치와 실지출의 비교이며 전처리 인건비는 제외했습니다.</p>

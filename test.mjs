@@ -3,6 +3,7 @@ import { createServer } from 'node:http';
 import { readFile, mkdir } from 'node:fs/promises';
 import { resolve, extname } from 'node:path';
 import puppeteer from 'puppeteer';
+import { execFileSync } from 'node:child_process';
 
 const root = resolve('site');
 const server = createServer(async (req, res) => {
@@ -41,7 +42,7 @@ try {
           await Promise.all(imgs.map(img => img.decode()));
           return imgs.map(img => ({ loaded: img.naturalWidth > 0, alt: img.alt }));
         });
-        assert.equal(images.length, 4);
+        assert.equal(images.length, 8);
         assert.ok(images.every(img => img.loaded && img.alt.length > 10));
         assert.ok(await page.$('#fruition-jev-routing'));
         assert.equal(await page.$eval('h1', el => el.textContent), '프로젝트 포트폴리오');
@@ -52,7 +53,6 @@ try {
         assert.ok(!(await page.$eval('body', el => el.textContent)).includes('edit_goal'));
         assert.ok(await page.$('#fruition-jev-evidence .comparison'));
         assert.equal(await page.$$eval('.writings a[href*="velog.io"]', els => els.length), 3);
-        await page.$$eval('.project-context details', els => els.forEach(el => { el.open = true; }));
         await page.$eval('.project-context', el => el.scrollIntoView({ behavior: 'instant' }));
         await page.screenshot({ path: `artifacts/projects-${width}.png` });
         if (width === 1440) {
@@ -93,8 +93,45 @@ try {
   await offline.waitForFunction(() => document.documentElement.dataset.diagrams === 'fallback');
   assert.ok(await offline.$eval('.mermaid', el => el.textContent.includes('flowchart TD')));
   await context.close();
+  // Exercise the real generated analytics tag without sending test visits to Google.
+  const fixtureCode = `import build; print(build.page('Check', 'Check', '<article class="case" id="case-check"><h2>Test case</h2></article><button class="print-button">Print</button>'))`;
+  const renderFixture = id => execFileSync('python3', ['-c', fixtureCode], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, GA_MEASUREMENT_ID: id } });
+  assert.ok(!renderFixture('').includes('ga-measurement-id'));
+  assert.throws(() => renderFixture('invalid-id'), /GA_MEASUREMENT_ID/);
+  const analyticsContext = await browser.createBrowserContext();
+  const analyticsPage = await analyticsContext.newPage();
+  await analyticsPage.setViewport({ width: 1000, height: 1000 });
+  await analyticsPage.setRequestInterception(true);
+  let tagLoads = 0;
+  analyticsPage.on('request', req => {
+    if (req.url().includes('/analytics-check')) return req.respond({ status: 200, contentType: 'text/html', body: renderFixture('G-TEST123') });
+    if (req.url().startsWith('https://www.googletagmanager.com/')) {
+      tagLoads++;
+      return req.respond({ status: 200, contentType: 'application/javascript', body: '' });
+    }
+    if (req.url().includes('google-analytics.com')) return req.abort();
+    req.continue();
+  });
+  const localBase = `http://127.0.0.1:${server.address().port}`;
+  await analyticsPage.goto(`${localBase}/analytics-check?utm_source=application&utm_medium=resume&utm_campaign=company-a&email=private@example.com#private`, { waitUntil: 'networkidle2' });
+  await analyticsPage.waitForFunction(() => window.dataLayer?.some(args => args[1] === 'view_case'));
+  let events = await analyticsPage.evaluate(() => window.dataLayer.map(args => Array.from(args)));
+  const config = events.find(args => args[0] === 'config')[2];
+  assert.equal(config.page_location, `${localBase}/analytics-check`);
+  assert.equal(config.campaign_name, 'company-a');
+  assert.equal(config.campaign_source, 'application');
+  assert.equal(config.allow_google_signals, false);
+  assert.ok(!JSON.stringify(events).includes('private'));
+  assert.equal(tagLoads, 1);
+  await analyticsPage.evaluate(() => { window.print = () => {}; document.querySelector('.print-button').click(); });
+  await analyticsPage.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await analyticsPage.evaluate(() => window.scrollTo(0, 0));
+  events = await analyticsPage.evaluate(() => window.dataLayer.map(args => Array.from(args)));
+  assert.equal(events.filter(args => args[1] === 'view_case').length, 1);
+  assert.equal(events.filter(args => args[1] === 'resume_print').length, 1);
+  await analyticsContext.close();
   assert.deepEqual(errors, []);
-  console.log('PASS: desktop/mobile (1440/390/320), 9 Mermaid diagrams, 4 project images, full-size image links, Jev cases, blog links, anchors, reading index, print, no-JS content and CDN fallback.');
+  console.log('PASS: desktop/mobile (1440/390/320), 9 Mermaid diagrams, 8 project images, full-size image links, Jev cases, blog links, anchors, reading index, print, no-JS content, CDN fallback and isolated analytics integration.');
 } finally {
   await browser.close();
   await new Promise(resolve => server.close(resolve));

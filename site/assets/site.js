@@ -1,11 +1,50 @@
-document.querySelector('.print-button')?.addEventListener('click', () => window.print());
+// The dashboard is private in Google Analytics; no analytics credentials live here.
+const measurementId = document.querySelector('meta[name="ga-measurement-id"]')?.content;
+if (/^G-[A-Z0-9]+$/.test(measurementId || '')) {
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function () { window.dataLayer.push(arguments); };
+  const params = new URLSearchParams(location.search);
+  const config = {
+    page_location: location.origin + location.pathname,
+    page_referrer: document.referrer.split(/[?#]/)[0],
+    allow_google_signals: false,
+    allow_ad_personalization_signals: false
+  };
+  for (const field of ['source', 'medium', 'campaign']) {
+    const value = params.get(`utm_${field}`);
+    if (value && /^[a-zA-Z0-9_-]{1,100}$/.test(value)) {
+      config[field === 'campaign' ? 'campaign_name' : `campaign_${field}`] = value;
+    }
+  }
+  window.gtag('js', new Date());
+  window.gtag('config', measurementId, config);
+  const script = document.createElement('script');
+  script.async = true;
+  script.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
+  document.head.append(script);
+}
+
+document.querySelector('.print-button')?.addEventListener('click', () => {
+  window.gtag?.('event', 'resume_print');
+  window.print();
+});
+document.addEventListener('click', event => {
+  const link = event.target.closest('a');
+  if (link?.getAttribute('href')?.startsWith('mailto:')) window.gtag?.('event', 'contact_click');
+  if (link?.closest('.project-figure')) window.gtag?.('event', 'project_image_open', { image: link.getAttribute('href').split('/').pop() });
+});
 
 const cases = [...document.querySelectorAll('.case')];
 if (cases.length) {
   const links = [...document.querySelectorAll('.toc nav a')];
+  const viewed = new Set();
   const observer = new IntersectionObserver(entries => {
     for (const entry of entries) {
       if (!entry.isIntersecting) continue;
+      if (!viewed.has(entry.target.id)) {
+        window.gtag?.('event', 'view_case', { case_id: entry.target.id });
+        viewed.add(entry.target.id);
+      }
       for (const link of links) {
         if (link.hash === `#${entry.target.id}`) link.setAttribute('aria-current', 'location');
         else link.removeAttribute('aria-current');

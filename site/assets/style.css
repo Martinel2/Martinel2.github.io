@@ -326,3 +326,14 @@ a{color:inherit}
 @media(max-width:1000px){.portfolio-overview{grid-template-columns:1fr}.engineering-profile{border-left:0;border-top:1px solid var(--line);padding:24px 0 0}.portfolio-page .toc-inner{max-height:none}.portfolio-overview h1{font-size:38px}}
 @media(max-width:680px){.portfolio-page .header{margin-top:16px;margin-bottom:18px;padding:12px 14px;border-radius:14px}.portfolio-page .identity small{display:none}.portfolio-page .monogram{font-size:23px}.portfolio-page .header nav{gap:12px;font-size:11px}.portfolio-overview{padding:20px 16px;gap:22px;border-radius:18px}.portfolio-overview h1{font-size:29px;letter-spacing:-1.1px}.overview-description{font-size:13px}.experience-index a{font-size:13px}.experience-index strong{font-size:14px}.engineering-profile{padding:20px 0 0;border-left:0;border-top:1px solid var(--line)}.project-context{padding:20px}.project-context>p:not(.eyebrow){font-size:13px}}
 @media print{.portfolio-overview{display:block}.engineering-profile{color:#111;background:white}.working-method p,.method-grid p,.profile-role,.profile-email{color:#333}.portfolio-page .header{margin:0}.project-context details{display:none}}
+
+.project-context h3{font-size:17px;margin:28px 0 14px}
+.contribution-list{margin:0;border-top:1px solid var(--line)}
+.contribution-list>div{display:grid;grid-template-columns:145px minmax(0,1fr);gap:18px;padding:15px 0;border-bottom:1px solid var(--line)}
+.contribution-list dt{font-size:13px;font-weight:650}
+.contribution-list dd{margin:0;font-size:13px;line-height:1.85;color:#4c5a70}
+.project-context>.gallery-note{font-size:12px;margin-bottom:18px}
+.project-gallery{display:grid;grid-template-columns:1fr;gap:24px}
+.project-gallery .project-figure{margin:0}
+.project-gallery .project-figure figcaption{font-size:12px}
+@media(max-width:680px){.contribution-list>div{grid-template-columns:1fr;gap:5px;padding:13px 0}.contribution-list dd{font-size:12px}.project-context h3{font-size:16px}.project-gallery{gap:20px}.project-gallery .project-figure figcaption{font-size:11px}}
