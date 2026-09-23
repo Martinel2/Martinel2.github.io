@@ -979,7 +979,7 @@
     "description": "각 프로젝트에 기여했던 부분에 대한 문제 상황, 검토한 대안, 선택 이유, 구현 구조와 검증 결과를 담았습니다.",
     "experience1Title": "PDF 표·수식 복원: 내부 평가 통과율 45.17% → 89.89%",
     "experience1Description": "원본 영역을 분할하여 추출, 복원하여 다시 조립하는 문서 변환 흐름 설계 및 검증",
-    "experience2Title": "RAG 근거 충족률 66.25% → 91.25% · Jev 처리시간 약 75% 단축",
+    "experience2Title": "Jev를 활용해 RAG 근거 충족률 66.25% → 91.25%, 처리시간 약 75% 단축",
     "experience2Description": "정답이 있는 80문항의 GPT 평가에서 기존 방식 대비 근거 충족률 개선. Jev 설정 개선 전후에는 근거 준비·선택 시간 중앙값 9.090초 → 2.251초",
     "experience3Title": "약품 변환 API 비용: 예상 약 $200 대비 실제 $11.18",
     "experience3Description": "약 4만 4천 건의 반복 문장을 한 번만 변환하고 약품별로 결과 재사용",
