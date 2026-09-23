@@ -6,6 +6,7 @@ import puppeteer from 'puppeteer';
 import { execFileSync } from 'node:child_process';
 
 const root = resolve('site');
+const content = JSON.parse(await readFile('content.json', 'utf8'));
 const server = createServer(async (req, res) => {
   try {
     const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
@@ -45,7 +46,7 @@ try {
         assert.equal(images.length, 8);
         assert.ok(images.every(img => img.loaded && img.alt.length > 10));
         assert.ok(await page.$('#fruition-jev-routing'));
-        assert.equal(await page.$eval('h1', el => el.textContent), '프로젝트 포트폴리오');
+        assert.equal(await page.$eval('h1', el => el.textContent), content.overview.title);
         assert.equal(await page.$$eval('.experience-index li', els => els.length), 3);
         assert.equal(await page.$$eval('.highlights, .hero', els => els.length), 0);
         assert.equal(await page.$$eval('.project-context', els => els.length), 2);
