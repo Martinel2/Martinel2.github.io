@@ -105,8 +105,8 @@ summary{cursor:pointer}
 .more-work{padding:45px 0 80px}
 .more-work h2{font-size:28px;margin:12px 0 26px;letter-spacing:-.7px}
 .more-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
-.more-grid>a{border-top:1px solid var(--line);padding:23px 0}
-.more-grid>a>span{font-size:10px;color:var(--blue);letter-spacing:1px}
+.more-grid>a,.more-grid>div{border-top:1px solid var(--line);padding:23px 0}
+.more-grid>a>span,.more-grid>div>a>span{font-size:10px;color:var(--blue);letter-spacing:1px}
 .more-grid h3{font-size:19px;margin:12px 0}
 .more-grid p{font-size:13px;color:var(--muted);max-width:480px}
 .more-grid a:hover h3{color:var(--blue)}

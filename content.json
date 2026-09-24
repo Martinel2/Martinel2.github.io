@@ -399,6 +399,14 @@
       ],
       "links": [
         {
+          "label": "GitHub · local-pilot",
+          "url": "https://github.com/FruitionKR/local-pilot"
+        },
+        {
+          "label": "GitHub · AI 분리 저장소",
+          "url": "https://github.com/FruitionKR/Fruition-ai"
+        },
+        {
           "label": "MSA 초기 설계와 피드백 반영 과정",
           "url": "https://velog.io/@kkuldangi3/MSA-전환과-피드백"
         }
@@ -491,21 +499,27 @@
           "width": 2000,
           "height": 1125
         }
+      ],
+      "links": [
+        {
+          "label": "GitHub 저장소",
+          "url": "https://github.com/PillTipKR/Pilltip"
+        }
       ]
     }
   ],
   "writings": [
     {
-      "title": "신뢰도를 위한 LLM 평가의 양면성",
-      "url": "https://velog.io/@kkuldangi3/신뢰도를-위한-LLM-평가의-양면성",
-      "label": "AGENT / 검증 경계",
-      "description": "검증 AI도 틀릴 수 있었습니다. 의도를 반복해서 분류하던 구조와 정상 요청을 막던 검증을 돌아봤습니다."
-    },
-    {
       "title": "MSA 전환과 피드백",
       "url": "https://velog.io/@kkuldangi3/MSA-전환과-피드백",
       "label": "ARCHITECTURE / 데이터 소유권",
       "description": "기능별 분리에서 데이터 소유권으로 관점을 바꿨습니다. 비동기 처리의 효과와 늘어난 운영 부담을 함께 기록했습니다."
+    },
+    {
+      "title": "디자인 싱킹 회고",
+      "url": "https://velog.io/@kkuldangi3/디자인-싱킹-회고",
+      "label": "기획 / 사용자 문제 정의",
+      "description": "기능부터 고민하던 기획을 돌아보고, 팀원들이 겪은 문서 탐색의 불편함을 모아 함께 해결할 문제를 정의한 과정입니다."
     }
   ],
   "resume": [
