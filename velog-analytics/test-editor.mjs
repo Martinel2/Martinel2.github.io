@@ -42,6 +42,22 @@ try{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto(`http://127.0.0.1:${server.address().port}/admin`);
  await page.waitForSelector('#field-overview-title');
+ // Resume editing order must follow the visible template, independently of text IDs.
+ const template=readFileSync(new URL('../templates/resume.html',import.meta.url),'utf8');
+ const order=[...template.matchAll(/@@(text\d+)@@/g)].map(m=>m[1]);
+ for(let i=0;i<content.resume.length;i++){
+  const fields=content.resume[i].fields;
+  const index=1+content.projects.length+content.cases.length+i;
+  await page.$$eval('#menu button',(buttons,i)=>buttons[i].click(),index);
+  const actual=await page.$$eval('#fields textarea',inputs=>inputs.map(input=>({key:input.id.split('-').at(-1),value:input.value})));
+  assert.deepEqual(actual,order.filter(k=>k in fields).map(key=>({key,value:fields[key]})));
+ }
+ const projectIndex=1+content.projects.length+content.cases.length+content.resume.findIndex(s=>'text21' in s.fields);
+ await page.$$eval('#menu button',(buttons,i)=>buttons[i].click(),projectIndex);
+ assert.match(await page.$eval('label[for$="-text54"]',e=>e.textContent),/비용 산정 기준/);
+ assert.equal(await page.$$eval('#fields .group > .group',groups=>groups.length),11);
+ await page.$$eval('#menu button',buttons=>buttons[0].click());
+
  await page.$eval('#field-overview-title',input=>{input.value='테스트 소개 <안전>';input.dispatchEvent(new Event('input',{bubbles:true}));});
  await page.click('#review');await page.waitForSelector('dialog[open]');
  assert.match(await page.$eval('#changes',e=>e.textContent),/테스트 소개 <안전>/);
