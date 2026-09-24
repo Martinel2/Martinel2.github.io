@@ -44,9 +44,12 @@ def page(title, description, body, resume=False):
 
 
 def case_html(c, i):
-    iterative = 'experiments' in c
+    iterative = 'experiments' in c or 'designSteps' in c
     section_title = escape(c.get('processTitle', '실험과 개선 과정' if iterative else '해결 방안 비교와 선택'))
-    if iterative:
+    if 'designSteps' in c:
+        steps = ''.join('<li><h4>' + escape(step['title']) + '</h4>' + ''.join(f'<p><strong>{label}</strong> {escape(step[key])}</p>' for key, label in [('judgment', '판단'), ('implementation', '구현'), ('verification', '확인한 결과')]) + '</li>' for step in c['designSteps'])
+        process = f'<ol class="experiment-timeline">{steps}</ol>'
+    elif iterative:
         steps = ''.join(f'<li><h4>{escape(title)}</h4><p>{escape(observed)}</p><p class="step-judgment"><strong>판단</strong> {escape(judgment)}</p></li>' for title, observed, judgment in c['experiments'])
         process = f'<ol class="experiment-timeline">{steps}</ol>'
     else:

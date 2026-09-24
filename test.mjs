@@ -62,9 +62,11 @@ try {
         assert.ok(Math.abs(lineBreaks.line - lineBreaks.height) < 2, 'Enter must preserve a line break');
         assert.ok(Math.abs(lineBreaks.paragraph - 2 * lineBreaks.height) < 2, 'Blank line must preserve paragraph spacing');
         for (const c of content.cases) {
-          assert.equal(await page.$$eval(`#${c.id} .experiment-timeline > li`, els => els.length), c.experiments.length);
+          assert.equal(await page.$$eval(`#${c.id} .experiment-timeline > li`, els => els.length), (c.designSteps || c.experiments).length);
           assert.equal(await page.$$eval(`#${c.id} table`, els => els.length), 0);
-          assert.ok(c.experiments.every(row => row.length === 3));
+          if (c.designSteps) {
+            assert.deepEqual(await page.$$eval(`#${c.id} .experiment-timeline li:first-child strong`, els => els.map(el => el.textContent)), ['판단', '구현', '확인한 결과']);
+          } else assert.ok(c.experiments.every(row => row.length === 3));
           assert.ok(!(await page.$eval(`#${c.id} .experiment-timeline`, el => el.textContent)).includes('다음 개선'));
           assert.equal(await page.$$eval(`#${c.id} .experiment-timeline strong`, els => els.filter(el => el.textContent === '개선').length), 0);
         }
