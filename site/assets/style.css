@@ -390,3 +390,6 @@ a{color:inherit}
 .project-dialog form button{cursor:pointer;background:white}
 body:has(.project-dialog[open]){overflow:hidden}
 @media(max-width:680px){.project-dialog{padding:18px}.project-dialog .resume-project-title{align-items:flex-start;flex-direction:column;gap:4px}}
+
+.home-actions .button{width:132px;height:48px;justify-content:center;gap:10px;padding:0 12px;background:white}.home-actions .button:hover{background:#e8ecf3}.home-actions .button img{width:20px;height:20px;flex-shrink:0}
+@media(max-width:480px){.home-actions{gap:8px}.home-actions .button{width:calc((100% - 16px)/3);padding:0 6px;gap:6px;font-size:12px}}

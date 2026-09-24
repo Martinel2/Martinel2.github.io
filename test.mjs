@@ -44,7 +44,7 @@ try {
         assert.equal(await page.$$eval('.case', els=>els.length),0);
         assert.equal(await page.$$eval('.home-project', els=>els.length),2);
         assert.equal(await page.$$eval('.home-highlights,.home-hero .profile-list',els=>els.length),0);
-        assert.equal(await page.$('.home-hero img'),null);
+        assert.equal(await page.$('.home-profile,.home-portrait'),null);
         for (const id of ['fruition', 'pilltip']) {
           const trigger = `.project-cover[href="resume.html#${id}"]`;
           await page.click(trigger);
