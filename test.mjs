@@ -52,11 +52,11 @@ try {
         assert.equal(await page.$$eval('.highlights, .hero', els => els.length), 0);
         assert.equal(await page.$$eval('.project-context', els => els.length), 2);
         const lineBreaks = await page.$eval('.experiment-timeline p', el => {
-          const original = el.textContent;
+          const original = el.innerHTML;
           el.textContent = '첫째\n둘째\n\n새문단';
           const y = offset => { const range = document.createRange(); range.setStart(el.firstChild, offset); range.setEnd(el.firstChild, offset + 1); return range.getBoundingClientRect().top; };
           const result = { line: y(3) - y(0), paragraph: y(7) - y(3), height: parseFloat(getComputedStyle(el).lineHeight) };
-          el.textContent = original;
+          el.innerHTML = original;
           return result;
         });
         assert.ok(Math.abs(lineBreaks.line - lineBreaks.height) < 2, 'Enter must preserve a line break');
@@ -65,8 +65,11 @@ try {
           assert.equal(await page.$$eval(`#${c.id} .experiment-timeline > li`, els => els.length), (c.designSteps || c.experiments).length);
           assert.equal(await page.$$eval(`#${c.id} table`, els => els.length), 0);
           if (c.designSteps) {
-            assert.deepEqual(await page.$$eval(`#${c.id} .experiment-timeline li:first-child strong`, els => els.map(el => el.textContent)), ['판단', '구현', '확인한 결과']);
-          } else assert.ok(c.experiments.every(row => row.length === 3));
+            assert.deepEqual(await page.$$eval(`#${c.id} .experiment-timeline li:first-child strong`, els => els.map(el => el.textContent)), ['문제 상황', '판단', '구현', '확인한 결과']);
+          } else {
+            assert.ok(c.experiments.every(row => row.length === 4));
+            assert.deepEqual(await page.$$eval(`#${c.id} .experiment-timeline li:first-child strong`, els => els.map(el => el.textContent)), ['문제 상황', '시도와 결과', '판단']);
+          }
           assert.ok(!(await page.$eval(`#${c.id} .experiment-timeline`, el => el.textContent)).includes('다음 개선'));
           assert.equal(await page.$$eval(`#${c.id} .experiment-timeline strong`, els => els.filter(el => el.textContent === '개선').length), 0);
         }
