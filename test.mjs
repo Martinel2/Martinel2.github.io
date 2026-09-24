@@ -45,7 +45,8 @@ try {
         });
         assert.equal(images.length, 8);
         assert.ok(images.every(img => img.loaded && img.alt.length > 10));
-        assert.ok(await page.$('#fruition-jev-routing'));
+        assert.ok(await page.$('#fruition-jev-evidence'));
+        assert.equal(await page.$$eval('.case[id^="fruition-jev-"]', els => els.length), 1);
         assert.equal(await page.$eval('h1', el => el.textContent), content.overview.title);
         assert.equal(await page.$$eval('.experience-index li', els => els.length), 3);
         assert.equal(await page.$$eval('.highlights, .hero', els => els.length), 0);
