@@ -51,11 +51,23 @@ try{
  sha='changed-elsewhere';await page.click('#review');await page.click('#save');
  await page.waitForFunction(()=>document.querySelector('#status').textContent.includes('다른 곳에서'));
  assert.equal(await page.$eval('#field-overview-title',e=>e.value),'충돌 시 보존할 문장');assert.equal(writes,1);
+ // A stalled save must stop blocking the editor without losing the draft.
+ await page.setRequestInterception(true);
+ page.on('request',request=>{if(request.method()!=='POST')request.continue();});
+ await page.evaluate(()=>{AbortSignal.timeout=()=>{const c=new AbortController();setTimeout(()=>c.abort(new DOMException('Timed out','TimeoutError')),500);return c.signal;};});
+ await page.click('#review');await page.click('#save');
+ assert.equal(await page.$eval('#save',e=>e.disabled),true);
+ assert.match(await page.$eval('#save-status',e=>e.textContent),/저장 중/);
+ await page.waitForFunction(()=>document.querySelector('#status').textContent.includes('대기를 중단'));
+ assert.equal(await page.$eval('#field-overview-title',e=>e.value),'충돌 시 보존할 문장');
+ assert.equal(await page.$eval('#review',e=>e.disabled),false);
+ assert.equal(await page.$eval('#backup',e=>e.disabled),false);
+ assert.equal(writes,1);
  await page.setViewport({width:390,height:844});
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
  mkdirSync(new URL('../artifacts',import.meta.url),{recursive:true});await page.screenshot({path:new URL('../artifacts/admin-mobile.png',import.meta.url).pathname,fullPage:true});
  await page.setViewport({width:1440,height:960});await page.screenshot({path:new URL('../artifacts/admin-desktop.png',import.meta.url).pathname});
  assert.deepEqual(errors,[]);
  fail=true;assert.equal((await call('/admin/api/content',{headers:{Authorization:auth}})).status,502);
- console.log('PASS: admin authentication, CSRF, immutable identifiers/URLs, missing token, GitHub save, stale edit conflict, retained draft, responsive UI, escaped review, upstream errors');
+ console.log('PASS: admin authentication, CSRF, immutable identifiers/URLs, missing token, GitHub save, stale edit conflict, retained draft, stalled-save timeout and visible progress, responsive UI, escaped review, upstream errors');
 }finally{await browser.close();await new Promise(resolve=>server.close(resolve));globalThis.fetch=nativeFetch;}
