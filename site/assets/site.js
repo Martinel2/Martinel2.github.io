@@ -80,3 +80,22 @@ async function renderDiagrams() {
   }
 }
 renderDiagrams();
+
+// Keep ordinary resume links as the fallback when JavaScript is unavailable.
+for (const link of document.querySelectorAll('.home-project a[href^="resume.html#"]')) {
+  const dialog = document.getElementById(link.hash.slice(1) + '-dialog');
+  if (!dialog) continue;
+  link.setAttribute('aria-haspopup', 'dialog');
+  link.addEventListener('click', event => {
+    if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    dialog.showModal();
+    dialog.scrollTop = 0;
+  });
+}
+for (const dialog of document.querySelectorAll('.project-dialog')) {
+  dialog.addEventListener('click', event => {
+    const rect = dialog.getBoundingClientRect();
+    if (event.target === dialog && (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom)) dialog.close();
+  });
+}

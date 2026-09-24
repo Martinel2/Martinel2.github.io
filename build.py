@@ -106,7 +106,7 @@ def portfolio():
 <div class="work-layout"><aside class="toc"><div class="toc-inner"><p class="eyebrow">목차 <span>{len(DATA['cases']):02d}</span></p><nav aria-label="프로젝트 목차">{contents}</nav><div class="toc-foot"><span>READING GUIDE</span><p>문제 상황<br>실험과 개선 · 해결 방안 비교<br>구현과 구조<br>결과와 배운 점</p><a href="resume.pdf" target="_blank" rel="noopener">이력서 PDF ↗</a></div></div></aside><div class="cases">{''.join(project_sections)}</div></div>
 <section class="more-work"><span class="eyebrow">BEYOND THE PROJECTS</span><h2>코드 밖에서도 이어지는 경험</h2><div class="more-grid"><div><a href="https://github.com/edwardkim/rhwp/pull/1213"><span>OPEN SOURCE ↗</span><h3>Rhwp · HWPX 저장 오류 수정</h3><p>textFlow 속성 보존 오류를 수정한 PR #1213 병합. 이슈 분석부터 구현, 테스트와 CI 대응까지 기여했습니다.</p></a><a class="text-link" href="https://github.com/edwardkim/rhwp">GitHub 저장소 ↗</a></div>
 <div><h3>APPTIVE · 백엔드 멘토링</h3><div class="evidence-row"><a class="evidence-thumb" href="assets/evidence/apptive-merit.jpeg" target="_blank" rel="noopener"><img src="assets/evidence/apptive-merit.jpeg" alt="APPTIVE 백엔드 멘토 공로상" loading="lazy"><span>공로상 보기 ↗</span></a><div><p>멘티 경험을 교육 개선으로 연결했습니다. 멘티 12명을 대상으로 6회의 멘토링과 코드 리뷰를 진행했습니다.</p><a class="text-link" href="./#activities">활동 내용 ↗</a></div></div></div></div></section>
-<section class="more-work writings"><span class="eyebrow">ENGINEERING JOURNAL</span><h2>선택 뒤에 남긴 기록</h2><div class="more-grid">{writings}</div><a class="text-link" href="https://velog.io/@kkuldangi3/posts">블로그 글 전체 보기 ↗</a></section>'''
+<section class="more-work writings"><span class="eyebrow">ENGINEERING JOURNAL</span><h2>팀의 의사결정과 회고</h2><div class="more-grid">{writings}</div><a class="text-link" href="https://velog.io/@kkuldangi3/posts">블로그 글 전체 보기 ↗</a></section>'''
     (SITE / 'portfolio.html').write_text(page('포트폴리오', '김재형의 Backend · AI 응용 개발 포트폴리오. Fruition과 Pilltip의 문제, 기술 선택, Mermaid 구조도, 평가 결과를 소개합니다.', body))
 
 
@@ -122,7 +122,6 @@ def home():
     t = lambda n: escape(fields['text' + str(n)])
     projects = ''
     for project in DATA['projects']:
-        cases = [c for c in DATA['cases'] if c['project'] == project['name']]
         links = ''.join(f'<a class="text-link" href="{escape(link["url"])}">{escape(link["label"])} ↗</a>' for link in project.get('links', []))
         target = 'resume.html#' + project['name'].lower()
         affiliation_key, role_key = (23, 24) if project['name'] == 'Fruition' else (46, 47)
@@ -132,15 +131,20 @@ def home():
         cover = project['cover']
         projects += f'<article class="home-project"><a class="project-cover" href="{escape(target)}"><img src="{escape(cover["src"])}" alt="{escape(cover["alt"])}" width="{cover["width"]}" height="{cover["height"]}" loading="lazy"></a><div class="project-card-body"><h3><a href="{escape(target)}">{escape(project["name"])}</a></h3><dl class="project-meta"><div><dt>소속</dt><dd>{affiliation}</dd></div><div><dt>역할</dt><dd>{role}</dd></div></dl><p>{escape(project["description"])}</p>{links}<div>{details}</div></div></article>'
     resume_body = re.sub(r'@@(text\d+)@@', lambda match: escape(fields[match[1]]), (ROOT / 'templates/resume.html').read_text())
+    dialogs = ''
+    for match in re.finditer(r'<article class="resume-project" id="([^"]+)">.*?</article>', resume_body, re.S):
+        project_id, article = match[1], match[0]
+        article = article.replace('<h3>', f'<h3 id="{project_id}-title">', 1)
+        dialogs += f'<dialog class="project-dialog" id="{project_id}-dialog" aria-labelledby="{project_id}-title"><form method="dialog"><button class="button" autofocus>닫기 ×</button></form>{article}</dialog>'
     sections = re.findall(r'<section class="resume-section".*?</section>', resume_body, re.S)
     background = ''.join(sections[3:5]).replace('class="resume-section"', 'class="home-section home-background-section"')
     background = re.sub(r'<h2>(.*?)<span>.*?</span>\s*</h2>', r'<h2>\1</h2>', background, flags=re.S)
     portfolio_html = (SITE / 'portfolio.html').read_text()
     writings = re.search(r'<section class="more-work writings">.*?</section>', portfolio_html, re.S)[0]
-    body = f'''<section class="home-hero"><div class="home-intro"><p class="eyebrow">BACKEND / AI APPLICATION DEVELOPER</p><h1>안녕하세요,<br>김재형입니다.</h1><h2>{t(2)}<br>{t(3)}</h2><div class="home-actions"><a class="button primary" href="resume.pdf" target="_blank" rel="noopener">이력서 PDF ↗</a><a class="button" href="portfolio.html">포트폴리오 ↗</a><a class="text-link" href="https://github.com/Martinel2">GitHub ↗</a></div></div><figure class="home-profile"><a class="home-portrait" href="assets/evidence/data-week-award.jpeg" target="_blank" rel="noopener" aria-label="김재형의 부산 데이터 위크 최우수상 수상 사진 원본 보기"><img src="assets/evidence/data-week-award.jpeg" alt="부산 데이터 위크 최우수상 수상 현장의 김재형" width="1607" height="1649" fetchpriority="high"></a></figure></section>
+    body = f'''<section class="home-hero"><div class="home-intro"><p class="eyebrow">BACKEND / AI APPLICATION DEVELOPER</p><h1>안녕하세요,<br>김재형입니다.</h1><h2>{t(2)}<br>{t(3)}</h2><div class="home-actions"><a class="button primary" href="resume.pdf" target="_blank" rel="noopener">이력서 PDF ↗</a><a class="button" href="portfolio.html">포트폴리오 ↗</a><a class="text-link" href="https://github.com/Martinel2">GitHub ↗</a></div></div></section>
 <section class="home-about home-section" id="about"><p class="eyebrow">ABOUT ME</p><h2>어떤 개발자인가요?</h2><p>{t(5)}</p><p>{t(6)}</p><p>문서를 지식으로 활용하는 AI 워크스페이스 Fruition과, 의약품 정보를 쉽게 전달하는 복약 서비스 Pilltip을 만들었습니다.</p></section>
 <section class="home-section" id="projects"><p class="eyebrow">PROJECTS</p><h2>만들어 온 서비스</h2><div class="home-projects">{projects}</div></section>
-<div class="home-background">{background}</div>{writings}'''
+<div class="home-background">{background}</div>{writings}{dialogs}'''
     (SITE / 'index.html').write_text(page('소개', '김재형의 개발 경험, 프로젝트, 활동과 이력서.', body))
 
 if __name__ == '__main__':

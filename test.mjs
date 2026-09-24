@@ -44,8 +44,23 @@ try {
         assert.equal(await page.$$eval('.case', els=>els.length),0);
         assert.equal(await page.$$eval('.home-project', els=>els.length),2);
         assert.equal(await page.$$eval('.home-highlights,.home-hero .profile-list',els=>els.length),0);
-        assert.equal(await page.$eval('.home-portrait',el=>getComputedStyle(el).borderRadius),'50%');
-        await page.$eval('.home-portrait img',img=>img.decode());
+        assert.equal(await page.$('.home-hero img'),null);
+        for (const id of ['fruition', 'pilltip']) {
+          const trigger = `.project-cover[href="resume.html#${id}"]`;
+          await page.click(trigger);
+          assert.equal(new URL(page.url()).pathname, '/');
+          assert.ok(await page.$eval(`#${id}-dialog`, el=>el.open));
+          assert.ok(await page.$(`#${id}-dialog a[href^="portfolio.html#"]`));
+          assert.ok(await page.$eval(`#${id}-dialog`, el=>el.scrollWidth<=el.clientWidth+1));
+          await page.screenshot({path:`artifacts/${id}-dialog-${width}.png`});
+          await page.keyboard.press('Escape');
+          assert.equal(await page.$eval(`#${id}-dialog`, el=>el.open),false);
+          assert.equal(await page.$eval(trigger,el=>document.activeElement===el),true);
+          await page.click(trigger);
+          await page.click(`#${id}-dialog button`);
+          assert.equal(await page.$eval(`#${id}-dialog`,el=>el.open),false);
+        }
+        await page.evaluate(()=>window.scrollTo(0,0));
         const covers=await page.$$eval('.project-cover img',async imgs=>{for(const i of imgs)i.loading='eager';await Promise.all(imgs.map(i=>i.decode()));return imgs.length;});
         assert.equal(covers,2);
         const targets=await page.$$eval('nav a[href^="./#"]',links=>links.map(a=>a.hash.slice(1)));
