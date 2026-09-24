@@ -89,7 +89,7 @@ def portfolio():
             seen.add(c['project'])
         project_sections.append(case_html(c, i))
     activities = DATA['activities']
-    activity_gallery = ''.join(picture(item) for item in activities['gallery'])
+    activity_gallery = ''.join(picture(item).replace('<figcaption>', '<figcaption><h3>' + escape(item['title']) + '</h3>') for item in activities['gallery'])
     writings = ''.join(f'<a href="{escape(w["url"])}"><span>{escape(w["label"])} ↗</span><h3>{escape(w["title"])}</h3><p>{escape(w["description"])}</p></a>' for w in DATA['writings'])
     body = f'''<section class="portfolio-overview" aria-labelledby="portfolio-title">
 <div class="overview-main"><p class="eyebrow">{escape(DATA['overview']['eyebrow'])}</p><h1 id="portfolio-title">{escape(DATA['overview']['title'])}</h1>
