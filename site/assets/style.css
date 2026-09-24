@@ -384,3 +384,5 @@ a{color:inherit}
 .home-project{padding:0;overflow:hidden}.project-cover{display:block;background:white;overflow:hidden}.project-cover img{display:block;width:100%;aspect-ratio:16/9;height:auto;object-fit:contain;transition:transform .2s}.project-cover:hover img{transform:scale(1.025)}.project-card-body{padding:24px 28px}
 .header nav{display:flex;flex-wrap:wrap;gap:20px}.header nav a{white-space:nowrap}
 @media(max-width:800px){.header{height:auto;min-height:95px;flex-wrap:wrap;padding:18px 0;gap:14px}.header nav{gap:12px 16px;font-size:11px}.site-footer{align-items:flex-start;flex-direction:column;gap:14px}.site-footer .footer-links{gap:14px}.project-card-body{padding:20px}}
+
+.project-meta{margin:14px 0;font-size:14px}.project-meta>div{display:flex;gap:12px;margin:5px 0}.project-meta dt{color:var(--muted);flex:0 0 28px}.project-meta dd{margin:0;font-weight:600}.resume-project{scroll-margin-top:110px}

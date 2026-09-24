@@ -124,17 +124,20 @@ def home():
     for project in DATA['projects']:
         cases = [c for c in DATA['cases'] if c['project'] == project['name']]
         links = ''.join(f'<a class="text-link" href="{escape(link["url"])}">{escape(link["label"])} ↗</a>' for link in project.get('links', []))
-        details = f'<a class="text-link" href="portfolio.html#{escape(cases[0]["id"])}">프로젝트 경험 읽기 ↗</a>'
+        target = 'resume.html#' + project['name'].lower()
+        affiliation_key, role_key = (23, 24) if project['name'] == 'Fruition' else (46, 47)
+        affiliation = escape(fields['text' + str(affiliation_key)].rsplit(' · ', 1)[-1])
+        role = escape(fields['text' + str(role_key)].split(' / ', 1)[-1])
+        details = f'<a class="text-link" href="{target}">기여와 성과 보기 ↗</a>'
         cover = project['cover']
-        target = 'portfolio.html#' + cases[0]['id']
-        projects += f'<article class="home-project"><a class="project-cover" href="{escape(target)}"><img src="{escape(cover["src"])}" alt="{escape(cover["alt"])}" width="{cover["width"]}" height="{cover["height"]}" loading="lazy"></a><div class="project-card-body"><h3><a href="{escape(target)}">{escape(project["name"])}</a></h3><p>{escape(project["description"])}</p>{links}<div>{details}</div></div></article>'
+        projects += f'<article class="home-project"><a class="project-cover" href="{escape(target)}"><img src="{escape(cover["src"])}" alt="{escape(cover["alt"])}" width="{cover["width"]}" height="{cover["height"]}" loading="lazy"></a><div class="project-card-body"><h3><a href="{escape(target)}">{escape(project["name"])}</a></h3><dl class="project-meta"><div><dt>소속</dt><dd>{affiliation}</dd></div><div><dt>역할</dt><dd>{role}</dd></div></dl><p>{escape(project["description"])}</p>{links}<div>{details}</div></div></article>'
     resume_body = re.sub(r'@@(text\d+)@@', lambda match: escape(fields[match[1]]), (ROOT / 'templates/resume.html').read_text())
     sections = re.findall(r'<section class="resume-section".*?</section>', resume_body, re.S)
     background = ''.join(sections[3:5]).replace('class="resume-section"', 'class="home-section home-background-section"')
     background = re.sub(r'<h2>(.*?)<span>.*?</span>\s*</h2>', r'<h2>\1</h2>', background, flags=re.S)
     portfolio_html = (SITE / 'portfolio.html').read_text()
     writings = re.search(r'<section class="more-work writings">.*?</section>', portfolio_html, re.S)[0]
-    body = f'''<section class="home-hero"><div class="home-intro"><p class="eyebrow">BACKEND / AI APPLICATION DEVELOPER</p><h1>안녕하세요,<br>김재형입니다.</h1><h2>{t(2)}<br>{t(3)}</h2><div class="home-actions"><a class="button primary" href="resume.pdf" target="_blank" rel="noopener">이력서 PDF ↗</a><a class="button" href="portfolio.html">포트폴리오 ↗</a><a class="text-link" href="https://github.com/Martinel2">GitHub ↗</a></div></div><figure class="home-profile"><a class="home-portrait" href="assets/profile.jpg" target="_blank" rel="noopener" aria-label="김재형 프로필 사진 원본 보기"><img src="assets/profile.jpg" alt="김재형 프로필 사진" width="413" height="531" fetchpriority="high"></a></figure></section>
+    body = f'''<section class="home-hero"><div class="home-intro"><p class="eyebrow">BACKEND / AI APPLICATION DEVELOPER</p><h1>안녕하세요,<br>김재형입니다.</h1><h2>{t(2)}<br>{t(3)}</h2><div class="home-actions"><a class="button primary" href="resume.pdf" target="_blank" rel="noopener">이력서 PDF ↗</a><a class="button" href="portfolio.html">포트폴리오 ↗</a><a class="text-link" href="https://github.com/Martinel2">GitHub ↗</a></div></div><figure class="home-profile"><a class="home-portrait" href="assets/evidence/data-week-award.jpeg" target="_blank" rel="noopener" aria-label="김재형의 부산 데이터 위크 최우수상 수상 사진 원본 보기"><img src="assets/evidence/data-week-award.jpeg" alt="부산 데이터 위크 최우수상 수상 현장의 김재형" width="1607" height="1649" fetchpriority="high"></a></figure></section>
 <section class="home-about home-section" id="about"><p class="eyebrow">ABOUT ME</p><h2>어떤 개발자인가요?</h2><p>{t(5)}</p><p>{t(6)}</p><p>문서를 지식으로 활용하는 AI 워크스페이스 Fruition과, 의약품 정보를 쉽게 전달하는 복약 서비스 Pilltip을 만들었습니다.</p></section>
 <section class="home-section" id="projects"><p class="eyebrow">PROJECTS</p><h2>만들어 온 서비스</h2><div class="home-projects">{projects}</div></section>
 <div class="home-background">{background}</div>{writings}'''
