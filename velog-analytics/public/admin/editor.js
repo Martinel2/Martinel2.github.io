@@ -1,6 +1,6 @@
 const $ = selector => document.querySelector(selector);
 const labels = {updated:'최종 수정일',overview:'첫 화면',title:'제목',eyebrow:'상단 설명',description:'소개',experience1Title:'주요 경험 1 · 제목',experience1Description:'주요 경험 1 · 설명',experience2Title:'주요 경험 2 · 제목',experience2Description:'주요 경험 2 · 설명',experience3Title:'주요 경험 3 · 제목',experience3Description:'주요 경험 3 · 설명',profileRole:'직무',profileLine1:'프로필 소개 · 첫 줄',profileLine2:'프로필 소개 · 둘째 줄',label:'구분 / 링크 이름',short:'목차 이름',category:'분야',period:'기간',role:'역할',summary:'요약',tags:'기술 태그',problem:'문제 상황',ownership:'내가 맡은 부분',processTitle:'과정 섹션 제목',experiments:'진행 과정',designSteps:'판단과 구현 과정',judgment:'판단',verification:'확인한 결과',options:'해결 방안 비교',decision:'선택 이유',implementation:'구현 내용',diagram:'구조도 · Mermaid 원문',diagramCaption:'구조도 설명',resultTitle:'결과 제목',result:'결과',metrics:'성과 수치',comparison:'결과 비교표',columns:'열 제목',rows:'비교 내용',note:'비교 조건 / 주의점',tradeoff:'결과 범위와 한계',next:'다음 검증',source:'근거',links:'관련 링크',url:'링크 주소',href:'페이지 내 연결',contributions:'담당 범위와 협업',cover:'프로젝트 표지',gallery:'프로젝트 사진',image:'사례 사진',alt:'이미지 대체 설명',caption:'사진 설명',fields:'본문',writings:'블로그 글'};
-const resumeLabels = {text19:'섹션 제목',text20:'섹션 영문 표기',text21:'프로젝트 이름',text22:'진행 기간',text23:'프로젝트 소개',text24:'담당 역할',text25:'팀원과의 역할 구분',text26:'PDF 변환 · 문제 / 해결 / 성과',text28:'문서 병렬 처리 · 문제 / 해결 / 성과',text27:'근거 검색 · 문제 / 해결 / 성과',text29:'사용자 정의 작업 · 문제 / 해결 / 성과',text30:'문서 편집 · 문제 / 해결 / 성과',text35:'서비스 설계 기여',text36:'평가 수치의 기준',text37:'PDF 변환 상세 링크',text39:'문서 병렬 처리 상세 링크',text40:'Agent 상세 링크',text43:'근거 검색 상세 링크',text44:'프로젝트 이름',text45:'진행 기간',text46:'프로젝트 소개',text47:'담당 역할',text112:'팀원과의 역할 구분',text50:'데이터 정제 · 문제 / 해결',text51:'데이터 정제 · 성과',text54:'비용 산정 기준',text52:'복약 챗봇 · 문제 / 해결 / 성과',text48:'의약품 검색과 위험정보 기능',text49:'복약 관리와 가족 기능',text53:'팀 협업과 문서화',text55:'데이터 정제 상세 링크',text56:'복약 챗봇 상세 링크',text130:'멘토 공로상 증빙 링크 이름',text113:'인증·인가 항목 제목',text128:'쇼핑몰 GitHub 링크 이름',text129:'Todo GitHub 링크 이름'};
+const resumeLabels = {text1:'이력서 상단 표기',text2:'소개 문구 앞부분',text3:'소개 문구 뒷부분',text4:'이력서 직무 표기',text5:'어떤 개발자인가요? · 첫 문단',text6:'어떤 개발자인가요? · 둘째 문단',text19:'섹션 제목',text20:'섹션 영문 표기',text21:'프로젝트 이름',text22:'진행 기간',text23:'프로젝트 소개',text24:'담당 역할',text25:'팀원과의 역할 구분',text26:'PDF 변환 · 문제 / 해결 / 성과',text28:'문서 병렬 처리 · 문제 / 해결 / 성과',text27:'근거 검색 · 문제 / 해결 / 성과',text29:'사용자 정의 작업 · 문제 / 해결 / 성과',text30:'문서 편집 · 문제 / 해결 / 성과',text35:'서비스 설계 기여',text36:'평가 수치의 기준',text37:'PDF 변환 상세 링크',text39:'문서 병렬 처리 상세 링크',text40:'Agent 상세 링크',text43:'근거 검색 상세 링크',text44:'프로젝트 이름',text45:'진행 기간',text46:'프로젝트 소개',text47:'담당 역할',text112:'팀원과의 역할 구분',text50:'데이터 정제 · 문제 / 해결',text51:'데이터 정제 · 성과',text54:'비용 산정 기준',text52:'복약 챗봇 · 문제 / 해결 / 성과',text48:'의약품 검색과 위험정보 기능',text49:'복약 관리와 가족 기능',text53:'팀 협업과 문서화',text55:'데이터 정제 상세 링크',text56:'복약 챗봇 상세 링크',text130:'멘토 공로상 수상 설명',text113:'인증·인가 항목 제목',text128:'쇼핑몰 GitHub 링크 이름',text129:'Todo GitHub 링크 이름'};
 const resumeGroupStarts = new Set(['text21','text114','text116','text118','text120','text44','text122','text124','text126','text36','text55']);
 for(let n=114;n<=127;n++)resumeLabels['text'+n]=n%2===0?'분야 제목':'분야 설명';
 const locked = new Set(['id','project','name','src','width','height']);
@@ -10,7 +10,7 @@ const fieldLabels=new Map();
 function el(tag,text,className){const node=document.createElement(tag);if(text!==undefined)node.textContent=text;if(className)node.className=className;return node;}
 function status(message,error=false){$('#status').textContent=message;$('#status').setAttribute('role',error?'alert':'status');$('#save-status').textContent=message;}
 function changed(a=data,b=original,path=[]){if(!a||!b)return [];if(typeof a==='string')return a===b?[]:[{path,before:b,after:a}];if(typeof a!=='object')return [];return Object.keys(a).flatMap(k=>changed(a[k],b[k],[...path,k]));}
-function refresh(){const count=changed().length;$('#dirty').textContent=count?`${count}개 항목 수정됨 · 아직 저장하지 않았습니다.`:'저장된 내용과 같습니다.';$('#review').disabled=busy||!canSave||!count;$('#reload').disabled=busy||!data;$('#backup').disabled=busy||!data;$('#save').disabled=busy;$('#save').textContent=busy?'저장 중…':'저장하고 배포';$('#cancel').disabled=busy;document.querySelectorAll('#fields textarea,#menu button').forEach(n=>n.disabled=busy);}
+function refresh(){const intro=sections[active]?.kind==='resume'&&valueAt(sections[active].path).fields.text2!==undefined;$('#intro-preview').hidden=!intro;if(intro){const f=valueAt(sections[active].path).fields;$('#intro-preview').textContent='안녕하세요,\n김재형입니다.\n\n'+f.text2+'\n'+f.text3;}const count=changed().length;$('#dirty').textContent=count?`${count}개 항목 수정됨 · 아직 저장하지 않았습니다.`:'저장된 내용과 같습니다.';$('#review').disabled=busy||!canSave||!count;$('#reload').disabled=busy||!data;$('#backup').disabled=busy||!data;$('#save').disabled=busy;$('#save').textContent=busy?'저장 중…':'저장하고 배포';$('#cancel').disabled=busy;document.querySelectorAll('#fields textarea,#menu button').forEach(n=>n.disabled=busy);}
 function valueAt(path){return path.reduce((v,k)=>v[k],data);}
 function setAt(path,value){const parent=valueAt(path.slice(0,-1));parent[path.at(-1)]=value;refresh();}
 function field(value,path,parent,label){const key=path.at(-1);if(locked.has(key))return;
@@ -33,15 +33,22 @@ function field(value,path,parent,label){const key=path.at(-1);if(locked.has(key)
   });return group;
  }
 }
-function show(index){active=index;const section=sections[index];$('#section-title').textContent=section.title;$('#fields').replaceChildren();document.querySelectorAll('#menu button').forEach((b,i)=>b.setAttribute('aria-current',String(i===index)));
+function show(index){active=index;const section=sections[index];$('#section-title').textContent=section.title;$('#fields').replaceChildren();$('#section-help').textContent=section.help||'내용을 수정한 뒤 변경 내용을 확인하고 저장하세요.';document.querySelectorAll('#menu button').forEach((b,i)=>b.setAttribute('aria-current',String(i===index)));
  const obj=valueAt(section.path);Object.entries(obj).forEach(([k,v])=>{if(section.kind==='resume'&&k==='title')return;const f=field(v,[...section.path,k],obj,k==='problem'?'경험 전체 배경':obj.experiments&&k==='decision'?'개선 과정에서 확인한 점':undefined);if(f)$('#fields').append(f);});refresh();
 }
-function render(){sections=[{group:'포트폴리오',title:'상세 포트폴리오 소개',path:['overview']}];
- data.projects.forEach((p,i)=>sections.push({group:'프로젝트 소개',title:p.name,path:['projects',String(i)]}));
+function render(){sections=[];
+ const resumeOrder=['text1','text57','text19','text71','text84','text11','text98'];
+ for(const key of resumeOrder){
+  const i=data.resume.findIndex(r=>key in r.fields);if(i<0)continue;
+  const r=data.resume[i];
+  const help=key==='text1'?'소개 문구 앞부분과 뒷부분은 홈 인사말 아래에 표시되며, 이력서 소개에도 반영됩니다.':key==='text19'?'홈의 프로젝트 팝업과 이력서에 함께 반영됩니다. 소속과 역할은 홈 카드에도 표시됩니다.':key==='text57'?'홈의 기술 섹션과 이력서에 함께 반영됩니다.':['text71','text84'].includes(key)?'홈과 이력서에 함께 반영됩니다.':'이력서에 반영됩니다.';
+  sections.push({group:['text11','text98'].includes(key)?'이력서 추가 항목':'홈·이력서',title:key==='text19'?'프로젝트 팝업':r.title,path:['resume',String(i)],kind:'resume',help});
+ }
+ data.projects.forEach((p,i)=>sections.push({group:'프로젝트 카드·상세 소개',title:p.name,path:['projects',String(i)],help:'표지와 서비스 소개, 저장소 링크는 홈 카드에 표시됩니다. 담당 범위와 서비스 사진은 상세 포트폴리오에 표시됩니다.'}));
+ data.writings.forEach((w,i)=>sections.push({group:'팀의 의사결정과 회고',title:w.title,path:['writings',String(i)]}));
+ sections.push({group:'포트폴리오',title:'상세 포트폴리오 소개',path:['overview'],help:'상세 포트폴리오의 첫 화면입니다. 홈 인사말은 홈·이력서의 소개에서 수정하세요.'});
  data.cases.forEach((c,i)=>sections.push({group:'상세 경험',title:c.short,path:['cases',String(i)]}));
- data.resume.forEach((r,i)=>sections.push({group:'홈·이력서',title:r.title,path:['resume',String(i)],kind:'resume'}));
- data.writings.forEach((w,i)=>sections.push({group:'블로그 링크',title:w.title,path:['writings',String(i)]}));
- $('#menu').replaceChildren();let group='';sections.forEach((s,i)=>{if(s.group!==group){$('#menu').append(el('h2',s.group));group=s.group;}const button=el('button',s.title);button.addEventListener('click',()=>show(i));$('#menu').append(button);});show(Math.min(active,sections.length-1));
+ $('#menu').replaceChildren();let group='';sections.forEach((s,i)=>{if(s.group!==group){$('#menu').append(el('h2',s.group));group=s.group;}const button=el('button',s.title);button.dataset.path=s.path.join('.');button.addEventListener('click',()=>show(i));$('#menu').append(button);});show(Math.min(active,sections.length-1));
 }
 async function load(){if(data&&changed().length&&!confirm('저장하지 않은 변경을 버리고 다시 불러올까요?'))return;busy=true;refresh();status('최신 내용을 불러오는 중입니다.');try{
  const res=await fetch('/admin/api/content',{cache:'no-store',signal:AbortSignal.timeout(35000)});if(res.status===401)throw Error('로그인이 만료됐습니다. 새로고침해 다시 로그인해 주세요.');const body=await res.json();if(!res.ok)throw Error(body.error);
