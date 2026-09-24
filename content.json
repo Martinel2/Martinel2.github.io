@@ -180,7 +180,7 @@
     {
       "id": "fruition-agent",
       "project": "Fruition",
-      "category": "Agent · 품질 평가",
+      "category": "AI Agent · 품질 평가",
       "title": "편집 Agent 검증 개선: 회귀 평가 114건 중 94 → 104건 통과",
       "short": "AI 문서 편집: 내부 평가 통과 94/114 → 104/114",
       "period": "2026.05 — 현재",
