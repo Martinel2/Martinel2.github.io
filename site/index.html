@@ -156,35 +156,33 @@ AI는 작업 지침과 수정안을 작성하고, 코드는 권한과 실행 범
 <figcaption>가족 프로필 전환 — 관리할 가족을 바꾸어 해당 프로필의 복약 정보를 확인하는 기능을 담당했습니다. 딥링크 기반 친구 초대도 구현했으며, 이 화면은 가족 전환 기능을 보여줍니다. </figcaption></figure><figure class="project-figure"><a href="assets/projects/pilltip-chatbot.jpg" target="_blank" rel="noopener" aria-label="Pilltip의 질문 분석·RAG·DUR 도구를 연결하는 AI 챗봇 구조와 대화 화면 · 원본 크기로 보기, 새 탭">
 <img src="assets/projects/pilltip-chatbot.jpg" alt="Pilltip의 질문 분석·RAG·DUR 도구를 연결하는 AI 챗봇 구조와 대화 화면" width="2000" height="1125" loading="lazy" decoding="async"><span class="image-expand">원본 크기로 보기 ↗</span></a>
 <figcaption>AI 챗봇 — 질문에 따라 RAG 검색과 DUR 확인을 연결하는 오케스트레이션을 담당했습니다. 발표 자료의 예시 대화이며 의약 판단 정확도의 평가 결과는 아닙니다. </figcaption></figure></div></section><article class="case" id="pilltip-data" aria-labelledby="pilltip-data-title">
-<header class="case-header"><div class="case-kicker"><span>CASE 05</span><span>Pilltip / 데이터 파이프라인 · GPT Batch API</span></div><h2 id="pilltip-data-title">의약품 데이터 정제 파이프라인 구축 및 예상 약 $200 대비 실제 API 지출 $11.18</h2><p class="case-summary">어려운 의약품 정보를 이해하기 쉬운 표현으로 바꾸기 위해 데이터 파이프라인을 구축했습니다. 예산 안에서 기능을 유지하기 위해 모델 호출  수와 모델 비용을 줄여 1GB의 의약품 데이터를 실제 $11.18로 처리에 성공했습니다.</p><p class="case-meta">2025.07 — 2025.07</p><div class="tags"><span>데이터 파이프라인</span><span>Fuzzy Matching</span><span>GPT Batch API</span><span>데이터 분석</span></div></header>
+<header class="case-header"><div class="case-kicker"><span>CASE 05</span><span>Pilltip / 데이터 파이프라인 · GPT Batch API</span></div><h2 id="pilltip-data-title">의약품 데이터 정제 파이프라인 구축 및 예상 약 $200 대비 실제 API 지출 $11.18</h2><p class="case-summary">어려운 의약품 정보를 이해하기 쉬운 표현으로 바꾸기 위해 데이터 정제 파이프라인을 구축했습니다. 완전히 같은 문장과 의미가 같은 문장을 차례로 통합하고, 누락된 5%는 성분별 주의사항을 정제해 보완했습니다. 고유 문장을 변환해 각 약품에 다시 연결하면서 실제 API 지출 $11.18로 처리했습니다.</p><p class="case-meta">2025.07 — 2025.07</p><div class="tags"><span>데이터 파이프라인</span><span>Fuzzy Matching</span><span>GPT Batch API</span><span>데이터 분석</span></div></header>
 <section class="case-part"><h3><span>01</span> 배경</h3><p>약 4만 4천 건의 약품 원문을 사용자가 이해하기 쉬운 설명으로 변환하는 기능을 만들었습니다.</p></section>
-<section class="case-part"><h3><span>02</span> 문제 분석과 구현 과정</h3><ol class="experiment-timeline"><li><h4>원문 100개를 조사해 약 70%의 중복을 확인했습니다</h4><p><strong>문제 상황</strong> 약 4만 4천 건, 1GB 규모의 원문을 모두 변환하면 API 비용이 약 $200으로 예상됐습니다. 예산 안에서 전체 약품의 설명을 제공할 방법이 필요했습니다.</p><p><strong>시도와 결과</strong> 반복되는 내용을 줄일 수 있는지 약품 원문 100개를 살펴봤고, 약 70%가 중복되는 내용임을 확인했습니다. 표본 분석과 작업 계획을 제시해 팀으로부터 전처리 기간 7일을 확보했습니다.</p><p class="step-judgment"><strong>판단</strong> 약품 수를 줄이는 대신 같은 내용을 반복 변환하는 낭비를 줄이기로 했습니다. 원문을 문장 블록으로 나누고, 어미 정리와 유사도 비교로 유사한 표현까지 묶은 뒤 변환 결과를 재사용하기로 했습니다.</p></li><li><h4>중복을 제거하고 변환 결과를 재사용해 실제 비용을 $11.18로 줄였습니다</h4><p><strong>문제 상황</strong> 표본에서 중복을 확인했지만, 문장을 합치는 과정에서 약품별 연결이나 용량·숫자가 달라지면 잘못된 설명이 될 수 있었습니다. 중복을 줄이면서도 각 약품에 맞는 설명을 돌려줘야 했습니다.</p><p><strong>시도와 결과</strong> 문장 블록의 중복을 정리해 변환 대상을 1GB에서 326MB로 줄였습니다. 약품 ID와 문장 블록 ID의 연결을 보존하고 용량과 숫자는 따로 처리했으며, 표본을 직접 확인했습니다. 고유 문장만 GPT Batch API로 변환해 각 약품에 다시 연결한 결과, 실제 API 지출 $11.18로 변환을 마쳤습니다.</p><p class="step-judgment"><strong>판단</strong> 서비스 중 즉시 응답해야 하는 작업이 아니므로 일괄 처리의 대기 시간을 허용할 수 있었습니다. 약품별 연결과 수치를 보존하면서 중복 제거와 Batch 변환을 함께 사용해, 설명을 제공할 약품의 범위를 줄이지 않기로 했습니다.</p></li></ol></section>
+<section class="case-part"><h3><span>02</span> 문제 분석과 구현 과정</h3><ol class="experiment-timeline"><li><h4>완전히 일치하는 문장을 찾아 중복 변환을 줄였습니다</h4><p><strong>문제 상황</strong> 약 4만 4천 건, 1GB 규모의 원문을 모두 변환하면 API 비용이 약 $200으로 예상됐습니다. 예산 안에서 전체 약품의 설명을 제공할 방법이 필요했습니다.</p><p><strong>시도와 결과</strong> 약품 원문 100개를 조사해 약 70%가 중복되는 내용임을 확인했고, 표본 분석과 작업 계획으로 전처리 기간 7일을 확보했습니다. 원문을 문장 블록으로 나눠 완전히 일치하는 문장은 하나로 통합하고, 각 약품과 문장 블록의 연결을 남겼습니다.</p><p class="step-judgment"><strong>판단</strong> 약품 수를 줄이는 대신 같은 문장을 한 번만 변환해 재사용하기로 했습니다. 다만 문자열이 완전히 같지 않은 중복도 남아, 다음에는 표현이 달라도 의미가 같은 문장을 구분하기로 했습니다.</p></li><li><h4>표현은 달라도 의미가 같은 문장을 추가로 통합했습니다</h4><p><strong>문제 상황</strong> 완전 일치 중복을 제거해도 어미나 표현만 다른 문장은 별개의 변환 대상으로 남았습니다. 같은 주의사항을 다시 변환하지 않으면서 용량과 숫자의 차이는 보존해야 했습니다.</p><p><strong>시도와 결과</strong> 어미 정리와 유사도 비교를 활용해 의미가 같은 문장을 묶었습니다. 약품 ID와 문장 블록 ID의 연결을 유지하고, 용량과 숫자는 따로 처리해 표본을 직접 확인했습니다. 완전 일치와 의미 중복 정리를 거쳐 변환 대상은 1GB에서 326MB로 줄었습니다.</p><p class="step-judgment"><strong>판단</strong> 문자열이 비슷하다는 이유만으로 합치기보다, 약품별 정보와 수치를 보존하면서 같은 설명을 재사용하도록 했습니다. 중복 제거로 끝내지 않고 누락된 약품 정보도 확인하기로 했습니다.</p></li><li><h4>누락된 5%는 성분별 주의사항을 정제해 보완했습니다</h4><p><strong>문제 상황</strong> 앞선 처리에서 약 5%의 정보가 누락돼, 중복을 줄인 데이터만으로는 모든 대상의 설명을 채울 수 없었습니다.</p><p><strong>시도와 결과</strong> 누락된 항목을 확인하고, 같은 성분의 주의사항이 공통된다는 점에 착안했습니다. 누락된 성분별로 데이터를 모아 정제한 뒤 추가 처리해 부족한 주의사항을 보완했습니다.</p><p class="step-judgment"><strong>판단</strong> 누락된 항목을 제외하지 않고 성분 단위로 보완하기로 했습니다. 약품별로 반복 처리하기보다 공통된 성분별 주의사항을 활용해 설명의 제공 범위를 유지했습니다.</p></li><li><h4>GPT Batch API로 고유 문장을 일괄 변환해 비용을 줄였습니다</h4><p><strong>문제 상황</strong> 정제한 고유 문장을 쉬운 표현으로 바꾸고, 여러 약품이 공유하는 변환 결과를 각 약품에 올바르게 연결해야 했습니다. 남은 변환 비용도 줄일 필요가 있었습니다.</p><p><strong>시도와 결과</strong> 고유 문장을 GPT Batch API로 변환한 뒤, 보존한 약품 ID와 문장 블록 ID의 연결을 이용해 각 약품에 결과를 다시 연결했습니다. 전체 원문 변환에 예상했던 약 $200 대비 실제 API 지출 $11.18로 변환을 마쳤습니다.</p><p class="step-judgment"><strong>판단</strong> 서비스 사용 중 즉시 응답해야 하는 작업이 아니므로 일괄 처리의 대기 시간을 허용했습니다. 중복 제거와 성분별 누락 보완, Batch 변환을 함께 사용해 약품의 범위를 줄이지 않고 기능을 구현했습니다.</p></li></ol></section>
 <section class="case-part"><h3><span>03</span> 개선한 처리 흐름</h3><figure class="project-figure"><a href="assets/projects/pilltip-blocks.png" target="_blank" rel="noopener" aria-label="의약품 문장을 INDEX 단위로 분리하고 약품 ID와 블록 ID를 매핑한 출력 자료 · 원본 크기로 보기, 새 탭">
 <img src="assets/projects/pilltip-blocks.png" alt="의약품 문장을 INDEX 단위로 분리하고 약품 ID와 블록 ID를 매핑한 출력 자료" width="1578" height="1434" loading="lazy" decoding="async"><span class="image-expand">원본 크기로 보기 ↗</span></a>
 <figcaption>고유 문장 블록과 약품별 연결을 보존한 처리 산출물입니다.</figcaption></figure><figure class="diagram"><figcaption><span>ARCHITECTURE</span><span>Mermaid diagram</span></figcaption><div class="diagram-scroll" tabindex="0" role="region" aria-label="의약품 데이터 정제 파이프라인 구축 및 예상 약 $200 대비 실제 API 지출 $11.18 구조도"><pre class="mermaid">flowchart TD
-  A[약품 원문 · 1GB] --&gt; B[정규표현식 정리]
-  B --&gt; C[문장 블록 분리]
-  C --&gt; D[유사 문장 · 어미 정규화]
-  C --&gt; M[약품 ID ↔ 블록 ID 매핑]
-  D --&gt; U[고유 변환 대상 · 326MB]
-  U --&gt; G[GPT Batch API · 한 번씩 변환]
-  G --&gt; R[변환 결과]
-  M --&gt; F[원래 약품 데이터에 재결합]
-  R --&gt; F
-  classDef accent fill:#e5edff,stroke:#4164c8,color:#142b60;
-  class U,G,F accent;</pre></div><p class="diagram-caption">중복 제거 후에도 약품과 문장 블록의 연결을 유지해 변환 결과를 재사용했습니다.</p><details><summary>Mermaid 원문 보기</summary><pre class="diagram-source">flowchart TD
-  A[약품 원문 · 1GB] --&gt; B[정규표현식 정리]
-  B --&gt; C[문장 블록 분리]
-  C --&gt; D[유사 문장 · 어미 정규화]
-  C --&gt; M[약품 ID ↔ 블록 ID 매핑]
-  D --&gt; U[고유 변환 대상 · 326MB]
-  U --&gt; G[GPT Batch API · 한 번씩 변환]
-  G --&gt; R[변환 결과]
-  M --&gt; F[원래 약품 데이터에 재결합]
-  R --&gt; F
-  classDef accent fill:#e5edff,stroke:#4164c8,color:#142b60;
-  class U,G,F accent;</pre></details></figure></section>
-<section class="case-part"><h3><span>04</span> 결과와 배운 점</h3><h4>변환 대상 1GB → 326MB · 실제 API 지출 $11.18</h4><p>전체 원문을 처리할 때 예상한 약 $200 대비 실제 API 지출 $11.18로 변환을 마쳤습니다. 설명을 제공할 약품의 범위를 줄이지 않고, 중복 호출을 줄여 예산 안에서 기능을 구현했습니다.</p><div class="result-metrics"><div><span>원문 처리 예상 비용</span><strong>약 $200</strong><small>추산치</small></div><div><span>실제 API 지출</span><strong>$11.18</strong><small>변환 작업</small></div><div><span>전처리 후 대상</span><strong>326MB</strong><small>원문 1GB</small></div></div><div class="limits"><strong>결과의 범위 · 트레이드오프</strong><p>약 $200은 사전 추산이고 $11.18은 실제 지출입니다. 전처리 7일의 인건비는 포함하지 않았습니다.</p></div></section>
+ A[약품 원문 · 1GB] --&gt; B[문장 블록 분리]
+ B --&gt; C[완전히 일치하는 문장 통합]
+ C --&gt; D[의미가 같은 문장 통합 · 수치 구분]
+ B --&gt; M[약품 ID와 문장 블록 ID 연결 보존]
+ D --&gt; U[중복 정리 후 변환 대상 · 326MB]
+ U --&gt; E[누락 항목 확인 · 약 5%]
+ E --&gt; F[누락된 성분별 주의사항 정제·보완]
+ F --&gt; G[고유 문장을 GPT Batch API로 변환]
+ G --&gt; R[각 약품에 변환 결과 재연결]
+ M --&gt; R</pre></div><p class="diagram-caption">완전 일치 중복과 의미 중복을 나눠 제거하고, 누락된 정보는 성분별로 보완한 뒤 변환 결과를 각 약품에 연결했습니다.</p><details><summary>Mermaid 원문 보기</summary><pre class="diagram-source">flowchart TD
+ A[약품 원문 · 1GB] --&gt; B[문장 블록 분리]
+ B --&gt; C[완전히 일치하는 문장 통합]
+ C --&gt; D[의미가 같은 문장 통합 · 수치 구분]
+ B --&gt; M[약품 ID와 문장 블록 ID 연결 보존]
+ D --&gt; U[중복 정리 후 변환 대상 · 326MB]
+ U --&gt; E[누락 항목 확인 · 약 5%]
+ E --&gt; F[누락된 성분별 주의사항 정제·보완]
+ F --&gt; G[고유 문장을 GPT Batch API로 변환]
+ G --&gt; R[각 약품에 변환 결과 재연결]
+ M --&gt; R</pre></details></figure></section>
+<section class="case-part"><h3><span>04</span> 결과와 배운 점</h3><h4>변환 대상 1GB → 326MB · 실제 API 지출 $11.18</h4><p>전체 원문을 처리할 때 예상한 약 $200 대비 실제 API 지출 $11.18로 변환을 마쳤습니다. 완전 일치·의미 중복 제거로 변환 대상을 줄이고, 누락된 5%는 성분별 주의사항 정제로 보완했습니다. 설명을 제공할 약품의 범위를 줄이지 않고, 정제한 고유 문장의 변환 결과를 재사용해 예산 안에서 기능을 구현했습니다.</p><div class="result-metrics"><div><span>원문 처리 예상 비용</span><strong>약 $200</strong><small>추산치</small></div><div><span>실제 API 지출</span><strong>$11.18</strong><small>변환 작업</small></div><div><span>전처리 후 대상</span><strong>326MB</strong><small>원문 1GB</small></div></div><div class="limits"><strong>결과의 범위 · 트레이드오프</strong><p>약 $200은 사전 추산이고 $11.18은 실제 지출입니다. 전처리 7일의 인건비는 포함하지 않았습니다.</p></div></section>
 </article><article class="case" id="pilltip-personalization" aria-labelledby="pilltip-personalization-title">
 <header class="case-header"><div class="case-kicker"><span>CASE 06</span><span>Pilltip / 개인화 · 데이터 경계</span></div><h2 id="pilltip-personalization-title">증상 검색과 사용자 프로필 판단 분리</h2><p class="case-summary">사용자 증상에 맞는 의약품 탐색과 프로필에 따른 판단을 나눴습니다. 모델의 언어 해석 능력을 활용하면서 민감한 프로필을 사용하는 범위는 코드로 관리했습니다.</p><p class="case-meta">2025.03 — 2025.12</p><div class="tags"><span>Java</span><span>Spring Boot</span><span>Spring AI</span><span>Weaviate</span></div></header>
 <section class="case-part"><h3><span>01</span> 배경</h3><p>사용자가 자연어로 증상을 질문하면 약품 정보를 찾고, 건강 프로필에 맞는 정보를 제공하는 복약 챗봇을 구현했습니다.</p></section>
