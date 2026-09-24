@@ -40,7 +40,7 @@ def page(title, description, body, resume=False):
 </head><body id="top" class="{'resume-page' if resume else 'portfolio-page'}">
 <a class="skip" href="#main">본문으로 바로가기</a>
 <header class="header"><a class="identity" href="./"><span class="monogram">JH<span>.</span></span><span>김재형 <small>JAEHYEONG KIM</small></span></a>
-<nav aria-label="주 메뉴"><a href="./" {'aria-current="page"' if not path else ''}>홈</a><a href="./#about">소개</a><a href="./#projects">프로젝트</a><a href="./#skills">기술</a><a href="./#activities">활동</a></nav></header>
+<nav aria-label="주 메뉴"><a href="./" {'aria-current="page"' if not path else ''}>홈</a><a href="./#about">소개</a><a href="./#skills">기술</a><a href="./#projects">프로젝트</a><a href="./#activities">활동</a></nav></header>
 <main id="main">{body}</main>
 <footer class="site-footer"><span>© {DATA['updated'][:4]} 김재형</span><div class="footer-links"><a href="mailto:kkuldangi2@gmail.com">Email ↗</a><a href="https://github.com/Martinel2">GitHub ↗</a><a href="https://velog.io/@kkuldangi3/posts">Blog ↗</a><a href="https://www.linkedin.com/in/%EC%9E%AC%ED%98%95-%EA%B9%80-b75920345/">LinkedIn ↗</a><a href="#top">맨 위로 ↑</a></div></footer>
 </body></html>'''.replace('href="resume.pdf"', f'href="resume.pdf?v={CONTENT_VERSION}"')
@@ -145,8 +145,8 @@ def home():
     writings = re.search(r'<section class="more-work writings">.*?</section>', portfolio_html, re.S)[0]
     body = f'''<section class="home-hero"><div class="home-intro"><p class="eyebrow">BACKEND / AI APPLICATION DEVELOPER</p><h1>안녕하세요,<br>김재형입니다.</h1><h2>{t(2)}<br>{t(3)}</h2><div class="home-actions"><a class="button" href="resume.pdf" target="_blank" rel="noopener"><img src="assets/icons/file-text.svg" alt="" width="20" height="20">이력서</a><a class="button" href="portfolio.html"><img src="assets/icons/briefcase.svg" alt="" width="20" height="20">포트폴리오</a><a class="button" href="https://www.linkedin.com/in/%EC%9E%AC%ED%98%95-%EA%B9%80-b75920345/" target="_blank" rel="noopener"><img src="assets/icons/linkedin.svg" alt="" width="20" height="20">LinkedIn</a><a class="button" href="https://github.com/Martinel2" target="_blank" rel="noopener"><img src="assets/icons/github.svg" alt="" width="20" height="20">GitHub</a></div></div></section>
 <section class="home-about home-section" id="about"><p class="eyebrow">ABOUT ME</p><h2>어떤 개발자인가요?</h2><p>{t(5)}</p><p>{t(6)}</p><p>문서를 지식으로 활용하는 AI 워크스페이스 Fruition과, 의약품 정보를 쉽게 전달하는 복약 서비스 Pilltip을 만들었습니다.</p></section>
-<section class="home-section" id="projects"><p class="eyebrow">PROJECTS</p><h2>만들어 온 서비스</h2><div class="home-projects">{projects}</div></section>
-{skills}<div class="home-background">{background}</div>{writings}{dialogs}'''
+{skills}<section class="home-section" id="projects"><p class="eyebrow">PROJECTS</p><h2>만들어 온 서비스</h2><div class="home-projects">{projects}</div></section>
+<div class="home-background">{background}</div>{writings}{dialogs}'''
     (SITE / 'index.html').write_text(page('소개', '김재형의 개발 경험, 프로젝트, 활동과 이력서.', body))
 
 if __name__ == '__main__':
