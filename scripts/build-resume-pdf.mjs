@@ -9,7 +9,7 @@ try{
  const sheets=await page.evaluate(()=>{
   const sections=[...document.querySelectorAll('.resume-section')];
   const copy=el=>el.cloneNode(true);
-  const html=el=>{el.querySelectorAll('a').forEach(a=>a.href=new URL(a.getAttribute('href'),'https://martinel2.github.io/').href);el.querySelectorAll('.evidence-thumb,.print-button,.resume-section>h2>span').forEach(e=>e.remove());return el.outerHTML;};
+  const html=el=>{el.querySelectorAll('a').forEach(a=>a.href=new URL(a.getAttribute('href'),'https://martinel2.github.io/').href);el.querySelectorAll('.print-button,.resume-section>h2>span').forEach(e=>e.remove());return el.outerHTML;};
   const section=(title,body)=>`<section><h2>${title}</h2>${body}</section>`;
   const hero=copy(document.querySelector('.resume-hero'));
   hero.querySelector('.eyebrow').textContent='김재형 · Backend / AI Application Developer';
@@ -28,6 +28,7 @@ try{
  const html=`<!doctype html><html lang="ko"><head><meta charset="utf-8"><base href="${base}"><style>${css}</style></head><body>${sheets.map((body,i)=>`<article class="sheet"><div class="sheet-content">${body}</div><footer>김재형 · Backend / AI Application Developer <span>${i+1} / 3</span></footer></article>`).join('')}</body></html>`;
  await mkdir('artifacts',{recursive:true});await writeFile('artifacts/resume-pdf.html',html);
  await page.setContent(html,{waitUntil:'load'});await page.evaluate(()=>document.fonts.ready);
+ await page.$$eval('img',async imgs=>{for(const img of imgs)img.loading='eager';await Promise.all(imgs.map(img=>img.decode()));});
  await page.emulateMediaType('print');
  const overflow=await page.$$eval('.sheet',sheets=>sheets.map((s,i)=>({page:i+1,bottom:s.querySelector('.sheet-content').getBoundingClientRect().bottom,limit:s.querySelector('footer').getBoundingClientRect().top})).filter(s=>s.bottom>s.limit-10));
  if(overflow.length)throw Error('Resume content exceeds page: '+JSON.stringify(overflow));

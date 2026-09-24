@@ -1,5 +1,7 @@
+# -*- coding: utf-8 -*-
 """Generate static, readable pages. Run: python3 build.py"""
 import json
+import hashlib
 import os
 import re
 from html import escape
@@ -8,6 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 SITE = ROOT / "site"
 DATA = json.loads((ROOT / "content.json").read_text())
+CONTENT_VERSION = hashlib.sha256((ROOT / "content.json").read_bytes() + (ROOT / "templates/resume-pdf.css").read_bytes() + (ROOT / "scripts/build-resume-pdf.mjs").read_bytes()).hexdigest()[:10]
 
 
 def tags(items):
@@ -33,14 +36,14 @@ def page(title, description, body, resume=False):
 <meta property="og:description" content="{description}"><meta property="og:type" content="website">
 <meta property="og:locale" content="ko_KR"><meta property="og:image" content="https://Martinel2.github.io/assets/og.png">
 <link rel="canonical" href="https://Martinel2.github.io/{path}"><link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-{analytics_meta}<link rel="stylesheet" href="assets/style.css"><script defer src="assets/site.js"></script>
+{analytics_meta}<link rel="stylesheet" href="assets/style.css?v={hashlib.sha256((SITE / 'assets/style.css').read_bytes()).hexdigest()[:10]}"><script defer src="assets/site.js?v={hashlib.sha256((SITE / 'assets/site.js').read_bytes()).hexdigest()[:10]}"></script>
 </head><body id="top" class="{'resume-page' if resume else 'portfolio-page'}">
 <a class="skip" href="#main">본문으로 바로가기</a>
 <header class="header"><a class="identity" href="./"><span class="monogram">JH<span>.</span></span><span>김재형 <small>JAEHYEONG KIM</small></span></a>
 <nav aria-label="주 메뉴"><a href="./" {'aria-current="page"' if not path else ''}>홈</a><a href="portfolio.html" {'aria-current="page"' if path == "portfolio.html" else ''}>포트폴리오</a><a href="resume.pdf" target="_blank" rel="noopener">이력서 PDF ↗</a><a class="nav-contact" href="#contact">연락하기 <span aria-hidden="true">↗</span></a></nav></header>
 <main id="main">{body}</main>
 <footer id="contact"><div><span class="eyebrow">LET’S CONNECT</span><h2>김재형 · 연락처</h2><a class="email" href="mailto:kkuldangi2@gmail.com">kkuldangi2@gmail.com <span aria-hidden="true">↗</span></a></div><div class="footer-links"><a href="https://github.com/Martinel2">GitHub ↗</a><a href="https://velog.io/@kkuldangi3/posts">Blog ↗</a><a href="https://www.linkedin.com/in/%EC%9E%AC%ED%98%95-%EA%B9%80-b75920345/">LinkedIn ↗</a><a href="resume.pdf" target="_blank" rel="noopener">이력서 PDF ↗</a><a href="#top">맨 위로 ↑</a></div><div class="footer-bottom"><span>© 2026 김재형</span><span>Backend & AI Application Developer · Updated {DATA['updated']}</span></div></footer>
-</body></html>'''
+</body></html>'''.replace('href="resume.pdf"', f'href="resume.pdf?v={CONTENT_VERSION}"')
 
 
 def case_html(c, i):
@@ -103,7 +106,8 @@ def portfolio():
 <p class="profile-summary">{escape(DATA['overview']['profileLine1'])}<br>{escape(DATA['overview']['profileLine2'])}</p><a class="profile-resume" href="resume.pdf" target="_blank" rel="noopener">이력서 PDF ↗</a></aside></section>
 <div id="work" class="work-anchor"></div>
 <div class="work-layout"><aside class="toc"><div class="toc-inner"><p class="eyebrow">목차 <span>{len(DATA['cases']):02d}</span></p><nav aria-label="프로젝트 목차">{contents}</nav><div class="toc-foot"><span>READING GUIDE</span><p>문제 상황<br>실험과 개선 · 해결 방안 비교<br>구현과 구조<br>결과와 배운 점</p><a href="resume.pdf" target="_blank" rel="noopener">이력서 PDF ↗</a></div></div></aside><div class="cases">{''.join(project_sections)}</div></div>
-<section class="more-work"><span class="eyebrow">BEYOND THE PROJECTS</span><h2>코드 밖에서도 이어지는 경험</h2><div class="more-grid"><div><a href="https://github.com/edwardkim/rhwp/pull/1213"><span>OPEN SOURCE ↗</span><h3>Rhwp · HWPX 저장 오류 수정</h3><p>textFlow 속성 보존 오류를 수정한 PR #1213 병합. 이슈 분석부터 구현, 테스트와 CI 대응까지 기여했습니다.</p></a><a class="text-link" href="https://github.com/edwardkim/rhwp">GitHub 저장소 ↗</a></div><a href="resume.html#activities"><span>COMMUNITY ↗</span><h3>APPTIVE · 백엔드 멘토링</h3><p>멘티 경험을 교육 개선으로 연결했습니다. 멘티 12명을 대상으로 6회의 멘토링과 코드 리뷰를 진행했습니다.</p></a></div></section>
+<section class="more-work"><span class="eyebrow">BEYOND THE PROJECTS</span><h2>코드 밖에서도 이어지는 경험</h2><div class="more-grid"><div><a href="https://github.com/edwardkim/rhwp/pull/1213"><span>OPEN SOURCE ↗</span><h3>Rhwp · HWPX 저장 오류 수정</h3><p>textFlow 속성 보존 오류를 수정한 PR #1213 병합. 이슈 분석부터 구현, 테스트와 CI 대응까지 기여했습니다.</p></a><a class="text-link" href="https://github.com/edwardkim/rhwp">GitHub 저장소 ↗</a></div>
+<div><h3>APPTIVE · 백엔드 멘토링</h3><div class="evidence-row"><a class="evidence-thumb" href="assets/evidence/apptive-merit.jpeg" target="_blank" rel="noopener"><img src="assets/evidence/apptive-merit.jpeg" alt="APPTIVE 백엔드 멘토 공로상" loading="lazy"><span>공로상 보기 ↗</span></a><div><p>멘티 경험을 교육 개선으로 연결했습니다. 멘티 12명을 대상으로 6회의 멘토링과 코드 리뷰를 진행했습니다.</p><a class="text-link" href="./#activities">활동 내용 ↗</a></div></div></div></div></section>
 <section class="more-work" id="activity-gallery"><h2>{escape(activities["title"])}</h2><p>{escape(activities["description"])}</p><div class="activity-gallery">{activity_gallery}</div></section>
 <section class="more-work writings"><span class="eyebrow">ENGINEERING JOURNAL</span><h2>선택 뒤에 남긴 기록</h2><div class="more-grid">{writings}</div><a class="text-link" href="https://velog.io/@kkuldangi3/posts">블로그 글 전체 보기 ↗</a></section>'''
     (SITE / 'portfolio.html').write_text(page('포트폴리오', '김재형의 Backend · AI 응용 개발 포트폴리오. Fruition과 Pilltip의 문제, 기술 선택, Mermaid 구조도, 평가 결과를 소개합니다.', body))

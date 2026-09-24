@@ -35,10 +35,14 @@ try {
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `Overflow: ${width} ${route}`);
       const broken = await page.$$eval('a[href^="#"]', links => links.filter(a => !document.getElementById(decodeURIComponent(a.hash.slice(1)))).map(a => a.hash));
       assert.deepEqual(broken, []);
+      const evidence=await page.$$eval('.evidence-thumb img',async imgs=>{for(const i of imgs)i.loading='eager';await Promise.all(imgs.map(i=>i.decode()));return imgs.map(i=>({width:i.naturalWidth,height:i.getBoundingClientRect().height}));});
+      assert.equal(evidence.length,route==='/portfolio.html'?1:6);
+      assert.ok(evidence.every(i=>i.width>0&&i.height<=120),'Evidence thumbnails must load at compact sizes');
+
       if (route === '/') {
         assert.equal(await page.$$eval('.case', els=>els.length),0);
         assert.equal(await page.$$eval('.home-project', els=>els.length),2);
-        assert.equal(await page.$eval('nav a[href="resume.pdf"]',el=>el.target),'_blank');
+        assert.equal(await page.$eval('nav a[href^="resume.pdf"]',el=>el.target),'_blank');
         await page.screenshot({path:`artifacts/home-${width}.png`});
       } else if (route === '/portfolio.html') {
         await page.waitForFunction(() => document.documentElement.dataset.diagrams === 'ready', { timeout: 60000 });
