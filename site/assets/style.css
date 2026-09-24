@@ -149,7 +149,6 @@ footer h2{font-size:25px;letter-spacing:-.5px;margin:12px 0 17px}
 .text-link{display:inline-block;margin:7px 20px 0 0;color:var(--blue);font-size:12px;text-decoration:underline;text-underline-offset:4px}
 .skill-rows>div{display:grid;grid-template-columns:110px 1fr;gap:20px;margin-bottom:15px}
 .skill-rows>div:last-child{margin:0}
-.skill-rows .scope-note{grid-column:2;margin:0}
 .skill-rows p{color:var(--muted);font-size:13px}
 .skill-rows strong{font-size:12px}
 .experience-row{display:grid;grid-template-columns:135px 1fr;gap:20px;margin-bottom:25px}
