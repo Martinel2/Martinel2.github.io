@@ -8,6 +8,7 @@ const content=JSON.parse(readFileSync(new URL('../content.json',import.meta.url)
 validate(content,content);
 const changed=structuredClone(content);changed.cases[0].id='bad';assert.throws(()=>validate(changed,content));
 changed.cases[0].id=content.cases[0].id;changed.writings[0].url='javascript:alert(1)';assert.throws(()=>validate(changed,content));
+const badHome=structuredClone(content);badHome.home.sections.writingsUrl='javascript:alert(1)';assert.throws(()=>validate(badHome,content));
 let stored=structuredClone(content),sha='abc',writes=0,fail=false;
 const nativeFetch=globalThis.fetch;
 globalThis.fetch=async(url,options={})=>{
@@ -41,9 +42,11 @@ try{
  const page=await browser.newPage();await page.authenticate({username:'admin',password});
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto(`http://127.0.0.1:${server.address().port}/admin`);
- await page.waitForSelector('#field-resume-0-fields-text2');
+ await page.waitForSelector('#field-home-hero-greeting');
  assert.match(await page.$eval('#intro-preview',e=>e.textContent),/안녕하세요,[\s\S]*김재형입니다/);
- assert.deepEqual(await page.$$eval('#menu button',b=>b.slice(0,3).map(x=>x.textContent)),['소개','기술','프로젝트 팝업']);
+ assert.ok(await page.$('[data-path="home.actions"]'));
+ await page.$eval('#field-home-hero-greeting',input=>{input.value='반갑습니다,';input.dispatchEvent(new Event('input',{bubbles:true}));});
+ assert.match(await page.$eval('#intro-preview',e=>e.textContent),/반갑습니다,/);
  // Resume editing order must follow the visible template, independently of text IDs.
  const template=readFileSync(new URL('../templates/resume.html',import.meta.url),'utf8');
  const order=[...template.matchAll(/@@(text\d+)@@/g)].map(m=>m[1]);
@@ -63,7 +66,7 @@ try{
  await page.click('#review');await page.waitForSelector('dialog[open]');
  assert.match(await page.$eval('#changes',e=>e.textContent),/테스트 소개 <안전>/);
  await page.click('#save');await page.waitForFunction(()=>document.querySelector('#status').textContent.includes('저장됐습니다'));
- assert.equal(stored.overview.title,'테스트 소개 <안전>');assert.equal(writes,1);
+ assert.equal(stored.home.hero.greeting,'반갑습니다,');assert.equal(stored.overview.title,'테스트 소개 <안전>');assert.equal(writes,1);
  await page.$eval('#field-overview-title',input=>{input.value='충돌 시 보존할 문장';input.dispatchEvent(new Event('input',{bubbles:true}));});
  sha='changed-elsewhere';await page.click('#review');await page.click('#save');
  await page.waitForFunction(()=>document.querySelector('#status').textContent.includes('다른 곳에서'));

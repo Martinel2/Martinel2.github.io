@@ -13,6 +13,10 @@ DATA = json.loads((ROOT / "content.json").read_text())
 CONTENT_VERSION = hashlib.sha256((ROOT / "content.json").read_bytes() + (ROOT / "templates/resume-pdf.css").read_bytes() + (ROOT / "scripts/build-resume-pdf.mjs").read_bytes()).hexdigest()[:10]
 
 
+def home_text(group, key):
+    return escape(DATA['home'][group][key])
+
+
 def tags(items):
     return '<div class="tags">' + ''.join(f'<span>{escape(x)}</span>' for x in items) + '</div>'
 
@@ -40,7 +44,7 @@ def page(title, description, body, resume=False):
 </head><body id="top" class="{'resume-page' if resume else 'portfolio-page'}">
 <a class="skip" href="#main">본문으로 바로가기</a>
 <header class="header"><a class="identity" href="./"><span class="monogram">JH<span>.</span></span><span>김재형 <small>JAEHYEONG KIM</small></span></a>
-<nav aria-label="주 메뉴"><a href="./" {'aria-current="page"' if not path else ''}>홈</a><a href="./#about">소개</a><a href="./#skills">기술</a><a href="./#projects">프로젝트</a><a href="./#activities">활동</a></nav></header>
+<nav aria-label="주 메뉴"><a href="./" {'aria-current="page"' if not path else ''}>{home_text('navigation', 'homeLabel')}</a><a href="./#about">{home_text("navigation", "aboutLabel")}</a><a href="./#skills">{home_text("navigation", "skillsLabel")}</a><a href="./#projects">{home_text("navigation", "projectsLabel")}</a><a href="./#activities">{home_text("navigation", "activitiesLabel")}</a></nav></header>
 <main id="main">{body}</main>
 <footer class="site-footer"><span>© {DATA['updated'][:4]} 김재형</span><div class="footer-links"><a href="mailto:kkuldangi2@gmail.com">Email ↗</a><a href="https://github.com/Martinel2">GitHub ↗</a><a href="https://velog.io/@kkuldangi3/posts">Blog ↗</a><a href="https://www.linkedin.com/in/%EC%9E%AC%ED%98%95-%EA%B9%80-b75920345/">LinkedIn ↗</a><a href="#top">맨 위로 ↑</a></div></footer>
 </body></html>'''.replace('href="resume.pdf"', f'href="resume.pdf?v={CONTENT_VERSION}"')
@@ -106,7 +110,7 @@ def portfolio():
 <div class="work-layout"><aside class="toc"><div class="toc-inner"><p class="eyebrow">목차 <span>{len(DATA['cases']):02d}</span></p><nav aria-label="프로젝트 목차">{contents}</nav><div class="toc-foot"><span>READING GUIDE</span><p>문제 상황<br>실험과 개선 · 해결 방안 비교<br>구현과 구조<br>결과와 배운 점</p><a href="resume.pdf" target="_blank" rel="noopener">이력서 PDF ↗</a></div></div></aside><div class="cases">{''.join(project_sections)}</div></div>
 <section class="more-work"><span class="eyebrow">BEYOND THE PROJECTS</span><h2>코드 밖에서도 이어지는 경험</h2><div class="more-grid"><div><a href="https://github.com/edwardkim/rhwp/pull/1213"><span>OPEN SOURCE ↗</span><h3>Rhwp · HWPX 저장 오류 수정</h3><p>textFlow 속성 보존 오류를 수정한 PR #1213 병합. 이슈 분석부터 구현, 테스트와 CI 대응까지 기여했습니다.</p></a><a class="text-link" href="https://github.com/edwardkim/rhwp">GitHub 저장소 ↗</a></div>
 <div><h3>APPTIVE · 백엔드 멘토링</h3><div class="evidence-row"><a class="evidence-thumb" href="assets/evidence/apptive-merit.jpeg" target="_blank" rel="noopener"><img src="assets/evidence/apptive-merit.jpeg" alt="APPTIVE 백엔드 멘토 공로상" loading="lazy"><span>크게 보기 ↗</span></a><div><p>멘티 경험을 교육 개선으로 연결했습니다. 멘티 12명을 대상으로 6회의 멘토링과 코드 리뷰를 진행했습니다.</p><a class="text-link" href="./#activities">활동 내용 ↗</a></div></div></div></div></section>
-<section class="more-work writings"><span class="eyebrow">ENGINEERING JOURNAL</span><h2>팀의 의사결정과 회고</h2><div class="more-grid">{writings}</div><a class="text-link" href="https://velog.io/@kkuldangi3/posts">블로그 글 전체 보기 ↗</a></section>'''
+<section class="more-work writings"><span class="eyebrow">{home_text("sections", "writingsEyebrow")}</span><h2>{home_text("sections", "writingsTitle")}</h2><div class="more-grid">{writings}</div><a class="text-link" href="{home_text("sections", "writingsUrl")}">{home_text("sections", "writingsLinkLabel")} ↗</a></section>'''
     (SITE / 'portfolio.html').write_text(page('포트폴리오', '김재형의 Backend · AI 응용 개발 포트폴리오. Fruition과 Pilltip의 문제, 기술 선택, Mermaid 구조도, 평가 결과를 소개합니다.', body))
 
 
@@ -127,9 +131,9 @@ def home():
         affiliation_key, role_key = (23, 24) if project['name'] == 'Fruition' else (46, 47)
         affiliation = escape(fields['text' + str(affiliation_key)].rsplit(' · ', 1)[-1])
         role = escape(fields['text' + str(role_key)].split(' / ', 1)[-1])
-        details = f'<a class="text-link" href="{target}">기여와 성과 보기 ↗</a>'
+        details = f'<a class="text-link" href="{target}">{home_text("projectLabels", "detailsLabel")} ↗</a>'
         cover = project['cover']
-        projects += f'<article class="home-project"><a class="project-cover" href="{escape(target)}"><img src="{escape(cover["src"])}" alt="{escape(cover["alt"])}" width="{cover["width"]}" height="{cover["height"]}" loading="lazy"></a><div class="project-card-body"><h3><a href="{escape(target)}">{escape(project["name"])}</a></h3><dl class="project-meta"><div><dt>소속</dt><dd>{affiliation}</dd></div><div><dt>역할</dt><dd>{role}</dd></div></dl><p>{escape(project["description"])}</p>{links}<div>{details}</div></div></article>'
+        projects += f'<article class="home-project"><a class="project-cover" href="{escape(target)}"><img src="{escape(cover["src"])}" alt="{escape(cover["alt"])}" width="{cover["width"]}" height="{cover["height"]}" loading="lazy"></a><div class="project-card-body"><h3><a href="{escape(target)}">{escape(project["name"])}</a></h3><dl class="project-meta"><div><dt>{home_text("projectLabels", "affiliationLabel")}</dt><dd>{affiliation}</dd></div><div><dt>{home_text("projectLabels", "roleLabel")}</dt><dd>{role}</dd></div></dl><p>{escape(project["description"])}</p>{links}<div>{details}</div></div></article>'
     resume_body = re.sub(r'@@(text\d+)@@', lambda match: escape(fields[match[1]]), (ROOT / 'templates/resume.html').read_text())
     dialogs = ''
     for match in re.finditer(r'<article class="resume-project" id="([^"]+)">.*?</article>', resume_body, re.S):
@@ -138,14 +142,20 @@ def home():
         dialogs += f'<dialog class="project-dialog" id="{project_id}-dialog" aria-labelledby="{project_id}-title"><form method="dialog"><button class="button" autofocus>닫기 ×</button></form>{article}</dialog>'
     sections = re.findall(r'<section class="resume-section".*?</section>', resume_body, re.S)
     skills = sections[2].replace('class="resume-section"', 'class="home-section home-skills" id="skills"')
-    skills = re.sub(r'<h2>(.*?)<span>.*?</span>\s*</h2>', r'<p class="eyebrow">SKILLS</p><h2>\1</h2>', skills, flags=re.S)
+    skills = re.sub(r'<h2>(.*?)<span>.*?</span>\s*</h2>', lambda m: '<p class="eyebrow">' + home_text('sections', 'skillsEyebrow') + '</p><h2>' + m[1] + '</h2>', skills, flags=re.S)
     background = ''.join(sections[3:5]).replace('class="resume-section"', 'class="home-section home-background-section"')
     background = re.sub(r'<h2>(.*?)<span>.*?</span>\s*</h2>', r'<h2>\1</h2>', background, flags=re.S)
     portfolio_html = (SITE / 'portfolio.html').read_text()
     writings = re.search(r'<section class="more-work writings">.*?</section>', portfolio_html, re.S)[0]
-    body = f'''<section class="home-hero"><div class="home-intro"><p class="eyebrow">BACKEND / AI APPLICATION DEVELOPER</p><h1>안녕하세요,<br>김재형입니다.</h1><h2>{t(2)}<br>{t(3)}</h2><div class="home-actions"><a class="button" href="resume.pdf" target="_blank" rel="noopener"><img src="assets/icons/file-text.svg" alt="" width="20" height="20">이력서</a><a class="button" href="portfolio.html"><img src="assets/icons/briefcase.svg" alt="" width="20" height="20">포트폴리오</a><a class="button" href="https://www.linkedin.com/in/%EC%9E%AC%ED%98%95-%EA%B9%80-b75920345/" target="_blank" rel="noopener"><img src="assets/icons/linkedin.svg" alt="" width="20" height="20">LinkedIn</a><a class="button" href="https://github.com/Martinel2" target="_blank" rel="noopener"><img src="assets/icons/github.svg" alt="" width="20" height="20">GitHub</a></div></div></section>
-<section class="home-about home-section" id="about"><p class="eyebrow">ABOUT ME</p><h2>어떤 개발자인가요?</h2><p>{t(5)}</p><p>{t(6)}</p><p>문서를 지식으로 활용하는 AI 워크스페이스 Fruition과, 의약품 정보를 쉽게 전달하는 복약 서비스 Pilltip을 만들었습니다.</p></section>
-{skills}<section class="home-section" id="projects"><p class="eyebrow">PROJECTS</p><h2>만들어 온 서비스</h2><div class="home-projects">{projects}</div></section>
+    actions = ''
+    for key, icon in [('resume', 'file-text'), ('portfolio', 'briefcase'), ('linkedin', 'linkedin'), ('github', 'github')]:
+        action = DATA['home']['actions'][key]
+        url = {'resume': 'resume.pdf', 'portfolio': 'portfolio.html'}.get(key, action.get('url'))
+        target = '' if key == 'portfolio' else ' target="_blank" rel="noopener"'
+        actions += f'<a class="button" href="{escape(url)}"{target}><img src="assets/icons/{icon}.svg" alt="" width="20" height="20">{escape(action["label"])}</a>'
+    body = f'''<section class="home-hero"><div class="home-intro"><p class="eyebrow">{home_text("hero", "eyebrow")}</p><h1>{home_text("hero", "greeting")}<br>{home_text("hero", "nameLine")}</h1><h2>{t(2)}<br>{t(3)}</h2><div class="home-actions">{actions}</div></div></section>
+<section class="home-about home-section" id="about"><p class="eyebrow">{home_text("about", "eyebrow")}</p><h2>{home_text("about", "title")}</h2><p>{t(5)}</p><p>{t(6)}</p><p>{home_text("about", "description")}</p></section>
+{skills}<section class="home-section" id="projects"><p class="eyebrow">{home_text("sections", "projectsEyebrow")}</p><h2>{home_text("sections", "projectsTitle")}</h2><div class="home-projects">{projects}</div></section>
 <div class="home-background">{background}</div>{writings}{dialogs}'''
     (SITE / 'index.html').write_text(page('소개', '김재형의 개발 경험, 프로젝트, 활동과 이력서.', body))
 

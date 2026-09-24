@@ -12,7 +12,7 @@ export function validate(next, previous, key = '') {
     Object.entries(previous).forEach(([k, value]) => validate(next[k], value, k));
   } else if (typeof previous === 'string') {
     if (next.length > 30000 || next.includes('\u0000')) throw Error('입력 내용이 너무 길거나 올바르지 않습니다.');
-    if (key === 'url' || key === 'href') {
+    if (key === 'url' || key === 'href' || key.endsWith('Url')) {
       if (!/^(https:\/\/[^\s]+|#[a-z0-9-]+)$/.test(next)) throw Error('링크는 https:// 주소 또는 페이지 내 연결이어야 합니다.');
       if (next.startsWith('https://')) { const u = new URL(next); if (u.username || u.password) throw Error('로그인 정보가 포함된 URL은 사용할 수 없습니다.'); }
     }

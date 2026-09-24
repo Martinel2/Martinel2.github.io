@@ -724,5 +724,54 @@
         "title": "부산 데이터 위크 최우수상"
       }
     ]
+  },
+  "home": {
+    "hero": {
+      "eyebrow": "BACKEND / AI APPLICATION DEVELOPER",
+      "greeting": "안녕하세요,",
+      "nameLine": "김재형입니다."
+    },
+    "about": {
+      "eyebrow": "ABOUT ME",
+      "title": "어떤 개발자인가요?",
+      "description": "문서를 지식으로 활용하는 AI 워크스페이스 Fruition과, 의약품 정보를 쉽게 전달하는 복약 서비스 Pilltip을 만들었습니다."
+    },
+    "sections": {
+      "skillsEyebrow": "SKILLS",
+      "projectsEyebrow": "PROJECTS",
+      "projectsTitle": "만들어 온 서비스",
+      "writingsEyebrow": "ENGINEERING JOURNAL",
+      "writingsTitle": "팀의 의사결정과 회고",
+      "writingsLinkLabel": "블로그 글 전체 보기",
+      "writingsUrl": "https://velog.io/@kkuldangi3/posts"
+    },
+    "navigation": {
+      "homeLabel": "홈",
+      "aboutLabel": "소개",
+      "skillsLabel": "기술",
+      "projectsLabel": "프로젝트",
+      "activitiesLabel": "활동"
+    },
+    "actions": {
+      "resume": {
+        "label": "이력서"
+      },
+      "portfolio": {
+        "label": "포트폴리오"
+      },
+      "linkedin": {
+        "label": "LinkedIn",
+        "url": "https://www.linkedin.com/in/%EC%9E%AC%ED%98%95-%EA%B9%80-b75920345/"
+      },
+      "github": {
+        "label": "GitHub",
+        "url": "https://github.com/Martinel2"
+      }
+    },
+    "projectLabels": {
+      "affiliationLabel": "소속",
+      "roleLabel": "역할",
+      "detailsLabel": "기여와 성과 보기"
+    }
   }
 }
