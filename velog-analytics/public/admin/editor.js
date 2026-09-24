@@ -1,7 +1,7 @@
 const $ = selector => document.querySelector(selector);
 const labels = {updated:'최종 수정일',overview:'첫 화면',title:'제목',eyebrow:'상단 설명',description:'소개',experience1Title:'주요 경험 1 · 제목',experience1Description:'주요 경험 1 · 설명',experience2Title:'주요 경험 2 · 제목',experience2Description:'주요 경험 2 · 설명',experience3Title:'주요 경험 3 · 제목',experience3Description:'주요 경험 3 · 설명',profileRole:'직무',profileLine1:'프로필 소개 · 첫 줄',profileLine2:'프로필 소개 · 둘째 줄',label:'구분 / 링크 이름',short:'목차 이름',category:'분야',period:'기간',role:'역할',summary:'요약',tags:'기술 태그',problem:'문제 상황',ownership:'내가 맡은 부분',processTitle:'과정 섹션 제목',experiments:'진행 과정',options:'해결 방안 비교',decision:'선택 이유',implementation:'구현 내용',diagram:'구조도 · Mermaid 원문',diagramCaption:'구조도 설명',resultTitle:'결과 제목',result:'결과',metrics:'성과 수치',comparison:'결과 비교표',columns:'열 제목',rows:'비교 내용',note:'비교 조건 / 주의점',tradeoff:'결과 범위와 한계',next:'다음 검증',source:'근거',links:'관련 링크',url:'링크 주소',href:'페이지 내 연결',contributions:'담당 범위와 협업',gallery:'프로젝트 사진',image:'사례 사진',alt:'이미지 대체 설명',caption:'사진 설명',fields:'본문',writings:'블로그 글'};
 const locked = new Set(['id','project','name','src','width','height']);
-const matrixLabels = {experiments:['단계 제목','시도와 결과','판단','다음 개선'],options:['해결 방안','기대 효과','실험 결과','채택 여부와 이유'],metrics:['항목','수치','설명'],contributions:['담당 구분','기여 내용']};
+const matrixLabels = {experiments:['단계 제목','시도와 결과','판단'],options:['해결 방안','기대 효과','실험 결과','채택 여부와 이유'],metrics:['항목','수치','설명'],contributions:['담당 구분','기여 내용']};
 let data, original, sha, canSave=false, busy=false, active=0, sections=[];
 const fieldLabels=new Map();
 function el(tag,text,className){const node=document.createElement(tag);if(text!==undefined)node.textContent=text;if(className)node.className=className;return node;}

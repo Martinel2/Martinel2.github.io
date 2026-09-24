@@ -53,6 +53,9 @@ try {
         for (const c of content.cases) {
           assert.equal(await page.$$eval(`#${c.id} .experiment-timeline > li`, els => els.length), c.experiments.length);
           assert.equal(await page.$$eval(`#${c.id} table`, els => els.length), 0);
+          assert.ok(c.experiments.every(row => row.length === 3));
+          assert.ok(!(await page.$eval(`#${c.id} .experiment-timeline`, el => el.textContent)).includes('다음 개선'));
+          assert.equal(await page.$$eval(`#${c.id} .experiment-timeline strong`, els => els.filter(el => el.textContent === '개선').length), 0);
         }
         assert.ok(!(await page.$eval('body', el => el.textContent)).includes('edit_goal'));
         assert.match(await page.$eval('#pilltip-personalization', el => el.textContent), /설계와 구현 과정/);
