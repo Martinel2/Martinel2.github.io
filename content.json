@@ -538,8 +538,8 @@
         "text2": "실패의 원인을 깊이 파고들어",
         "text3": "해결하는 것을 좋아하는 개발자",
         "text4": "Backend Engineer · AI Application Developer",
-        "text5": "가설을 실험으로 확인하고, 결과가 달라진 원인을 찾아 다음 개선으로 연결합니다.",
-        "text6": "AI의 정확도와 비용, 처리 시간을 함께 살피며 서비스에 맞는 구현을 선택합니다.",
+        "text5": "문제에 Deep Dive 하는 것을 좋아합니다.",
+        "text6": "정확도와 비용, 처리 시간을 고려하여 서비스에 맞는 구현을 선택합니다.",
         "text7": "kkuldangi2@gmail.com",
         "text8": "GitHub ↗",
         "text9": "Blog ↗",
@@ -734,7 +734,7 @@
     "about": {
       "eyebrow": "ABOUT ME",
       "title": "어떤 개발자인가요?",
-      "description": "문제에 Deep Dive 하는 것을 좋아합니다.\n문서를 지식으로 활용하는 AI 워크스페이스 Fruition과, 의약품 정보를 쉽게 전달하는 복약 서비스 Pilltip 개발에 참여했습니다."
+      "description": "문서를 지식으로 활용하는 AI 워크스페이스 Fruition과, 의약품 정보를 쉽게 전달하는 복약 서비스 Pilltip 개발에 참여했습니다."
     },
     "sections": {
       "skillsEyebrow": "SKILLS",
