@@ -52,6 +52,7 @@ def case_html(c, i):
     rows = ''.join('<tr>' + ''.join(f'<td>{escape(v)}</td>' for v in row) + '</tr>' for row in c['experiments' if iterative else 'options'])
     metrics = ''.join(f'<div><span>{escape(label)}</span><strong>{escape(value)}</strong><small>{escape(note)}</small></div>' for label, value, note in c['metrics'])
     links = ''.join(f'<a class="text-link" href="{escape(link["url"])}">{escape(link["label"])} ↗</a>' for link in c.get('links', []))
+    source = f'<p class="source">근거 · {escape(c["source"])}</p>' if c.get('source') else ''
     comparison = ''
     if 'comparison' in c:
         table = c['comparison']
@@ -63,7 +64,7 @@ def case_html(c, i):
 <section class="case-part"><h3><span>01</span> 문제 상황</h3><p>{escape(c['problem'])}</p></section>
 <section class="case-part"><h3><span>02</span> {section_title}</h3><p class="table-note">{table_note}</p><div class="table-scroll" tabindex="0" role="region" aria-label="{escape(c['short'])} {section_title}"><table><thead><tr>{option_headers}</tr></thead><tbody>{rows}</tbody></table></div><div class="decision"><span class="eyebrow">{'개선 과정에서 확인한 점' if iterative else 'WHY THIS APPROACH'}</span><p>{escape(c['decision'])}</p></div></section>
 <section class="case-part"><h3><span>03</span> 구현과 구조</h3><ul>{''.join(f'<li>{escape(x)}</li>' for x in c['implementation'])}</ul>{picture(c['image']) if 'image' in c else ''}<figure class="diagram"><figcaption><span>ARCHITECTURE</span><span>Mermaid diagram</span></figcaption><div class="diagram-scroll" tabindex="0" role="region" aria-label="{escape(c['short'])} 구조도"><pre class="mermaid">{escape(c['diagram'])}</pre></div><p class="diagram-caption">{escape(c['diagramCaption'])}</p><details><summary>Mermaid 원문 보기</summary><pre class="diagram-source">{escape(c['diagram'])}</pre></details></figure></section>
-<section class="case-part"><h3><span>04</span> 결과와 배운 점</h3><h4>{escape(c['resultTitle'])}</h4><p>{escape(c['result'])}</p>{f'<div class="result-metrics">{metrics}</div>' if metrics else ''}{comparison}<div class="limits"><strong>결과의 범위 · 트레이드오프</strong><p>{escape(c['tradeoff'])}</p></div><p class="next"><strong>다음 검증</strong> {escape(c['next'])}</p><p class="source">근거 · {escape(c['source'])}</p>{links}</section>
+<section class="case-part"><h3><span>04</span> 결과와 배운 점</h3><h4>{escape(c['resultTitle'])}</h4><p>{escape(c['result'])}</p>{f'<div class="result-metrics">{metrics}</div>' if metrics else ''}{comparison}<div class="limits"><strong>결과의 범위 · 트레이드오프</strong><p>{escape(c['tradeoff'])}</p></div><p class="next"><strong>다음 검증</strong> {escape(c['next'])}</p>{source}{links}</section>
 </article>'''
 
 
