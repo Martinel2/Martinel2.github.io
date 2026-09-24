@@ -37,7 +37,7 @@ try {
       assert.deepEqual(broken, []);
       if (route === '/') {
         await page.waitForFunction(() => document.documentElement.dataset.diagrams === 'ready', { timeout: 60000 });
-        assert.equal(await page.$$eval('.mermaid svg', els => els.length), 9);
+        assert.equal(await page.$$eval('.mermaid svg', els => els.length), content.cases.length);
         const images = await page.$$eval('.project-figure img', async imgs => {
           for (const img of imgs) img.loading = 'eager';
           await Promise.all(imgs.map(img => img.decode()));
@@ -91,7 +91,7 @@ try {
   }
   await page.setJavaScriptEnabled(false);
   await page.goto(base);
-  assert.equal(await page.$$eval('.case', els => els.length), 9, 'Core content must not require JS');
+  assert.equal(await page.$$eval('.case', els => els.length), content.cases.length, 'Core content must not require JS');
   const context = await browser.createBrowserContext();
   const offline = await context.newPage();
   await offline.setRequestInterception(true);
@@ -138,7 +138,7 @@ try {
   assert.equal(events.filter(args => args[1] === 'resume_print').length, 1);
   await analyticsContext.close();
   assert.deepEqual(errors, []);
-  console.log('PASS: desktop/mobile (1440/390/320), 9 Mermaid diagrams, 8 project images, full-size image links, Jev cases, blog links, anchors, reading index, print, no-JS content, CDN fallback and isolated analytics integration.');
+  console.log('PASS: desktop/mobile (1440/390/320), Mermaid diagrams for all cases, 8 project images, full-size image links, Jev cases, blog links, anchors, reading index, print, no-JS content, CDN fallback and isolated analytics integration.');
 } finally {
   await browser.close();
   await new Promise(resolve => server.close(resolve));
