@@ -182,8 +182,8 @@
       "id": "fruition-agent",
       "project": "Fruition",
       "category": "AI Agent · 사용자 정의 Skill · HITL · Prompt Injection",
-      "title": "문서 작업 Agent 구현 · 편집 평가 94/114 → 104/114 통과",
-      "short": "문서 작업 Agent 구현 · 편집 평가 94/114 → 104/114 통과",
+      "title": "사용자 정의 Agent Skill 구현과 안전한 실행 설계",
+      "short": "사용자 정의 Agent Skill 구현과 안전한 실행 설계",
       "period": "2026.08 - 2026.09",
       "summary": "회의록 생성과 같이 반복하는 문서 작업을 사용자가 직접 정의하고 재사용할 수 있도록 Agent Skill을 구현했습니다. 작업 지침을 작성하고 검사하는 단계부터 사용자가 검토·게시하고, 실제 변경을 승인하는 단계까지 연결했습니다.",
       "tags": [
