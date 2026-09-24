@@ -431,10 +431,10 @@
         }
       ],
       "cover": {
-        "src": "assets/projects/fruition-cover.png",
-        "alt": "Fruition 발표자료 표지",
-        "width": 1600,
-        "height": 902
+        "src": "assets/projects/fruition-slide-17.png",
+        "alt": "Fruition 발표자료 17페이지: AI 문서 정리 지식관리 워크스페이스",
+        "width": 2880,
+        "height": 1620
       }
     },
     {
