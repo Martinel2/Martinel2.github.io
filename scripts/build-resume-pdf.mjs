@@ -9,7 +9,7 @@ try{
  const sheets=await page.evaluate(()=>{
   const sections=[...document.querySelectorAll('.resume-section')];
   const copy=el=>el.cloneNode(true);
-  const html=el=>{el.querySelectorAll('a').forEach(a=>a.href=new URL(a.getAttribute('href'),'https://martinel2.github.io/').href);el.querySelectorAll('.print-button,.resume-section>h2>span').forEach(e=>e.remove());return el.outerHTML;};
+  const html=el=>{el.querySelectorAll('a').forEach(a=>a.href=new URL(a.getAttribute('href'),'https://martinel2.github.io/').href);el.querySelectorAll('.resume-download,.resume-section>h2>span').forEach(e=>e.remove());return el.outerHTML;};
   const section=(title,body)=>`<section><h2>${title}</h2>${body}</section>`;
   const hero=copy(document.querySelector('.resume-hero'));
   hero.querySelector('.eyebrow').textContent='김재형 · Backend / AI Application Developer';

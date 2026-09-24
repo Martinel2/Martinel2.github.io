@@ -26,12 +26,9 @@ if (/^G-[A-Z0-9]+$/.test(measurementId || '')) {
   document.head.append(script);
 }
 
-document.querySelector('.print-button')?.addEventListener('click', () => {
-  window.gtag?.('event', 'resume_print');
-  window.print();
-});
 document.addEventListener('click', event => {
   const link = event.target.closest('a');
+  if (link?.matches('.resume-download')) window.gtag?.('event', 'resume_download');
   if (link?.getAttribute('href')?.startsWith('mailto:')) window.gtag?.('event', 'contact_click');
   if (link?.closest('.project-figure')) window.gtag?.('event', 'project_image_open', { image: link.getAttribute('href').split('/').pop() });
 });

@@ -42,6 +42,15 @@ try {
       if (route === '/') {
         assert.equal(await page.$$eval('.case', els=>els.length),0);
         assert.equal(await page.$$eval('.home-project', els=>els.length),2);
+        assert.equal(await page.$$eval('.home-highlights,.home-hero .profile-list',els=>els.length),0);
+        assert.equal(await page.$eval('.home-portrait',el=>getComputedStyle(el).borderRadius),'50%');
+        await page.$eval('.home-portrait img',img=>img.decode());
+        const covers=await page.$$eval('.project-cover img',async imgs=>{for(const i of imgs)i.loading='eager';await Promise.all(imgs.map(i=>i.decode()));return imgs.length;});
+        assert.equal(covers,2);
+        const targets=await page.$$eval('nav a[href^="./#"]',links=>links.map(a=>a.hash.slice(1)));
+        assert.ok(await page.evaluate(ids=>ids.every(id=>document.getElementById(id)),targets));
+        assert.equal(await page.$('nav a[href="#contact"]'),null);
+
         assert.equal(await page.$eval('nav a[href^="resume.pdf"]',el=>el.target),'_blank');
         await page.screenshot({path:`artifacts/home-${width}.png`});
       } else if (route === '/portfolio.html') {
@@ -113,8 +122,18 @@ try {
         });
         assert.ok(skills.aligned && skills.below && Math.abs(skills.width - skills.listWidth) < 1, 'Skill note must occupy the content column');
         await page.evaluate(() => { window.print = () => { window.printInvoked = true; }; });
-        await page.click('.print-button');
-        assert.equal(await page.evaluate(() => window.printInvoked), true);
+        const download=await page.$eval('.resume-download',a=>({href:a.href,name:a.download}));
+        assert.equal(download.name,'김재형_이력서.pdf');
+        assert.equal(new URL(download.href).pathname,'/resume.pdf');
+        if(width===1440){
+          const client=await page.createCDPSession();
+          await client.send('Browser.setDownloadBehavior',{behavior:'allow',downloadPath:resolve('artifacts/downloads'),eventsEnabled:true});
+          const completed=new Promise(resolve=>client.on('Browser.downloadProgress',e=>{if(e.state==='completed')resolve();}));
+          await page.click('.resume-download');await completed;
+          assert.deepEqual(await readFile('artifacts/downloads/김재형_이력서.pdf'),await readFile('site/resume.pdf'));
+          await client.detach();
+        }
+        assert.equal(await page.evaluate(() => !!window.printInvoked), false);
         await page.screenshot({ path: `artifacts/resume-${width}.png` });
         if (width === 1440) await page.pdf({ path: 'artifacts/resume.pdf', format: 'A4', printBackground: true, preferCSSPageSize: true });
       }
@@ -135,7 +154,7 @@ try {
   assert.ok(await offline.$eval('.mermaid', el => el.textContent.includes('flowchart TD')));
   await context.close();
   // Exercise the real generated analytics tag without sending test visits to Google.
-  const fixtureCode = `import build; print(build.page('Check', 'Check', '<article class="case" id="case-check"><h2>Test case</h2></article><button class="print-button">Print</button>'))`;
+  const fixtureCode = `import build; print(build.page('Check', 'Check', '<article class="case" id="case-check"><h2>Test case</h2></article><a class="resume-download" href="resume.pdf" download="resume.pdf">Download</a>'))`;
   const renderFixture = id => execFileSync('python3', ['-c', fixtureCode], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, GA_MEASUREMENT_ID: id } });
   assert.ok(!renderFixture('').includes('ga-measurement-id'));
   assert.throws(() => renderFixture('invalid-id'), /GA_MEASUREMENT_ID/);
@@ -164,15 +183,15 @@ try {
   assert.equal(config.allow_google_signals, false);
   assert.ok(!JSON.stringify(events).includes('private'));
   assert.equal(tagLoads, 1);
-  await analyticsPage.evaluate(() => { window.print = () => {}; document.querySelector('.print-button').click(); });
+  await analyticsPage.evaluate(() => { const a=document.querySelector('.resume-download');a.addEventListener('click',e=>e.preventDefault());a.click(); });
   await analyticsPage.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   await analyticsPage.evaluate(() => window.scrollTo(0, 0));
   events = await analyticsPage.evaluate(() => window.dataLayer.map(args => Array.from(args)));
   assert.equal(events.filter(args => args[1] === 'view_case').length, 1);
-  assert.equal(events.filter(args => args[1] === 'resume_print').length, 1);
+  assert.equal(events.filter(args => args[1] === 'resume_download').length, 1);
   await analyticsContext.close();
   assert.deepEqual(errors, []);
-  console.log('PASS: desktop/mobile (1440/390/320), Mermaid diagrams for all cases, project and activity images, full-size image links, Jev cases, blog links, anchors, reading index, print, no-JS content, CDN fallback and isolated analytics integration.');
+  console.log('PASS: desktop/mobile (1440/390/320), Mermaid diagrams for all cases, project and activity images, full-size image links, Jev cases, blog links, anchors, reading index, PDF download, no-JS content, CDN fallback and isolated analytics integration.');
 } finally {
   await browser.close();
   await new Promise(resolve => server.close(resolve));

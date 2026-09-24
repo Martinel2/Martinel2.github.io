@@ -433,7 +433,13 @@
           "width": 2000,
           "height": 1125
         }
-      ]
+      ],
+      "cover": {
+        "src": "assets/projects/fruition-cover.png",
+        "alt": "Fruition 발표자료 표지",
+        "width": 1600,
+        "height": 902
+      }
     },
     {
       "name": "Pilltip",
@@ -505,7 +511,13 @@
           "label": "GitHub 저장소",
           "url": "https://github.com/PillTipKR/Pilltip"
         }
-      ]
+      ],
+      "cover": {
+        "src": "assets/projects/pilltip-cover.png",
+        "alt": "Pilltip 발표자료 표지",
+        "width": 1920,
+        "height": 1080
+      }
     }
   ],
   "writings": [
