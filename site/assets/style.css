@@ -393,3 +393,6 @@ body:has(.project-dialog[open]){overflow:hidden}
 
 .home-actions .button{width:132px;height:48px;justify-content:center;gap:10px;padding:0 12px;background:var(--action-color,#263650);border-color:var(--action-color,#263650);color:white}.home-actions .button[href="portfolio.html"]{--action-color:#42665e}.home-actions .button[href*="linkedin.com"]{--action-color:#0a66c2}.home-actions .button[href*="github.com"]{--action-color:#24292f}.home-actions .button:hover{filter:brightness(.88)}.home-actions .button img{width:20px;height:20px;flex-shrink:0;filter:brightness(0) invert(1)}
 @media(max-width:480px){.home-actions{gap:8px}.home-actions .button{width:calc((100% - 8px)/2);padding:0 6px;gap:8px;font-size:12px}}
+
+.home-skills .skill-rows>div{padding:20px 0;border-bottom:1px solid var(--line);margin:0}.home-skills .skill-rows>div:last-child{border-bottom:0}.home-skills .skill-rows strong{font-size:14px}.home-skills .skill-rows p{font-size:15px}
+@media(max-width:480px){.home-skills .skill-rows>div{grid-template-columns:1fr;gap:8px}}
