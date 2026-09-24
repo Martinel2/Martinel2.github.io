@@ -637,6 +637,7 @@
         "text78": "2025.03 — 2026.01",
         "text79": "부산대학교 APPTIVE",
         "text80": "Backend 멘티 및 멘토. 멘티 12명 대상 6회 멘토링과 코드 리뷰. HTTP·Servlet·REST API·DB 기초를 보강하는 커리큘럼 개편에 참여했습니다.",
+        "text130": "APPTIVE 백엔드 멘토 공로상 · 2026.01.09",
         "text81": "2025.11 / 2025.07",
         "text82": "SK AI SUMMIT · K-ICT WEEK in Busan",
         "text83": "부산대학교 대표 전시팀으로 Pilltip 부스를 운영하고 서비스 시연과 기술 질의응답을 진행했습니다."
@@ -693,5 +694,25 @@
     "profileRole": "Backend · AI Application Developer",
     "profileLine1": "실패를 통해 최선의 답을 도출하는 개발자입니다.",
     "profileLine2": "가설에 대한 결과를 평가하고, 피드백을 통해 최선에 도달합니다."
+  },
+  "activities": {
+    "title": "수상과 전시 현장",
+    "description": "개발한 서비스를 전시하고, 프로젝트의 결과를 공유했습니다. 사진을 누르면 원본을 볼 수 있습니다.",
+    "gallery": [
+      {
+        "src": "assets/evidence/pilltip-exhibition.jpeg",
+        "width": 4000,
+        "height": 3000,
+        "alt": "Pilltip 전시 부스의 복약 챗봇 시연 화면",
+        "caption": "Pilltip 전시 부스. 부산대학교 대표 전시팀으로 서비스 시연과 기술 질의응답에 참여했습니다."
+      },
+      {
+        "src": "assets/evidence/data-week-award.jpeg",
+        "width": 5712,
+        "height": 4284,
+        "alt": "부산 데이터 위크 2025 최우수상 수상 현장",
+        "caption": "2025.09.23 · 부산 데이터 위크 데이터 활용 우수사례 공모전 최우수상 수상 현장."
+      }
+    ]
   }
 }

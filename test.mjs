@@ -43,7 +43,7 @@ try {
           await Promise.all(imgs.map(img => img.decode()));
           return imgs.map(img => ({ loaded: img.naturalWidth > 0, alt: img.alt }));
         });
-        assert.equal(images.length, 8);
+        assert.equal(images.length, 8 + content.activities.gallery.length);
         assert.ok(images.every(img => img.loaded && img.alt.length > 10));
         assert.ok(await page.$('#fruition-jev-evidence'));
         assert.equal(await page.$$eval('.case[id^="fruition-jev-"]', els => els.length), 1);
@@ -160,7 +160,7 @@ try {
   assert.equal(events.filter(args => args[1] === 'resume_print').length, 1);
   await analyticsContext.close();
   assert.deepEqual(errors, []);
-  console.log('PASS: desktop/mobile (1440/390/320), Mermaid diagrams for all cases, 8 project images, full-size image links, Jev cases, blog links, anchors, reading index, print, no-JS content, CDN fallback and isolated analytics integration.');
+  console.log('PASS: desktop/mobile (1440/390/320), Mermaid diagrams for all cases, project and activity images, full-size image links, Jev cases, blog links, anchors, reading index, print, no-JS content, CDN fallback and isolated analytics integration.');
 } finally {
   await browser.close();
   await new Promise(resolve => server.close(resolve));
