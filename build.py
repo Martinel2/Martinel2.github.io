@@ -46,10 +46,14 @@ def page(title, description, body, resume=False):
 def case_html(c, i):
     iterative = 'experiments' in c
     section_title = '실험과 개선 과정' if iterative else '해결 방안 비교와 선택'
-    table_note = '실험에서 확인한 문제의 원인을 찾아 다음 수정으로 이어간 과정입니다.' if iterative else '각 방안의 기대 효과와 확인한 결과를 비교했습니다. 비용 추산·설계 검토는 실제 실험 결과와 구분했습니다.'
-    columns = ['시도', '실험 결과', '원인 분석', '개선 내용'] if iterative else ['해결 방안', '기대 효과', '실험 결과', '채택 여부와 이유']
-    option_headers = ''.join(f'<th scope="col">{escape(label)}</th>' for label in columns)
-    rows = ''.join('<tr>' + ''.join(f'<td>{escape(v)}</td>' for v in row) + '</tr>' for row in c['experiments' if iterative else 'options'])
+    if iterative:
+        steps = ''.join(f'<li><h4>{escape(title)}</h4><p>{escape(observed)}</p><p class="step-judgment"><strong>판단</strong> {escape(judgment)}</p><p><strong>개선</strong> {escape(change)}</p></li>' for title, observed, judgment, change in c['experiments'])
+        process = f'<ol class="experiment-timeline">{steps}</ol>'
+    else:
+        rows = ''.join('<tr>' + ''.join(f'<td>{escape(v)}</td>' for v in row) + '</tr>' for row in c['options'])
+        process = f'''<p class="table-note">각 방안의 기대 효과와 확인한 결과를 비교했습니다. 비용 추산·설계 검토는 실제 실험 결과와 구분했습니다.</p><div class="table-scroll" tabindex="0" role="region" aria-label="{escape(c['short'])} 해결 방안 비교"><table><thead><tr><th scope="col">해결 방안</th><th scope="col">기대 효과</th><th scope="col">실험 결과</th><th scope="col">채택 여부와 이유</th></tr></thead><tbody>{rows}</tbody></table></div><div class="decision"><span class="eyebrow">WHY THIS APPROACH</span><p>{escape(c['decision'])}</p></div>'''
+    implementation = '<ul>' + ''.join(f'<li>{escape(x)}</li>' for x in c['implementation']) + '</ul>' if c.get('implementation') else ''
+    next_step = f'<p class="next"><strong>다음 검증</strong> {escape(c["next"])}</p>' if c.get('next') else ''
     metrics = ''.join(f'<div><span>{escape(label)}</span><strong>{escape(value)}</strong><small>{escape(note)}</small></div>' for label, value, note in c['metrics'])
     links = ''.join(f'<a class="text-link" href="{escape(link["url"])}">{escape(link["label"])} ↗</a>' for link in c.get('links', []))
     source = f'<p class="source">근거 · {escape(c["source"])}</p>' if c.get('source') else ''
@@ -62,9 +66,9 @@ def case_html(c, i):
     return f'''<article class="case" id="{escape(c['id'])}" aria-labelledby="{escape(c['id'])}-title">
 <header class="case-header"><div class="case-kicker"><span>CASE {i:02d}</span><span>{escape(c['project'])} / {escape(c['category'])}</span></div><h2 id="{escape(c['id'])}-title">{escape(c['title'])}</h2><p class="case-summary">{escape(c['summary'])}</p><p class="case-meta">{escape(c['period'])}</p>{tags(c['tags'])}</header>
 <section class="case-part"><h3><span>01</span> 문제 상황</h3><p>{escape(c['problem'])}</p></section>
-<section class="case-part"><h3><span>02</span> {section_title}</h3><p class="table-note">{table_note}</p><div class="table-scroll" tabindex="0" role="region" aria-label="{escape(c['short'])} {section_title}"><table><thead><tr>{option_headers}</tr></thead><tbody>{rows}</tbody></table></div><div class="decision"><span class="eyebrow">{'개선 과정에서 확인한 점' if iterative else 'WHY THIS APPROACH'}</span><p>{escape(c['decision'])}</p></div></section>
-<section class="case-part"><h3><span>03</span> 구현과 구조</h3><ul>{''.join(f'<li>{escape(x)}</li>' for x in c['implementation'])}</ul>{picture(c['image']) if 'image' in c else ''}<figure class="diagram"><figcaption><span>ARCHITECTURE</span><span>Mermaid diagram</span></figcaption><div class="diagram-scroll" tabindex="0" role="region" aria-label="{escape(c['short'])} 구조도"><pre class="mermaid">{escape(c['diagram'])}</pre></div><p class="diagram-caption">{escape(c['diagramCaption'])}</p><details><summary>Mermaid 원문 보기</summary><pre class="diagram-source">{escape(c['diagram'])}</pre></details></figure></section>
-<section class="case-part"><h3><span>04</span> 결과와 배운 점</h3><h4>{escape(c['resultTitle'])}</h4><p>{escape(c['result'])}</p>{f'<div class="result-metrics">{metrics}</div>' if metrics else ''}{comparison}<div class="limits"><strong>결과의 범위 · 트레이드오프</strong><p>{escape(c['tradeoff'])}</p></div><p class="next"><strong>다음 검증</strong> {escape(c['next'])}</p>{source}{links}</section>
+<section class="case-part"><h3><span>02</span> {section_title}</h3>{process}</section>
+<section class="case-part"><h3><span>03</span> {'개선한 처리 흐름' if iterative else '구현과 구조'}</h3>{implementation}{picture(c['image']) if 'image' in c else ''}<figure class="diagram"><figcaption><span>ARCHITECTURE</span><span>Mermaid diagram</span></figcaption><div class="diagram-scroll" tabindex="0" role="region" aria-label="{escape(c['short'])} 구조도"><pre class="mermaid">{escape(c['diagram'])}</pre></div><p class="diagram-caption">{escape(c['diagramCaption'])}</p><details><summary>Mermaid 원문 보기</summary><pre class="diagram-source">{escape(c['diagram'])}</pre></details></figure></section>
+<section class="case-part"><h3><span>04</span> 결과와 배운 점</h3><h4>{escape(c['resultTitle'])}</h4><p>{escape(c['result'])}</p>{f'<div class="result-metrics">{metrics}</div>' if metrics else ''}{comparison}<div class="limits"><strong>결과의 범위 · 트레이드오프</strong><p>{escape(c['tradeoff'])}</p></div>{next_step}{source}{links}</section>
 </article>'''
 
 

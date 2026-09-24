@@ -337,3 +337,11 @@ a{color:inherit}
 .project-gallery .project-figure{margin:0}
 .project-gallery .project-figure figcaption{font-size:12px}
 @media(max-width:680px){.contribution-list>div{grid-template-columns:1fr;gap:5px;padding:13px 0}.contribution-list dd{font-size:12px}.project-context h3{font-size:16px}.project-gallery{gap:20px}.project-gallery .project-figure figcaption{font-size:11px}}
+
+.experiment-timeline{list-style:none;margin:0;padding:0 0 0 18px;counter-reset:experiment}
+.experiment-timeline>li{position:relative;border-left:2px solid #d8e1f0;padding:0 0 32px 27px;counter-increment:experiment}
+.experiment-timeline>li:last-child{border-left-color:transparent;padding-bottom:0}
+.experiment-timeline>li::before{content:counter(experiment);position:absolute;left:-16px;top:0;width:30px;height:30px;border-radius:50%;background:var(--blue);color:white;text-align:center;line-height:30px;font-size:13px;font-weight:700}
+.experiment-timeline h4{font-size:16px;line-height:1.7;color:var(--ink);margin:0 0 12px}
+.experiment-timeline p+p{margin-top:12px}
+.experiment-timeline .step-judgment{color:var(--ink)}
