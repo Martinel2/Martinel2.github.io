@@ -99,3 +99,13 @@ for (const dialog of document.querySelectorAll('.project-dialog')) {
     if (event.target === dialog && (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom)) dialog.close();
   });
 }
+
+const resumeTrigger = document.querySelector('.home-actions a[href^="resume.pdf"]');
+if (resumeTrigger) {
+  resumeTrigger.setAttribute('aria-haspopup', 'dialog');
+  resumeTrigger.addEventListener('click', event => {
+    if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    document.getElementById('resume-format-dialog').showModal();
+  });
+}

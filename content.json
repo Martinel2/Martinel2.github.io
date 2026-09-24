@@ -543,7 +543,8 @@
         "text7": "kkuldangi2@gmail.com",
         "text8": "GitHub ↗",
         "text9": "Blog ↗",
-        "text10": "이력서 PDF 저장 ↓"
+        "text10": "이력서 PDF 저장 ↓",
+        "text131": "이력서 Word 저장 ↓"
       }
     },
     {
@@ -754,7 +755,10 @@
     },
     "actions": {
       "resume": {
-        "label": "이력서"
+        "label": "이력서",
+        "dialogTitle": "이력서",
+        "pdfLabel": "PDF 보기",
+        "docxLabel": "Word 다운로드"
       },
       "portfolio": {
         "label": "포트폴리오"

@@ -5,6 +5,7 @@ import { resolve, extname } from 'node:path';
 import puppeteer from 'puppeteer';
 import { execFileSync } from 'node:child_process';
 
+execFileSync('python3', ['scripts/test-resume-docx.py'], {stdio:'inherit'});
 const root = resolve('site');
 const content = JSON.parse(await readFile('content.json', 'utf8'));
 const server = createServer(async (req, res) => {
@@ -13,7 +14,7 @@ const server = createServer(async (req, res) => {
     const file = resolve(root, `.${pathname.endsWith('/') ? `${pathname}index.html` : pathname}`);
     if (!file.startsWith(`${root}/`)) throw new Error('Invalid path');
     const data = await readFile(file);
-    res.setHeader('Content-Type', { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg' }[extname(file)] || 'application/octet-stream');
+    res.setHeader('Content-Type', { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', '.png': 'image/png', '.jpg': 'image/jpeg' }[extname(file)] || 'application/octet-stream');
     res.end(data);
   } catch { res.writeHead(404).end(); }
 });
@@ -69,6 +70,28 @@ try {
 
         assert.equal(await page.$('header nav a[href^="resume.pdf"]'),null);
         assert.equal(await page.$eval('.home-actions a[href^="resume.pdf"]',el=>el.target),'_blank');
+        await page.click('.home-actions a[href^="resume.pdf"]');
+        assert.ok(await page.$eval('#resume-format-dialog',el=>el.open));
+        assert.equal(await page.$eval('#resume-format-dialog a[href^="resume.pdf"]',el=>el.target),'_blank');
+        const word=await page.$eval('#resume-format-dialog a[download]',el=>({href:el.href,name:el.download}));
+        assert.equal(word.name,'김재형_이력서.docx');
+        assert.equal(new URL(word.href).pathname,'/resume.docx');
+        if(width===1440){
+          const client=await page.createCDPSession();
+          await client.send('Browser.setDownloadBehavior',{behavior:'allow',downloadPath:resolve('artifacts/downloads'),eventsEnabled:true});
+          const completed=new Promise(resolve=>client.on('Browser.downloadProgress',e=>{if(e.state==='completed')resolve();}));
+          await page.click('#resume-format-dialog a[download]');await completed;
+          assert.deepEqual(await readFile('artifacts/downloads/김재형_이력서.docx'),await readFile('site/resume.docx'));
+          await client.detach();
+        }
+        await page.screenshot({path:`artifacts/resume-formats-${width}.png`});
+        await page.keyboard.press('Escape');
+        assert.equal(await page.$eval('#resume-format-dialog',el=>el.open),false);
+        assert.ok(await page.$eval('.home-actions a[href^="resume.pdf"]',el=>el===document.activeElement));
+        await page.click('.home-actions a[href^="resume.pdf"]');
+        await page.click('#resume-format-dialog button');
+        assert.equal(await page.$eval('#resume-format-dialog',el=>el.open),false);
+
         await page.screenshot({path:`artifacts/home-${width}.png`});
       } else if (route === '/portfolio.html') {
         await page.waitForFunction(() => document.documentElement.dataset.diagrams === 'ready', { timeout: 60000 });

@@ -4,3 +4,4 @@ __pycache__/
 artifacts/
 .wrangler/
 .dev.vars*
+~$*.docx

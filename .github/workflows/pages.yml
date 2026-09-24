@@ -29,6 +29,7 @@ jobs:
       - run: npm run build
         env:
           GA_MEASUREMENT_ID: ${{ vars.GA_MEASUREMENT_ID }}
+      - run: python3 scripts/test-resume-docx.py
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

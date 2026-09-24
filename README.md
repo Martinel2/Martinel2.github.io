@@ -108,3 +108,12 @@ GitHub 저장소 `Martinel2/Martinel2.github.io`의 Settings → Pages → Sourc
 - 링크에 개인 이름·이메일을 넣지 않고 지원처용 코드를 사용합니다. 코드에는 영문·숫자·하이픈·밑줄만 사용합니다. URL 전체 쿼리·해시 대신 허용된 캠페인 값만 설정하고 광고 개인화·Google Signals는 사용하지 않습니다.
 - 로그인·방문자 실명 추정·기기 지문 수집은 구현하지 않았습니다. 익명 방문자의 이름이나 소속은 이 방식으로 확인할 수 없습니다.
 - 공식 문서: [측정 ID](https://support.google.com/analytics/answer/12270356), [캠페인 링크](https://support.google.com/analytics/answer/10917952), [이벤트](https://developers.google.com/analytics/devguides/collection/ga4/events).
+
+
+## PDF 및 Word 이력서
+
+`npm run build`는 동일한 이력서 본문과 페이지 구성을 사용해 `site/resume.pdf`와 편집 가능한 `site/resume.docx`를 생성합니다. 홈의 이력서 버튼에서 PDF 보기 또는 Word 다운로드를 선택할 수 있습니다. 관리자 저장으로 배포가 실행되면 두 파일도 함께 갱신됩니다.
+
+DOCX는 본문·표·목록·하이퍼링크와 증빙 이미지로 구성됩니다. 현재 내용은 Word에서 3페이지로 확인했으며, 설치된 글꼴과 수정한 내용에 따라 페이지 나눔은 달라질 수 있습니다. Word에서 내려받은 파일을 수정해도 사이트로 역반영되지는 않습니다.
+
+`python3 scripts/test-resume-docx.py`는 빌드 후 PDF 원본과의 본문 일치, 이미지·링크·편집 제한 여부를 검사합니다. 배포에서도 이 검사를 통과해야 게시합니다.

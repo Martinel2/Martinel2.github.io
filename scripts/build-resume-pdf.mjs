@@ -1,3 +1,4 @@
+import {buildResumeDocx} from './build-resume-docx.mjs';
 import puppeteer from 'puppeteer';
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';
@@ -34,4 +35,5 @@ try{
  if(overflow.length)throw Error('Resume content exceeds page: '+JSON.stringify(overflow));
  await page.pdf({path:'site/resume.pdf',format:'A4',printBackground:true,preferCSSPageSize:true,tagged:true});
  console.log('Built 3-page site/resume.pdf; all content fits.');
+ await buildResumeDocx(page);
 }finally{await browser.close();}

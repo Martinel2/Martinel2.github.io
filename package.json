@@ -5,9 +5,10 @@
   "scripts": {
     "build": "python3 build.py && node scripts/build-resume-pdf.mjs",
     "dev": "python3 -m http.server 4173 --directory site",
-    "test": "node test.mjs"
+    "test": "npm run build && node test.mjs"
   },
   "devDependencies": {
+    "docx": "^9.7.2",
     "puppeteer": "25.1.0"
   }
 }

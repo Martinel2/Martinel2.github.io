@@ -396,3 +396,5 @@ body:has(.project-dialog[open]){overflow:hidden}
 
 .home-skills .skill-rows>div{padding:20px 0;border-bottom:1px solid var(--line);margin:0}.home-skills .skill-rows>div:last-child{border-bottom:0}.home-skills .skill-rows strong{font-size:14px}.home-skills .skill-rows p{font-size:15px}
 @media(max-width:480px){.home-skills .skill-rows>div{grid-template-columns:1fr;gap:8px}}
+
+.resume-format-dialog{max-width:440px}.resume-formats{display:flex;flex-wrap:wrap;gap:12px;margin-top:20px}.resume-formats .button{justify-content:center;flex:1;background:white;margin-top:0}

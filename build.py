@@ -10,7 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 SITE = ROOT / "site"
 DATA = json.loads((ROOT / "content.json").read_text())
-CONTENT_VERSION = hashlib.sha256((ROOT / "content.json").read_bytes() + (ROOT / "templates/resume-pdf.css").read_bytes() + (ROOT / "scripts/build-resume-pdf.mjs").read_bytes()).hexdigest()[:10]
+CONTENT_VERSION = hashlib.sha256((ROOT / "content.json").read_bytes() + (ROOT / "templates/resume-pdf.css").read_bytes() + (ROOT / "scripts/build-resume-pdf.mjs").read_bytes() + (ROOT / "scripts/build-resume-docx.mjs").read_bytes()).hexdigest()[:10]
 
 
 def home_text(group, key):
@@ -47,7 +47,7 @@ def page(title, description, body, resume=False):
 <nav aria-label="주 메뉴"><a href="./" {'aria-current="page"' if not path else ''}>{home_text('navigation', 'homeLabel')}</a><a href="./#about">{home_text("navigation", "aboutLabel")}</a><a href="./#skills">{home_text("navigation", "skillsLabel")}</a><a href="./#projects">{home_text("navigation", "projectsLabel")}</a><a href="./#activities">{home_text("navigation", "activitiesLabel")}</a></nav></header>
 <main id="main">{body}</main>
 <footer class="site-footer"><span>© {DATA['updated'][:4]} 김재형</span><div class="footer-links"><a href="mailto:kkuldangi2@gmail.com">Email ↗</a><a href="https://github.com/Martinel2">GitHub ↗</a><a href="https://velog.io/@kkuldangi3/posts">Blog ↗</a><a href="https://www.linkedin.com/in/%EC%9E%AC%ED%98%95-%EA%B9%80-b75920345/">LinkedIn ↗</a><a href="#top">맨 위로 ↑</a></div></footer>
-</body></html>'''.replace('href="resume.pdf"', f'href="resume.pdf?v={CONTENT_VERSION}"')
+</body></html>'''.replace('href="resume.pdf"', f'href="resume.pdf?v={CONTENT_VERSION}"').replace('href="resume.docx"', f'href="resume.docx?v={CONTENT_VERSION}"')
 
 
 def case_html(c, i):
@@ -153,10 +153,12 @@ def home():
         url = {'resume': 'resume.pdf', 'portfolio': 'portfolio.html'}.get(key, action.get('url'))
         target = '' if key == 'portfolio' else ' target="_blank" rel="noopener"'
         actions += f'<a class="button" href="{escape(url)}"{target}><img src="assets/icons/{icon}.svg" alt="" width="20" height="20">{escape(action["label"])}</a>'
+    resume_action = DATA['home']['actions']['resume']
     body = f'''<section class="home-hero"><div class="home-intro"><p class="eyebrow">{home_text("hero", "eyebrow")}</p><h1>{home_text("hero", "greeting")}<br>{home_text("hero", "nameLine")}</h1><h2>{t(2)}<br>{t(3)}</h2><div class="home-actions">{actions}</div></div></section>
 <section class="home-about home-section" id="about"><p class="eyebrow">{home_text("about", "eyebrow")}</p><h2>{home_text("about", "title")}</h2><p>{t(5)}</p><p>{t(6)}</p><p>{home_text("about", "description")}</p></section>
 {skills}<section class="home-section" id="projects"><p class="eyebrow">{home_text("sections", "projectsEyebrow")}</p><h2>{home_text("sections", "projectsTitle")}</h2><div class="home-projects">{projects}</div></section>
-<div class="home-background">{background}</div>{writings}{dialogs}'''
+<div class="home-background">{background}</div>{writings}{dialogs}
+<dialog class="project-dialog resume-format-dialog" id="resume-format-dialog" aria-labelledby="resume-format-title"><form method="dialog"><button class="button" autofocus>닫기 ×</button></form><h2 id="resume-format-title">{escape(resume_action['dialogTitle'])}</h2><div class="resume-formats"><a class="button" href="resume.pdf" target="_blank" rel="noopener">{escape(resume_action['pdfLabel'])}</a><a class="button resume-download" href="resume.docx" download="김재형_이력서.docx">{escape(resume_action['docxLabel'])}</a></div></dialog>'''
     (SITE / 'index.html').write_text(page('소개', '김재형의 개발 경험, 프로젝트, 활동과 이력서.', body))
 
 if __name__ == '__main__':
