@@ -36,10 +36,10 @@ function field(value,path,parent,label){const key=path.at(-1);if(locked.has(key)
 function show(index){active=index;const section=sections[index];$('#section-title').textContent=section.title;$('#fields').replaceChildren();document.querySelectorAll('#menu button').forEach((b,i)=>b.setAttribute('aria-current',String(i===index)));
  const obj=valueAt(section.path);Object.entries(obj).forEach(([k,v])=>{if(section.kind==='resume'&&k==='title')return;const f=field(v,[...section.path,k],obj,k==='problem'?'경험 전체 배경':obj.experiments&&k==='decision'?'개선 과정에서 확인한 점':undefined);if(f)$('#fields').append(f);});refresh();
 }
-function render(){sections=[{group:'포트폴리오',title:'첫 화면 소개',path:['overview']}];
+function render(){sections=[{group:'포트폴리오',title:'상세 포트폴리오 소개',path:['overview']}];
  data.projects.forEach((p,i)=>sections.push({group:'프로젝트 소개',title:p.name,path:['projects',String(i)]}));
  data.cases.forEach((c,i)=>sections.push({group:'상세 경험',title:c.short,path:['cases',String(i)]}));
- data.resume.forEach((r,i)=>sections.push({group:'이력서',title:r.title,path:['resume',String(i)],kind:'resume'}));
+ data.resume.forEach((r,i)=>sections.push({group:'홈·이력서',title:r.title,path:['resume',String(i)],kind:'resume'}));
  if(data.activities)sections.push({group:'수상과 전시',title:data.activities.title,path:['activities']});
  data.writings.forEach((w,i)=>sections.push({group:'블로그 링크',title:w.title,path:['writings',String(i)]}));
  $('#menu').replaceChildren();let group='';sections.forEach((s,i)=>{if(s.group!==group){$('#menu').append(el('h2',s.group));group=s.group;}const button=el('button',s.title);button.addEventListener('click',()=>show(i));$('#menu').append(button);});show(Math.min(active,sections.length-1));

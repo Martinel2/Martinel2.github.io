@@ -3,9 +3,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "python3 build.py",
+    "build": "python3 build.py && node scripts/build-resume-pdf.mjs",
     "dev": "python3 -m http.server 4173 --directory site",
     "test": "node test.mjs"
   },
-  "devDependencies": { "puppeteer": "25.1.0" }
+  "devDependencies": {
+    "puppeteer": "25.1.0"
+  }
 }

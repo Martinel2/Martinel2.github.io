@@ -21,7 +21,7 @@ def picture(item):
 
 
 def page(title, description, body, resume=False):
-    path = 'resume.html' if resume else ''
+    path = 'resume.html' if resume else ('portfolio.html' if title == '포트폴리오' else '')
     measurement_id = os.environ.get('GA_MEASUREMENT_ID', '')
     if measurement_id and not re.fullmatch(r'G-[A-Z0-9]+', measurement_id):
         raise ValueError('GA_MEASUREMENT_ID must be a G- measurement ID')
@@ -37,9 +37,9 @@ def page(title, description, body, resume=False):
 </head><body id="top" class="{'resume-page' if resume else 'portfolio-page'}">
 <a class="skip" href="#main">본문으로 바로가기</a>
 <header class="header"><a class="identity" href="./"><span class="monogram">JH<span>.</span></span><span>김재형 <small>JAEHYEONG KIM</small></span></a>
-<nav aria-label="주 메뉴"><a href="./" {'aria-current="page"' if not resume else ''}>포트폴리오</a><a href="resume.html" {'aria-current="page"' if resume else ''}>이력서</a><a class="nav-contact" href="#contact">연락하기 <span aria-hidden="true">↗</span></a></nav></header>
+<nav aria-label="주 메뉴"><a href="./" {'aria-current="page"' if not path else ''}>홈</a><a href="portfolio.html" {'aria-current="page"' if path == "portfolio.html" else ''}>포트폴리오</a><a href="resume.pdf" target="_blank" rel="noopener">이력서 PDF ↗</a><a class="nav-contact" href="#contact">연락하기 <span aria-hidden="true">↗</span></a></nav></header>
 <main id="main">{body}</main>
-<footer id="contact"><div><span class="eyebrow">LET’S CONNECT</span><h2>김재형 · 연락처</h2><a class="email" href="mailto:kkuldangi2@gmail.com">kkuldangi2@gmail.com <span aria-hidden="true">↗</span></a></div><div class="footer-links"><a href="https://github.com/Martinel2">GitHub ↗</a><a href="https://velog.io/@kkuldangi3/posts">Blog ↗</a><a href="https://www.linkedin.com/in/%EC%9E%AC%ED%98%95-%EA%B9%80-b75920345/">LinkedIn ↗</a><a href="resume.html">이력서 보기 ↗</a><a href="#top">맨 위로 ↑</a></div><div class="footer-bottom"><span>© 2026 김재형</span><span>Backend & AI Application Developer · Updated {DATA['updated']}</span></div></footer>
+<footer id="contact"><div><span class="eyebrow">LET’S CONNECT</span><h2>김재형 · 연락처</h2><a class="email" href="mailto:kkuldangi2@gmail.com">kkuldangi2@gmail.com <span aria-hidden="true">↗</span></a></div><div class="footer-links"><a href="https://github.com/Martinel2">GitHub ↗</a><a href="https://velog.io/@kkuldangi3/posts">Blog ↗</a><a href="https://www.linkedin.com/in/%EC%9E%AC%ED%98%95-%EA%B9%80-b75920345/">LinkedIn ↗</a><a href="resume.pdf" target="_blank" rel="noopener">이력서 PDF ↗</a><a href="#top">맨 위로 ↑</a></div><div class="footer-bottom"><span>© 2026 김재형</span><span>Backend & AI Application Developer · Updated {DATA['updated']}</span></div></footer>
 </body></html>'''
 
 
@@ -100,13 +100,13 @@ def portfolio():
 <li><a href="#pilltip-data"><strong>{escape(DATA['overview']['experience3Title'])}</strong><span>{escape(DATA['overview']['experience3Description'])}</span></a></li>
 </ul></div>
 <aside class="engineering-profile" aria-label="개발자 프로필"><p class="eyebrow">ENGINEERING PROFILE</p><h2>김재형</h2><p class="profile-role">{escape(DATA['overview']['profileRole'])}</p><a class="profile-email" href="mailto:kkuldangi2@gmail.com">kkuldangi2@gmail.com</a>
-<p class="profile-summary">{escape(DATA['overview']['profileLine1'])}<br>{escape(DATA['overview']['profileLine2'])}</p><a class="profile-resume" href="resume.html">이력서 보기 ↗</a></aside></section>
+<p class="profile-summary">{escape(DATA['overview']['profileLine1'])}<br>{escape(DATA['overview']['profileLine2'])}</p><a class="profile-resume" href="resume.pdf" target="_blank" rel="noopener">이력서 PDF ↗</a></aside></section>
 <div id="work" class="work-anchor"></div>
-<div class="work-layout"><aside class="toc"><div class="toc-inner"><p class="eyebrow">목차 <span>{len(DATA['cases']):02d}</span></p><nav aria-label="프로젝트 목차">{contents}</nav><div class="toc-foot"><span>READING GUIDE</span><p>문제 상황<br>실험과 개선 · 해결 방안 비교<br>구현과 구조<br>결과와 배운 점</p><a href="resume.html">경험 전체 보기 ↗</a></div></div></aside><div class="cases">{''.join(project_sections)}</div></div>
+<div class="work-layout"><aside class="toc"><div class="toc-inner"><p class="eyebrow">목차 <span>{len(DATA['cases']):02d}</span></p><nav aria-label="프로젝트 목차">{contents}</nav><div class="toc-foot"><span>READING GUIDE</span><p>문제 상황<br>실험과 개선 · 해결 방안 비교<br>구현과 구조<br>결과와 배운 점</p><a href="resume.pdf" target="_blank" rel="noopener">이력서 PDF ↗</a></div></div></aside><div class="cases">{''.join(project_sections)}</div></div>
 <section class="more-work"><span class="eyebrow">BEYOND THE PROJECTS</span><h2>코드 밖에서도 이어지는 경험</h2><div class="more-grid"><div><a href="https://github.com/edwardkim/rhwp/pull/1213"><span>OPEN SOURCE ↗</span><h3>Rhwp · HWPX 저장 오류 수정</h3><p>textFlow 속성 보존 오류를 수정한 PR #1213 병합. 이슈 분석부터 구현, 테스트와 CI 대응까지 기여했습니다.</p></a><a class="text-link" href="https://github.com/edwardkim/rhwp">GitHub 저장소 ↗</a></div><a href="resume.html#activities"><span>COMMUNITY ↗</span><h3>APPTIVE · 백엔드 멘토링</h3><p>멘티 경험을 교육 개선으로 연결했습니다. 멘티 12명을 대상으로 6회의 멘토링과 코드 리뷰를 진행했습니다.</p></a></div></section>
 <section class="more-work" id="activity-gallery"><h2>{escape(activities["title"])}</h2><p>{escape(activities["description"])}</p><div class="activity-gallery">{activity_gallery}</div></section>
 <section class="more-work writings"><span class="eyebrow">ENGINEERING JOURNAL</span><h2>선택 뒤에 남긴 기록</h2><div class="more-grid">{writings}</div><a class="text-link" href="https://velog.io/@kkuldangi3/posts">블로그 글 전체 보기 ↗</a></section>'''
-    (SITE / 'index.html').write_text(page('포트폴리오', '김재형의 Backend · AI 응용 개발 포트폴리오. Fruition과 Pilltip의 문제, 기술 선택, Mermaid 구조도, 평가 결과를 소개합니다.', body))
+    (SITE / 'portfolio.html').write_text(page('포트폴리오', '김재형의 Backend · AI 응용 개발 포트폴리오. Fruition과 Pilltip의 문제, 기술 선택, Mermaid 구조도, 평가 결과를 소개합니다.', body))
 
 
 def resume():
@@ -115,8 +115,32 @@ def resume():
     (SITE / 'resume.html').write_text(page('이력서', '김재형 · Backend Engineer / AI Application Developer. 프로젝트, 기술, 오픈소스 기여, 수상과 학력.', body, True))
 
 
+
+def home():
+    fields = {key: value for section in DATA['resume'] for key, value in section['fields'].items()}
+    t = lambda n: escape(fields['text' + str(n)])
+    projects = ''
+    for project in DATA['projects']:
+        cases = [c for c in DATA['cases'] if c['project'] == project['name']]
+        links = ''.join(f'<a class="text-link" href="{escape(link["url"])}">{escape(link["label"])} ↗</a>' for link in project.get('links', []))
+        details = ''.join(f'<li><a href="portfolio.html#{escape(c["id"])}">{escape(c["short"])} ↗</a></li>' for c in cases)
+        projects += f'<article class="home-project"><h3>{escape(project["name"])}</h3><p>{escape(project["description"])}</p>{links}<ul>{details}</ul></article>'
+    resume_body = re.sub(r'@@(text\d+)@@', lambda match: escape(fields[match[1]]), (ROOT / 'templates/resume.html').read_text())
+    sections = re.findall(r'<section class="resume-section".*?</section>', resume_body, re.S)
+    background = ''.join(sections[3:])
+    portfolio_html = (SITE / 'portfolio.html').read_text()
+    gallery = re.search(r'<section class="more-work" id="activity-gallery">.*?</section>', portfolio_html, re.S)[0]
+    writings = re.search(r'<section class="more-work writings">.*?</section>', portfolio_html, re.S)[0]
+    summary = ''.join(f'<li><strong>{t(n)}</strong><p>{t(n+1)}</p></li>' for n in [13,15,17])
+    body = f'''<section class="home-hero"><p class="eyebrow">BACKEND / AI APPLICATION</p><h1>김재형</h1><h2>{t(2)} {t(3)}</h2><p>{t(5)}<br>{t(6)}</p><div class="home-actions"><a class="button primary" href="resume.pdf" target="_blank" rel="noopener">이력서 PDF ↗</a><a class="button" href="portfolio.html">상세 포트폴리오 ↗</a><a class="text-link" href="https://github.com/Martinel2">GitHub ↗</a></div></section>
+<section class="home-section"><h2>주요 경험</h2><ul class="home-highlights">{summary}</ul></section>
+<section class="home-section"><h2>프로젝트</h2><div class="home-projects">{projects}</div></section>
+<div class="home-background">{background}</div>{gallery}{writings}'''
+    (SITE / 'index.html').write_text(page('소개', '김재형의 개발 경험, 프로젝트, 활동과 이력서.', body))
+
 if __name__ == '__main__':
     SITE.mkdir(exist_ok=True)
     portfolio()
     resume()
-    print('Built site/index.html and site/resume.html')
+    home()
+    print('Built home, portfolio and resume pages')

@@ -28,7 +28,7 @@ try {
   page.on('pageerror', e => errors.push(e.message));
   for (const width of [1440, 390, 320]) {
     await page.setViewport({ width, height: 1000 });
-    for (const route of ['/', '/resume.html']) {
+    for (const route of ['/', '/portfolio.html', '/resume.html']) {
       const response = await page.goto(`${base}${route}`, { waitUntil: 'networkidle2' });
       assert.equal(response.status(), 200);
       assert.equal(await page.$$eval('h1', els => els.length), 1);
@@ -36,6 +36,11 @@ try {
       const broken = await page.$$eval('a[href^="#"]', links => links.filter(a => !document.getElementById(decodeURIComponent(a.hash.slice(1)))).map(a => a.hash));
       assert.deepEqual(broken, []);
       if (route === '/') {
+        assert.equal(await page.$$eval('.case', els=>els.length),0);
+        assert.equal(await page.$$eval('.home-project', els=>els.length),2);
+        assert.equal(await page.$eval('nav a[href="resume.pdf"]',el=>el.target),'_blank');
+        await page.screenshot({path:`artifacts/home-${width}.png`});
+      } else if (route === '/portfolio.html') {
         await page.waitForFunction(() => document.documentElement.dataset.diagrams === 'ready', { timeout: 60000 });
         assert.equal(await page.$$eval('.mermaid svg', els => els.length), content.cases.length);
         const images = await page.$$eval('.project-figure img', async imgs => {
@@ -111,14 +116,17 @@ try {
       }
     }
   }
+  await page.goto(base+'/#fruition-document');
+  await page.waitForFunction(()=>location.pathname.endsWith('/portfolio.html'));
+  assert.equal(new URL(page.url()).hash,'#fruition-document');
   await page.setJavaScriptEnabled(false);
-  await page.goto(base);
+  await page.goto(base+'/portfolio.html');
   assert.equal(await page.$$eval('.case', els => els.length), content.cases.length, 'Core content must not require JS');
   const context = await browser.createBrowserContext();
   const offline = await context.newPage();
   await offline.setRequestInterception(true);
   offline.on('request', req => req.url().includes('mermaid@') ? req.abort() : req.continue());
-  await offline.goto(base);
+  await offline.goto(base+'/portfolio.html');
   await offline.waitForFunction(() => document.documentElement.dataset.diagrams === 'fallback');
   assert.ok(await offline.$eval('.mermaid', el => el.textContent.includes('flowchart TD')));
   await context.close();

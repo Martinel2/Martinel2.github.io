@@ -21,7 +21,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.x'
-      - run: python3 build.py
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
         env:
           GA_MEASUREMENT_ID: ${{ vars.GA_MEASUREMENT_ID }}
       - uses: actions/configure-pages@v5
