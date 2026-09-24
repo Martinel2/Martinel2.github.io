@@ -97,6 +97,12 @@ try {
         if (width === 1440) await page.$eval('#fruition-agent', el => el.scrollIntoView({ behavior: 'instant' }));
         if (width === 1440) await page.screenshot({ path: 'artifacts/case-desktop.png', fullPage: false });
       } else {
+        const skills = await page.$eval('.skill-rows > div', el => {
+          const list = el.querySelector('p').getBoundingClientRect();
+          const note = el.querySelector('.scope-note').getBoundingClientRect();
+          return { aligned: Math.abs(list.left - note.left) < 1, below: note.top >= list.bottom, width: note.width, listWidth: list.width };
+        });
+        assert.ok(skills.aligned && skills.below && Math.abs(skills.width - skills.listWidth) < 1, 'Skill note must occupy the content column');
         await page.evaluate(() => { window.print = () => { window.printInvoked = true; }; });
         await page.click('.print-button');
         assert.equal(await page.evaluate(() => window.printInvoked), true);
