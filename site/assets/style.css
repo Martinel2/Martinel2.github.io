@@ -10,6 +10,7 @@ button{font:inherit;cursor:pointer}
 a,button,summary{-webkit-tap-highlight-color:transparent}
 a:focus-visible,button:focus-visible,summary:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--blue);outline-offset:5px}
 h1,h2,h3,h4,p{margin:0}
+main p,.contribution-list dd,.resume-project li,.experience-index li>a>span,.result-metrics small,.project-figure figcaption{white-space:pre-line}
 h1,h2,h3,h4{line-height:1.35}
 ul{padding-left:22px}
 li{padding-left:3px;margin:10px 0}

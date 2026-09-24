@@ -50,6 +50,16 @@ try {
         assert.equal(await page.$$eval('.experience-index li', els => els.length), 3);
         assert.equal(await page.$$eval('.highlights, .hero', els => els.length), 0);
         assert.equal(await page.$$eval('.project-context', els => els.length), 2);
+        const lineBreaks = await page.$eval('.experiment-timeline p', el => {
+          const original = el.textContent;
+          el.textContent = '첫째\n둘째\n\n새문단';
+          const y = offset => { const range = document.createRange(); range.setStart(el.firstChild, offset); range.setEnd(el.firstChild, offset + 1); return range.getBoundingClientRect().top; };
+          const result = { line: y(3) - y(0), paragraph: y(7) - y(3), height: parseFloat(getComputedStyle(el).lineHeight) };
+          el.textContent = original;
+          return result;
+        });
+        assert.ok(Math.abs(lineBreaks.line - lineBreaks.height) < 2, 'Enter must preserve a line break');
+        assert.ok(Math.abs(lineBreaks.paragraph - 2 * lineBreaks.height) < 2, 'Blank line must preserve paragraph spacing');
         for (const c of content.cases) {
           assert.equal(await page.$$eval(`#${c.id} .experiment-timeline > li`, els => els.length), c.experiments.length);
           assert.equal(await page.$$eval(`#${c.id} table`, els => els.length), 0);
