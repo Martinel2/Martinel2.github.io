@@ -45,7 +45,7 @@ def page(title, description, body, resume=False):
 
 def case_html(c, i):
     iterative = 'experiments' in c
-    section_title = '실험과 개선 과정' if iterative else '해결 방안 비교와 선택'
+    section_title = escape(c.get('processTitle', '실험과 개선 과정' if iterative else '해결 방안 비교와 선택'))
     if iterative:
         steps = ''.join(f'<li><h4>{escape(title)}</h4><p>{escape(observed)}</p><p class="step-judgment"><strong>판단</strong> {escape(judgment)}</p><p><strong>개선</strong> {escape(change)}</p></li>' for title, observed, judgment, change in c['experiments'])
         process = f'<ol class="experiment-timeline">{steps}</ol>'

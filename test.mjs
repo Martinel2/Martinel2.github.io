@@ -50,9 +50,12 @@ try {
         assert.equal(await page.$$eval('.experience-index li', els => els.length), 3);
         assert.equal(await page.$$eval('.highlights, .hero', els => els.length), 0);
         assert.equal(await page.$$eval('.project-context', els => els.length), 2);
-        for (const id of ['fruition-document', 'fruition-jev-decisions', 'fruition-ingest']) assert.ok(await page.$(`#${id} .comparison`));
+        for (const c of content.cases) {
+          assert.equal(await page.$$eval(`#${c.id} .experiment-timeline > li`, els => els.length), c.experiments.length);
+          assert.equal(await page.$$eval(`#${c.id} table`, els => els.length), 0);
+        }
         assert.ok(!(await page.$eval('body', el => el.textContent)).includes('edit_goal'));
-        assert.ok(await page.$('#fruition-jev-evidence .comparison'));
+        assert.match(await page.$eval('#pilltip-personalization', el => el.textContent), /설계와 구현 과정/);
         assert.equal(await page.$$eval('.writings a[href*="velog.io"]', els => els.length), 3);
         await page.$eval('.project-context', el => el.scrollIntoView({ behavior: 'instant' }));
         await page.screenshot({ path: `artifacts/projects-${width}.png` });
