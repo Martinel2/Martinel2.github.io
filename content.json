@@ -734,14 +734,14 @@
     "about": {
       "eyebrow": "ABOUT ME",
       "title": "어떤 개발자인가요?",
-      "description": "문서를 지식으로 활용하는 AI 워크스페이스 Fruition과, 의약품 정보를 쉽게 전달하는 복약 서비스 Pilltip을 만들었습니다."
+      "description": "문제에 Deep Dive 하는 것을 좋아합니다.\n문서를 지식으로 활용하는 AI 워크스페이스 Fruition과, 의약품 정보를 쉽게 전달하는 복약 서비스 Pilltip 개발에 참여했습니다."
     },
     "sections": {
       "skillsEyebrow": "SKILLS",
       "projectsEyebrow": "PROJECTS",
       "projectsTitle": "만들어 온 서비스",
       "writingsEyebrow": "ENGINEERING JOURNAL",
-      "writingsTitle": "팀의 의사결정과 회고",
+      "writingsTitle": "프로젝트 회고",
       "writingsLinkLabel": "블로그 글 전체 보기",
       "writingsUrl": "https://velog.io/@kkuldangi3/posts"
     },
