@@ -35,6 +35,7 @@ try {
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `Overflow: ${width} ${route}`);
       const broken = await page.$$eval('a[href^="#"]', links => links.filter(a => !document.getElementById(decodeURIComponent(a.hash.slice(1)))).map(a => a.hash));
       assert.deepEqual(broken, []);
+      assert.equal(await page.$('.activity-gallery'),null);
       const evidence=await page.$$eval('.evidence-thumb img',async imgs=>{for(const i of imgs)i.loading='eager';await Promise.all(imgs.map(i=>i.decode()));return imgs.map(i=>({width:i.naturalWidth,height:i.getBoundingClientRect().height}));});
       assert.equal(evidence.length,route==='/portfolio.html'?1:6);
       assert.ok(evidence.every(i=>i.width>0&&i.height<=120),'Evidence thumbnails must load at compact sizes');
@@ -51,7 +52,8 @@ try {
         assert.ok(await page.evaluate(ids=>ids.every(id=>document.getElementById(id)),targets));
         assert.equal(await page.$('nav a[href="#contact"]'),null);
 
-        assert.equal(await page.$eval('nav a[href^="resume.pdf"]',el=>el.target),'_blank');
+        assert.equal(await page.$('header nav a[href^="resume.pdf"]'),null);
+        assert.equal(await page.$eval('.home-actions a[href^="resume.pdf"]',el=>el.target),'_blank');
         await page.screenshot({path:`artifacts/home-${width}.png`});
       } else if (route === '/portfolio.html') {
         await page.waitForFunction(() => document.documentElement.dataset.diagrams === 'ready', { timeout: 60000 });
@@ -61,7 +63,7 @@ try {
           await Promise.all(imgs.map(img => img.decode()));
           return imgs.map(img => ({ loaded: img.naturalWidth > 0, alt: img.alt }));
         });
-        assert.equal(images.length, 8 + content.activities.gallery.length);
+        assert.equal(images.length, 8);
         assert.ok(images.every(img => img.loaded && img.alt.length > 10));
         assert.ok(await page.$('#fruition-jev-evidence'));
         assert.equal(await page.$$eval('.case[id^="fruition-jev-"]', els => els.length), 1);

@@ -40,7 +40,7 @@ def page(title, description, body, resume=False):
 </head><body id="top" class="{'resume-page' if resume else 'portfolio-page'}">
 <a class="skip" href="#main">본문으로 바로가기</a>
 <header class="header"><a class="identity" href="./"><span class="monogram">JH<span>.</span></span><span>김재형 <small>JAEHYEONG KIM</small></span></a>
-<nav aria-label="주 메뉴"><a href="./" {'aria-current="page"' if not path else ''}>홈</a><a href="./#about">소개</a><a href="./#projects">프로젝트</a><a href="./#activities">활동</a><a href="portfolio.html" {'aria-current="page"' if path == "portfolio.html" else ''}>포트폴리오</a><a href="resume.pdf" target="_blank" rel="noopener">이력서 PDF ↗</a></nav></header>
+<nav aria-label="주 메뉴"><a href="./" {'aria-current="page"' if not path else ''}>홈</a><a href="./#about">소개</a><a href="./#projects">프로젝트</a><a href="./#activities">활동</a><a href="portfolio.html" {'aria-current="page"' if path == "portfolio.html" else ''}>포트폴리오</a></nav></header>
 <main id="main">{body}</main>
 <footer class="site-footer"><span>© {DATA['updated'][:4]} 김재형</span><div class="footer-links"><a href="mailto:kkuldangi2@gmail.com">Email ↗</a><a href="https://github.com/Martinel2">GitHub ↗</a><a href="https://velog.io/@kkuldangi3/posts">Blog ↗</a><a href="https://www.linkedin.com/in/%EC%9E%AC%ED%98%95-%EA%B9%80-b75920345/">LinkedIn ↗</a><a href="#top">맨 위로 ↑</a></div></footer>
 </body></html>'''.replace('href="resume.pdf"', f'href="resume.pdf?v={CONTENT_VERSION}"')
@@ -91,8 +91,6 @@ def portfolio():
             project_sections.append(f'<section class="project-context" aria-label="{escape(project["name"]) } 프로젝트 소개"><p class="eyebrow">PROJECT OVERVIEW</p><h2>{escape(project["name"]) }</h2><p>{escape(project["description"]) }</p><h3>담당 범위와 협업</h3><dl class="contribution-list">{contributions}</dl>{links}<h3>담당 기능과 서비스 화면</h3><p class="gallery-note">팀 발표 자료의 서비스 화면과 구조입니다. 각 설명에 제 담당 범위를 표시했습니다. 이미지를 누르면 원본 크기로 볼 수 있습니다.</p><div class="project-gallery">{gallery}</div></section>')
             seen.add(c['project'])
         project_sections.append(case_html(c, i))
-    activities = DATA['activities']
-    activity_gallery = ''.join(picture(item).replace('<figcaption>', '<figcaption><h3>' + escape(item['title']) + '</h3>') for item in activities['gallery'])
     writings = ''.join(f'<a href="{escape(w["url"])}"><span>{escape(w["label"])} ↗</span><h3>{escape(w["title"])}</h3><p>{escape(w["description"])}</p></a>' for w in DATA['writings'])
     body = f'''<section class="portfolio-overview" aria-labelledby="portfolio-title">
 <div class="overview-main"><p class="eyebrow">{escape(DATA['overview']['eyebrow'])}</p><h1 id="portfolio-title">{escape(DATA['overview']['title'])}</h1>
@@ -108,7 +106,6 @@ def portfolio():
 <div class="work-layout"><aside class="toc"><div class="toc-inner"><p class="eyebrow">목차 <span>{len(DATA['cases']):02d}</span></p><nav aria-label="프로젝트 목차">{contents}</nav><div class="toc-foot"><span>READING GUIDE</span><p>문제 상황<br>실험과 개선 · 해결 방안 비교<br>구현과 구조<br>결과와 배운 점</p><a href="resume.pdf" target="_blank" rel="noopener">이력서 PDF ↗</a></div></div></aside><div class="cases">{''.join(project_sections)}</div></div>
 <section class="more-work"><span class="eyebrow">BEYOND THE PROJECTS</span><h2>코드 밖에서도 이어지는 경험</h2><div class="more-grid"><div><a href="https://github.com/edwardkim/rhwp/pull/1213"><span>OPEN SOURCE ↗</span><h3>Rhwp · HWPX 저장 오류 수정</h3><p>textFlow 속성 보존 오류를 수정한 PR #1213 병합. 이슈 분석부터 구현, 테스트와 CI 대응까지 기여했습니다.</p></a><a class="text-link" href="https://github.com/edwardkim/rhwp">GitHub 저장소 ↗</a></div>
 <div><h3>APPTIVE · 백엔드 멘토링</h3><div class="evidence-row"><a class="evidence-thumb" href="assets/evidence/apptive-merit.jpeg" target="_blank" rel="noopener"><img src="assets/evidence/apptive-merit.jpeg" alt="APPTIVE 백엔드 멘토 공로상" loading="lazy"><span>공로상 보기 ↗</span></a><div><p>멘티 경험을 교육 개선으로 연결했습니다. 멘티 12명을 대상으로 6회의 멘토링과 코드 리뷰를 진행했습니다.</p><a class="text-link" href="./#activities">활동 내용 ↗</a></div></div></div></div></section>
-<section class="more-work" id="activity-gallery"><h2>{escape(activities["title"])}</h2><p>{escape(activities["description"])}</p><div class="activity-gallery">{activity_gallery}</div></section>
 <section class="more-work writings"><span class="eyebrow">ENGINEERING JOURNAL</span><h2>선택 뒤에 남긴 기록</h2><div class="more-grid">{writings}</div><a class="text-link" href="https://velog.io/@kkuldangi3/posts">블로그 글 전체 보기 ↗</a></section>'''
     (SITE / 'portfolio.html').write_text(page('포트폴리오', '김재형의 Backend · AI 응용 개발 포트폴리오. Fruition과 Pilltip의 문제, 기술 선택, Mermaid 구조도, 평가 결과를 소개합니다.', body))
 
@@ -136,12 +133,11 @@ def home():
     background = ''.join(sections[3:5]).replace('class="resume-section"', 'class="home-section home-background-section"')
     background = re.sub(r'<h2>(.*?)<span>.*?</span>\s*</h2>', r'<h2>\1</h2>', background, flags=re.S)
     portfolio_html = (SITE / 'portfolio.html').read_text()
-    gallery = re.search(r'<section class="more-work" id="activity-gallery">.*?</section>', portfolio_html, re.S)[0]
     writings = re.search(r'<section class="more-work writings">.*?</section>', portfolio_html, re.S)[0]
     body = f'''<section class="home-hero"><div class="home-intro"><p class="eyebrow">BACKEND / AI APPLICATION DEVELOPER</p><h1>안녕하세요,<br>김재형입니다.</h1><h2>{t(2)}<br>{t(3)}</h2><div class="home-actions"><a class="button primary" href="resume.pdf" target="_blank" rel="noopener">이력서 PDF ↗</a><a class="button" href="portfolio.html">포트폴리오 ↗</a><a class="text-link" href="https://github.com/Martinel2">GitHub ↗</a></div></div><figure class="home-profile"><a class="home-portrait" href="assets/evidence/data-week-award.jpeg" target="_blank" rel="noopener" aria-label="김재형의 부산 데이터 위크 최우수상 수상 사진 원본 보기"><img src="assets/evidence/data-week-award.jpeg" alt="부산 데이터 위크 최우수상 수상 현장의 김재형" width="3024" height="4032" fetchpriority="high"></a><figcaption>부산 데이터 위크 2025 · 최우수상</figcaption></figure></section>
 <section class="home-about home-section" id="about"><p class="eyebrow">ABOUT ME</p><h2>어떤 개발자인가요?</h2><p>{t(5)}</p><p>{t(6)}</p><p>문서를 지식으로 활용하는 AI 워크스페이스 Fruition과, 의약품 정보를 쉽게 전달하는 복약 서비스 Pilltip을 만들었습니다.</p></section>
 <section class="home-section" id="projects"><p class="eyebrow">PROJECTS</p><h2>만들어 온 서비스</h2><div class="home-projects">{projects}</div></section>
-<div class="home-background">{background}</div>{gallery}{writings}'''
+<div class="home-background">{background}</div>{writings}'''
     (SITE / 'index.html').write_text(page('소개', '김재형의 개발 경험, 프로젝트, 활동과 이력서.', body))
 
 if __name__ == '__main__':
