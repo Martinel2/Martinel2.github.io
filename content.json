@@ -984,7 +984,7 @@
     }
   ],
   "overview": {
-    "eyebrow": "AI Agent · Data Pipeline · Spring",
+    "eyebrow": "AI Agent · 데이터 파이프라인 · Spring",
     "title": "JH's PORTFOLIO",
     "description": "각 프로젝트에 기여했던 부분에 대한 문제 상황, 검토한 대안, 선택 이유, 구현 구조와 검증 결과를 담았습니다.",
     "experience1Title": "PDF 표·수식 복원: 내부 평가 통과율 45.17% → 89.89%",
