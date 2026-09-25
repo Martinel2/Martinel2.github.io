@@ -398,3 +398,9 @@ body:has(.project-dialog[open]){overflow:hidden}
 @media(max-width:480px){.home-skills .skill-rows>div{grid-template-columns:1fr;gap:8px}}
 
 .resume-format-dialog{max-width:440px}.resume-formats{display:flex;flex-wrap:wrap;gap:12px;margin-top:20px}.resume-formats .button{justify-content:center;flex:1;background:white;margin-top:0}
+
+.language-switch{flex-shrink:0;border:1px solid var(--line,#dce2ec);border-radius:6px;padding:6px 10px;font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap}
+html[lang="en"] .home-intro h1{font-size:clamp(36px,6vw,64px)}
+@media(max-width:600px){.header{flex-wrap:wrap}.header nav{order:3;width:100%;justify-content:center;gap:16px}.language-switch{margin-left:auto}}
+
+@media print{.language-switch{display:none}}

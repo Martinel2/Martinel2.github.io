@@ -3,8 +3,11 @@ import {fileURLToPath} from 'node:url';
 import {Document, Packer, Paragraph, TextRun, ExternalHyperlink, ImageRun, Table, TableRow, TableCell, WidthType, BorderStyle, Footer, PageNumber, TabStopType} from 'docx';
 
 // Read the already prepared PDF sheets so wording and page grouping have one source.
-export async function buildResumeDocx(page) {
-  await writeFile('artifacts/resume-docx-source.json', JSON.stringify(await page.$$eval('.sheet-content', els=>els.map(el=>el.innerText))));
+export async function buildResumeDocx(page, lang = 'ko') {
+  const name=lang==='en'?'Jaehyeong Kim':'김재형';
+  const dir=lang==='en'?'site/en':'site';
+  const suffix=lang==='en'?'-en':'';
+  await writeFile(`artifacts/resume-docx-source${suffix}.json`, JSON.stringify(await page.$$eval('.sheet-content', els=>els.map(el=>el.innerText))));
   const sheets = await page.$$eval('.sheet-content', elements => {
     const inline = node => {
       if (node.nodeType === Node.TEXT_NODE) return node.textContent.trim() ? [{text:node.textContent}] : [];
@@ -80,9 +83,9 @@ export async function buildResumeDocx(page) {
   }
   const sections=[];
   for(const sheet of sheets)sections.push({properties:{page:{size:{width:11906,height:16838},margin:{top:737,bottom:907,left:794,right:794,footer:454}}},
-    footers:{default:new Footer({children:[new Paragraph({tabStops:[{type:TabStopType.RIGHT,position:10318}],children:[new TextRun({text:'김재형 · Backend / AI Application Developer\t',size:14,color:'7D8DA3'}),new TextRun({children:[PageNumber.CURRENT,' / ',PageNumber.TOTAL_PAGES],size:14,color:'7D8DA3'})]})]})},
+    footers:{default:new Footer({children:[new Paragraph({tabStops:[{type:TabStopType.RIGHT,position:10318}],children:[new TextRun({text:name+' · Backend / AI Application Developer\t',size:14,color:'7D8DA3'}),new TextRun({children:[PageNumber.CURRENT,' / ',PageNumber.TOTAL_PAGES],size:14,color:'7D8DA3'})]})]})},
     children:await paragraphs(sheet)});
-  const doc=new Document({creator:'김재형',title:'김재형 이력서',styles:{default:{document:{run:{font:{ascii:'Arial',hAnsi:'Arial',eastAsia:'맑은 고딕'},size:16,color:'203047',language:{value:'ko-KR',eastAsia:'ko-KR'}},paragraph:{spacing:{after:45,line:190}}}}},sections});
-  await writeFile('site/resume.docx',await Packer.toBuffer(doc));
-  console.log('Built editable site/resume.docx from the PDF sheets.');
+  const doc=new Document({creator:name,title:name+(lang==='en'?' Resume':' 이력서'),styles:{default:{document:{run:{font:{ascii:'Arial',hAnsi:'Arial',eastAsia:'맑은 고딕'},size:16,color:'203047',language:{value:lang==='en'?'en-US':'ko-KR',eastAsia:'ko-KR'}},paragraph:{spacing:{after:45,line:190}}}}},sections});
+  await writeFile(dir+'/resume.docx',await Packer.toBuffer(doc));
+  console.log(`Built editable ${dir}/resume.docx from the PDF sheets.`);
 }

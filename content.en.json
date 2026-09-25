@@ -1,0 +1,781 @@
+{
+  "updated": "2026.09",
+  "cases": [
+    {
+      "id": "fruition-document",
+      "project": "Fruition",
+      "category": "PDF conversion · Data pipeline",
+      "title": "PDF → Markdown: internal pass rate 45.17% → 89.89%",
+      "short": "PDF conversion: pass rate 45.17% → 89.89%",
+      "period": "2026.07 — 2026.09",
+      "summary": "To use research papers as knowledge, PDF-to-Markdown conversion had to preserve table values and equations. I traced omissions introduced during AI repair and split processing paths by content type and original layout.",
+      "tags": [
+        "Open-source PDF conversion: AnyDoc, Docling",
+        "LLM API",
+        "Python",
+        "LLM-as-a-Judge"
+      ],
+      "problem": "Using research papers as service knowledge required Markdown that preserved not only body text but also tables, equations and figures.",
+      "diagram": "flowchart TD\n A[Original PDF] --> B[Separate text, tables, equations and figures]\n B --> C[Preserve text context and position]\n B --> D[AI reads original table and equation regions]\n B --> E[Preserve original figures]\n C --> F[Reassemble in original order]\n D --> F\n E --> F\n F --> G{Check markers and missing content}\n G -->|Pass| H[Converted document]\n G -->|Mismatch| I[Keep original content for that region]",
+      "diagramCaption": "A conceptual view of processing by content type and reassembling at the original positions. This is the current design; experiments did not all use the same path.",
+      "resultTitle": "Pass rate against 30 original pages: 45.17% → 89.89%",
+      "result": "Split the same papers into 445 evaluation units covering body text, tables, equations and other content, then compared them with the originals. The existing Docling output and improved pipeline output were evaluated with method names hidden.",
+      "metrics": [
+        [
+          "Existing Docling",
+          "45.17%",
+          "30 pages total"
+        ],
+        [
+          "Improved pipeline",
+          "89.89%",
+          "30 pages total"
+        ],
+        [
+          "Missing regions",
+          "4 → 1",
+          "30 pages total"
+        ]
+      ],
+      "tradeoff": "Internal LLM evaluation of 4 PDFs (30 pages). Minor differences were allowed for text, headings and figures; tables and equations had to match in values, symbols and structure.",
+      "experiments": [
+        [
+          "Selective repair and missed errors",
+          "Open-source PDF-to-Markdown conversion damaged table row/column relationships and equations. I needed a way to repair errors without processing everything again.",
+          "Selected damaged regions for AI repair, then evaluated repaired and untouched regions separately. Of 96 repaired regions, 85 passed, but 107 errors or omissions remained in untouched content. A separate experiment adding OCR comparison raised the pass rate from 80.00% to 97.53%, but also selected 50 correct regions for repair; the sum of processing-stage times was about 12 minutes 35 seconds.",
+          "Selecting repair targets missed errors, and extra checks to catch them added cost. I decided to test whether having AI read every original page could avoid this dependence on damage detection."
+        ],
+        [
+          "Table/equation errors and cost in full-page AI conversion",
+          "Selective repair missed errors. Adding OCR checks also flagged correct content, increasing evaluation time and cost.",
+          "Full AI conversion of 25 research PDFs (415 pages) achieved a 91.92% content-preservation pass rate. However, only 58.84% of tables and equations fully matched in values and structure, and processing every page incurred substantial API usage.",
+          "Rather than send all content through the same AI path, I decided to use AI only where needed for body text and give tables and equations inputs that preserved their structure. I looked for fast text extraction with selective AI repair."
+        ],
+        [
+          "Comparing text extraction and adopting AnyDoc",
+          "Full-page AI processing still left table/equation errors and required sending all body text to the model. I needed fast text extraction alongside separate table/equation repair.",
+          "I found AnyDoc on Threads and, after seeing its GitHub comparison with Docling, tested it on the same 4 PDFs (30 pages).\n\nThe recorded Docling run took 134.19s, while AnyDoc text extraction took 1.68s, about 80 times shorter. Docling’s time also included OCR and table analysis. One AnyDoc document had garbled characters because the PDF lacked mappings from character codes to actual characters.",
+          "The processing scopes differed, so this was not an 80-fold improvement in complete conversion. Still, AnyDoc was useful for fast text extraction. I kept separate table/equation repair, switched body extraction to AnyDoc, used AI on garbled or misordered pages, and preserved original figures."
+        ]
+      ],
+      "links": [
+        {
+          "label": "Trying a small LLM for PDF → Markdown (Korean)",
+          "url": "https://velog.io/@kkuldangi3/sllm%EA%B3%BC-Router"
+        },
+        {
+          "label": "Trying the open-source PDF converter AnyDoc (Korean)",
+          "url": "https://velog.io/@kkuldangi3/PDF-%EB%B3%80%ED%99%98-%EC%98%A4%ED%94%88%EC%86%8C%EC%8A%A4-AnyDoc%EC%9D%84-%EC%82%AC%EC%9A%A9%ED%95%B4%EB%B3%B4%EC%9E%90"
+        }
+      ]
+    },
+    {
+      "id": "fruition-jev-evidence",
+      "project": "Fruition",
+      "category": "AI Agent · RAG · Jev",
+      "title": "RAG evidence coverage: 66.25% → 91.25%, with 75% less time after tuning",
+      "short": "RAG evidence coverage: 66.25% → 91.25%",
+      "period": "2026.09",
+      "summary": "Jev improved both accuracy and speed when routing user requests to tasks such as questions or edits. I then applied it to RAG evidence selection, increasing coverage from 66.25% to 91.25%, and reduced its added latency by tuning candidates and parallel batches.",
+      "tags": [
+        "Jev 1.13.0",
+        "BGE-M3",
+        "BM25",
+        "RAG",
+        "Quality evaluation"
+      ],
+      "problem": "To choose appropriate tasks and answer evidence more reliably, I evaluated Jev first for routing and then expanded it to RAG.",
+      "diagram": "flowchart TD\n Q[User question] --> S[Collect semantic and keyword search candidates]\n S --> C[Top 300 candidates]\n C --> J[Jev selects evidence in up to 4 parallel batches]\n J --> E{Sufficient evidence?}\n E -->|Yes| A[Pass selected evidence to answer generation]\n E -->|No| N[No evidence]\n",
+      "diagramCaption": "The evaluated evidence-selection design. Reference answers were used only for evaluation, never as retrieval or model inputs.",
+      "resultTitle": "Questions with sufficient evidence: 53/80 → 73/80; total median time 2.251s",
+      "result": "On a self-authored golden set of 80 answerable questions, the share with evidence supporting every required fact rose from 66.25% to 91.25%. On a separate 20 unanswerable questions, false evidence returns fell from 20 to 0. The improved selector was still slower than the original, but I chose Jev because accuracy mattered more to the service.\n\nI also tried grouping equivalent expressions: correct answers stayed similar on 76 questions (71 previously, 72 with Jev), while median decision time fell from 8.162s to 0.254s.",
+      "metrics": [
+        [
+          "Evidence coverage (LLM evaluation on golden set)",
+          "66.25% → 91.25%",
+          "Original selector 53/80 → tuned Jev 73/80"
+        ],
+        [
+          "Jev evidence-selection time",
+          "Median 9.090s → 2.251s",
+          "500 candidates, sequential → 300 candidates, 4 parallel batches"
+        ],
+        [
+          "False evidence returns on 20 unanswerable questions",
+          "20 → 0",
+          "Original selector → tuned Jev"
+        ]
+      ],
+      "tradeoff": "The time reduction compares Jev settings before and after tuning.",
+      "links": [
+        {
+          "label": "Introducing Jev · TypeSafe AI",
+          "url": "https://typesafe.ai/blog/introducing-system-one-models-and-jev"
+        }
+      ],
+      "experiments": [
+        [
+          "Routing comparison and the decision to try RAG",
+          "Some questions were misclassified as document edits, leading to the wrong action. Task types and additional conditions needed to be selected more accurately and quickly.",
+          "Applied Jev, a choice-based decision model released on September 14, to routing questions, document edits, document creation and folder organization.\n\nAcross 98 requests, correct task types and additional conditions totaled 77 for the existing JSON approach, 63 for GPT-5-nano given the same options, and 81 for Jev. Median decision time improved from 8.967s to 0.658s.",
+          "Jev showed promise in both accuracy and speed. I decided to test it on evidence selection, which previous retrieval changes had not solved."
+        ],
+        [
+          "Full-corpus inspection: evidence coverage on all 90 answerable questions",
+          "Using the original question for retrieval and increasing semantic-score weight raised top-1 correct retrieval from 50 to 57 out of 110 questions. However, the experiment had some bias and did not establish reliable evidence selection on new questions.",
+          "Tested whether Jev could find evidence missed by retrieval. It inspected all 2,020 evidence units in a test Wiki without retrieval filtering and returned at most 8, matching the existing return limit.\n\nIn a semantic evaluation allowing paraphrases, coverage on 90 answerable questions rose from 24/90 (26.7%) to 90/90 (100%). It returned no evidence for all 10 unanswerable questions. Median processing time was 1.511s for the original approach and 5.338s for Jev. Jev processed 26 batches of 80, with up to 4 in parallel.",
+          "Full-corpus access found the evidence, but inspecting everything per question would increase calls as documents grew. The test also needed better controls for bias. I decided to reduce candidates through retrieval first, rather than use the 90-question result alone to set the deployment scope."
+        ],
+        [
+          "Controlled comparison on 500 candidates: 87.50% coverage",
+          "The full-corpus test needed 26 batches per question. Questions were concentrated in certain technical documents and included document titles. The original search inspected only some pages while Jev saw all evidence, confounding judgment quality with access scope. Both candidate count and comparison conditions needed control.",
+          "Created 100 new questions from 9 papers without reusing earlier questions: 63 answerable from one paper, 17 requiring two papers, and 20 unanswerable. Questions, reference answers and required facts were fixed before runs.\n\nAfter deduplication, BGE-M3 and BM25 selected up to 500 candidates once; both methods received identical text and metadata. The original selector could inspect every candidate page, and both methods returned at most 8 untruncated evidence passages. Reference answers were excluded from retrieval and Jev inputs. GPT and Gemini graded independently without seeing method names or competing outputs, and run order alternated.\n\nGPT-graded coverage rose from 53/80 (66.25%) to 70/80 (87.50%); Gemini also showed improvement, from 52/80 to 74/80. False evidence returns on unanswerable questions fell from 20 to 1. Median time including candidate preparation was 0.431s for the original selector and 9.090s for Jev, which processed batches sequentially.",
+          "Jev selected better evidence even with matched candidates and return conditions, so I kept retrieval for candidate collection and Jev for final selection. Results on public papers and self-authored questions were not treated as general accuracy. Next I would tune candidate count and batch processing to reduce sequential waiting."
+        ],
+        [
+          "300 candidates and 4 parallel batches to reduce latency",
+          "Jev improved evidence selection, but sequential processing of up to 500 candidates raised median preparation-and-selection time to 9.090s versus 0.431s previously. I needed to reduce waiting without losing accuracy.",
+          "Reduced the candidate pool to the top 300 and ran up to 4 batches in parallel. Time fell to 2.251s, while questions with all required evidence increased from 70 to 73.",
+          "At 2.251s, the tuned approach was still slower than the original 0.431s. I considered fewer candidates and more parallel batches, but rejected further candidate reduction because some required evidence ranked below 250.\n\nI adopted Jev despite the added latency because accuracy was central to the service."
+        ]
+      ]
+    },
+    {
+      "id": "fruition-ingest",
+      "project": "Fruition",
+      "category": "Kafka asynchronous processing · AI pipeline",
+      "title": "Parallel document analysis: 282.11s → 73.89s",
+      "short": "Parallel analysis: 73.8% less processing time",
+      "period": "2026.09",
+      "summary": "Sequential Wiki generation could make large documents slow to process and hurt the user experience. I measured worker scaling and resource use, then set different scaling policies for document analysis and embedding generation.",
+      "tags": [
+        "AI pipeline",
+        "Kafka",
+        "PostgreSQL",
+        "Concurrency and memory"
+      ],
+      "problem": "I tested parallelism separately for document analysis and embedding generation to reduce waiting in the document-to-Wiki pipeline.",
+      "diagram": "flowchart TD\n A[Document processing request] --> K[Kafka distributes document jobs]\n K --> W[Multiple workers with per-worker request limits]\n W --> L[Lock writes within the same workspace]\n V[Embedding generation] --> G[Check contention on a shared GPU]\n L --> D[Check time, memory and content preservation]\n G --> D\n D --> R[Choose scaling policy per stage]",
+      "diagramCaption": "Evaluated scaling separately for Wiki generation and embedding generation.",
+      "resultTitle": "73.8% less analysis time for 4 documents, with about 4× memory",
+      "result": "With 4 workers and 2 concurrent requests each, analysis time for 4 documents fell by about 73.8%. Memory rose about fourfold, and output quality varied with configuration. Replaying saved AI responses for 100 documents under 3 queue configurations processed all 300 jobs without omissions or failures.\n\nI adopted a maximum of 4 workers: although memory increased about fourfold, I judged that the AI service’s MSA deployment on EKS could distribute the load.",
+      "metrics": [
+        [
+          "1 worker",
+          "282.11s",
+          "4 documents, 8 calls"
+        ],
+        [
+          "4 workers",
+          "73.89s",
+          "Up to 8 concurrent API requests"
+        ],
+        [
+          "Combined process memory",
+          "About 4×",
+          "351.7 → 1,401.0MiB"
+        ]
+      ],
+      "tradeoff": "One analysis run per configuration on the same documents. These are not end-to-end timings including storage and post-processing.",
+      "experiments": [
+        [
+          "Worker count: analysis time versus memory",
+          "Sequential processing left later documents waiting for earlier external AI responses. I needed to measure both speed gains and memory cost from adding workers.",
+          "Increasing workers from 1 to 4 for the same 4 documents reduced analysis time from 282.11s to 73.89s. Combined process memory rose from about 352MiB to 1,401MiB. I also checked that writes to the same workspace waited on a lock while different workspaces proceeded in parallel.",
+          "Processing another document during API waits helped, but resources grew with worker count. I decided to evaluate document workers separately from concurrent requests within each worker, and tested whether more concurrent requests could help further."
+        ],
+        [
+          "Extra concurrent requests and GPU contention",
+          "More workers reduced analysis time, but it still felt slow. It was unclear whether more requests per worker or more embedding processes on the same GPU would help.",
+          "With 4 workers, raising concurrent AI requests per worker from 2 to 4 increased time from 73.89s to 95.92s. Running 2 embedding processes on the same GPU also raised each process’s time from about 9.5s to 19–21s.",
+          "Analysis waiting on external responses and embeddings sharing a device behaved differently. Higher concurrency did not always improve speed, so I rejected these changes."
+        ]
+      ]
+    },
+    {
+      "id": "fruition-agent",
+      "project": "Fruition",
+      "category": "AI Agent · User-defined Skills · HITL · Prompt injection",
+      "title": "User-defined Agent Skills with controlled execution",
+      "short": "Agent Skills: authoring, validation and approval",
+      "period": "2026.08 - 2026.09",
+      "summary": "Built Agent Skills so users could define and reuse recurring document tasks, such as meeting notes. Connected instruction drafting and checks to user review and publication, followed by separate approval for actual changes.",
+      "tags": [
+        "LangGraph",
+        "Agent Skill",
+        "Prompt injection defenses",
+        "LLM Evaluation",
+        "Human-in-the-loop"
+      ],
+      "problem": "Built a workflow from Skill authoring and publishing to actual document changes, allowing users to define and reuse their own recurring tasks.",
+      "diagram": "flowchart TD\n U[User describes a recurring task] --> S[Draft Skill, mask personal data and check prompt injection]\n S --> P[User review and recheck on publication]\n P --> K[Store reusable instructions]\n Q[User requests document work] --> R[Router selects task and conditions]\n K -. Reuse when needed .-> R\n R --> E[Edit while preserving goal and scope]\n R --> F[Plan folder organization and compare with request]\n E --> V[Check format, edit scope, personal data and injection]\n V --> D[Show validated changes and diff]\n F --> D\n D --> A{User approval}\n A -->|Approve| W[Apply edits or organize folders]\n A -->|Cancel| N[Keep originals]",
+      "diagramCaption": "User-defined instructions and the document workflow that uses them. Executors do not reclassify the task; they validate proposed changes and apply them after user approval.",
+      "resultTitle": "Reusable tasks and approval workflow; editing passes 94/114 → 104/114",
+      "result": "Users can define recurring tasks, publish them as Skills and reuse them. The final instructions are rechecked on publication; actual document changes require a preview and user approval. In a plan–approve–execute check using 6 documents, folder changes occurred only after approval.\n\nEditing quality was evaluated separately on the same 114 drafts from 19 request types. The original implementation passed 94; improved edit-goal and retry inputs passed 98; adding semantic evaluation and rewriting passed 104. Evaluation checked request fulfillment and meaning preservation. Rewriting based on failure reasons was limited to one attempt, and a second failure returned no edit proposal.\n\nAI drafts instructions and edits, code checks permissions and execution scope, and users decide publication and final application.",
+      "metrics": [
+        [
+          "Original Agent",
+          "94 / 114",
+          "82.5%"
+        ],
+        [
+          "Code changes, without evaluator",
+          "98 / 114",
+          "86.0%"
+        ],
+        [
+          "Final implementation with evaluator",
+          "104 / 114",
+          "91.2%"
+        ]
+      ],
+      "tradeoff": "Normalized average editing-evaluation time increased from 11.11s to 18.92s. I accepted the latency while limiting rewrites.",
+      "links": [
+        {
+          "label": "Building user-defined Agent Skills (Korean)",
+          "url": "https://velog.io/@kkuldangi3/사용자가-직접-만드는-Agent-Skill-구현해보기"
+        },
+        {
+          "label": "The two sides of LLM evaluation for reliability (Korean)",
+          "url": "https://velog.io/@kkuldangi3/신뢰도를-위한-LLM-평가의-양면성"
+        }
+      ],
+      "processTitle": "Decisions and implementation",
+      "designSteps": [
+        {
+          "title": "Authoring and publishing user-defined instructions",
+          "problem": "Recurring tasks such as meeting notes vary by user; developers cannot prebuild every workflow.",
+          "judgment": "Let users define and reuse natural-language instructions instead of adding each workflow as a feature. Treat AI-generated instructions as proposals until users review them.",
+          "implementation": "Turned natural-language requests into reusable Markdown Skills. Users review and edit drafts; the Skill and version are stored on final publication.",
+          "verification": "Neither Skills nor temporary drafts persist in the DB before publication. Published instructions can be reused in later tasks."
+        },
+        {
+          "title": "Checking instructions for permission and approval bypasses",
+          "problem": "User instructions and reference documents could contain personal data or directions to bypass permissions and approval. Such intent can be phrased many ways, and users can edit drafts after review.",
+          "judgment": "Use code for explicit risk and permission checks, and an LLM to detect rephrased bypass intent. Do not allow publication based only on an earlier check after users edit the content.",
+          "implementation": "Applied rule checks to input and reference documents. The server verified that risky phrases reported by the LLM existed in the source. After checking access and original documents, it sent only necessary structure to the model. Publication reran checks on the final content. Risky phrases were not silently deleted; only user-requested regeneration removed them and rechecked the result.",
+          "verification": "Showed blocked input and the problematic location to users, letting them edit it themselves or request regeneration."
+        },
+        {
+          "title": "Previewing changes and applying them after approval",
+          "problem": "Publishing a reviewed Skill does not approve every later document change. Users still need to inspect the target documents and proposed modifications.",
+          "judgment": "Separate instruction publication from approval of actual changes. Keep task classification in the router and execution in the executor, while letting users inspect what will change.",
+          "implementation": "Displayed before/after diffs for edits and a folder-and-document move plan for organization. Code checked output format and edit scope; only approved changes were executed.",
+          "verification": "With 6 documents, the plan–approve–execute check made no changes before approval. After approval, it created 3 topic folders and moved the documents."
+        }
+      ]
+    },
+    {
+      "id": "pilltip-data",
+      "project": "Pilltip",
+      "category": "Data pipeline · GPT Batch API",
+      "title": "Drug data pipeline: $200 estimated → $11.18 spent",
+      "short": "Drug data conversion: $200 estimated → $11.18 spent",
+      "period": "2025.07 — 2025.07",
+      "summary": "Built a data preparation pipeline to rewrite difficult drug information in plain language. Merged exact duplicates and then equivalent sentences, filled the missing 5% using ingredient-specific precautions, and converted unique text once before mapping it back to each drug. Actual API spending was $11.18.",
+      "tags": [
+        "Data pipeline",
+        "Fuzzy Matching",
+        "GPT Batch API",
+        "Data analysis"
+      ],
+      "problem": "Built a feature to rewrite about 44,000 drug records into explanations users could understand.",
+      "diagram": "flowchart TD\n A[Original drug text: 1GB] --> B[Split into sentence blocks]\n B --> C[Merge exact duplicate sentences]\n C --> D[Merge equivalent sentences, preserving numbers]\n B --> M[Keep drug ID to block ID mappings]\n D --> U[Deduplicated conversion input: 326MB]\n U --> E[Find missing information: about 5%]\n E --> F[Clean and fill precautions by ingredient]\n F --> G[Convert unique sentences with GPT Batch API]\n G --> R[Map converted text back to each drug]\n M --> R",
+      "diagramCaption": "Removed exact and semantic duplicates separately, filled missing information by ingredient, and mapped converted text back to each drug.",
+      "resultTitle": "Conversion input: 1GB → 326MB; actual API spend: $11.18",
+      "result": "Completed conversion for $11.18 in actual API spending versus about $200 estimated for all original text. Removed exact and semantic duplicates, then filled the missing 5% with cleaned ingredient-specific precautions. Reusing converted unique sentences kept the feature within budget without reducing the set of drugs covered.",
+      "metrics": [
+        [
+          "Estimated cost for original text",
+          "About $200",
+          "Estimate"
+        ],
+        [
+          "Actual API spending",
+          "$11.18",
+          "Conversion work"
+        ],
+        [
+          "Input after preprocessing",
+          "326MB",
+          "Original: 1GB"
+        ]
+      ],
+      "tradeoff": "About $200 was the upfront estimate; $11.18 was actual spending. Labor for 7 days of preprocessing is excluded.",
+      "image": {
+        "src": "assets/projects/pilltip-blocks.png",
+        "alt": "Output showing drug text split into indexed blocks with drug ID to block ID mappings",
+        "caption": "Processing output preserving unique sentence blocks and their links to each drug.",
+        "width": 1578,
+        "height": 1434
+      },
+      "processTitle": "Problem analysis and implementation",
+      "experiments": [
+        [
+          "Removing exact duplicate sentences",
+          "Converting about 44,000 records totaling 1GB was estimated to cost about $200 in API usage. I needed to cover all drugs within budget.",
+          "Examined 100 records and found about 70% duplicate content. Used this sample and a work plan to secure 7 days for preprocessing. Split text into sentence blocks, merged exact matches and preserved links from each drug to its blocks.",
+          "Convert repeated sentences once and reuse them rather than cover fewer drugs. Since non-identical duplicates remained, the next step was to identify equivalent sentences with different wording."
+        ],
+        [
+          "Merging semantically equivalent sentences",
+          "Exact deduplication left sentences that differed only in endings or phrasing. I needed to avoid repeated conversion while preserving dosage and numeric differences.",
+          "Normalized sentence endings and compared similarity to group equivalent sentences. Preserved drug-to-block mappings, handled dosages and numbers separately, and manually checked samples. Exact and semantic deduplication reduced input from 1GB to 326MB.",
+          "Reuse equivalent explanations while preserving drug-specific facts and numbers, rather than merge solely on string similarity. Next I checked missing information instead of stopping at deduplication."
+        ],
+        [
+          "Filling the missing 5% with ingredient-specific precautions",
+          "About 5% of information was missing after earlier processing, leaving gaps in descriptions for the full target set.",
+          "Inspected missing entries and noticed that drugs with the same ingredient shared precautions. Collected and cleaned data for the missing ingredients, then processed it to fill the gaps.",
+          "Fill gaps by ingredient instead of excluding records. Shared ingredient precautions maintained coverage without repeatedly processing each drug."
+        ],
+        [
+          "GPT Batch API conversion and mapping results back to drugs",
+          "Deduplication reduced input, but I still needed to minimize model costs.",
+          "The work did not require immediate responses during service use, so batch waiting was acceptable. Converted unique sentences with GPT Batch API, then reused the preserved drug-to-block mappings to attach results to each drug. Actual API spending was $11.18 versus about $200 estimated for all original text.",
+          "Combined deduplication, ingredient-level gap filling and batch conversion to deliver the feature without reducing drug coverage."
+        ]
+      ]
+    },
+    {
+      "id": "pilltip-personalization",
+      "project": "Pilltip",
+      "category": "AI Agent · Sensitive data boundaries",
+      "title": "Medication chatbot: keeping health profiles out of external AI inputs",
+      "short": "Medication chatbot: health profiles kept internal",
+      "period": "2025.09 — 2025.9",
+      "summary": "Built a medication chatbot using RAG and AI orchestration for app integration. Separated symptom-based drug discovery from health-profile decisions, using the model for language understanding and code to control sensitive profile use.",
+      "tags": [
+        "Spring AI",
+        "Weaviate",
+        "RAG",
+        "AI Orchestration"
+      ],
+      "problem": "Built a chatbot that finds drug information from natural-language symptoms and personalizes it using health profiles.",
+      "diagram": "flowchart TD\n S[Natural-language symptoms] --> V[Weaviate: semantic search of indications]\n P[Pregnancy, medications and underlying conditions] --> T[Internal tool: profile decisions]\n V --> R[Personalized information]\n T --> R\n B[External LLM input boundary] -.-> X[Exclude these profile fields]\n classDef accent fill:#e5edff,stroke:#4164c8,color:#142b60;\n class T,B,X accent;",
+      "diagramCaption": "A conceptual view of responsibilities and data boundaries, not the exact call sequence or a guarantee against every form of data leakage.",
+      "resultTitle": "Separating symptom search from internal health-profile decisions",
+      "result": "Enabled natural-language drug discovery while excluding pregnancy status, current medications and underlying conditions from external LLM inputs. Explicitly separated information sent to AI from information evaluated by internal code.",
+      "metrics": [],
+      "tradeoff": "Profile-rule changes require code updates. I prioritized keeping those personal data fields out of external AI inputs and retained profile decisions in internal code.",
+      "processTitle": "Design and implementation",
+      "designSteps": [
+        {
+          "title": "Semantic search connecting symptoms to drug indications",
+          "problem": "Everyday symptom descriptions and drug indications use different words for the same meaning. Related information needed to be found without exact keyword matches.",
+          "judgment": "Use semantic search to connect symptoms and indications, with separate processing paths for the information each question needs.",
+          "implementation": "Stored drug indications in Weaviate for semantic symptom search. Built paths for drug discovery, medication risks and dosage information according to the question.",
+          "verification": "Implemented natural-language symptom search and routing to the appropriate information-processing path."
+        },
+        {
+          "title": "Internal health-profile processing, separate from external AI inputs",
+          "problem": "Personalization required pregnancy status, medications and underlying conditions, but sending those profiles to an external LLM risked exposing sensitive information.",
+          "judgment": "Separate language understanding from profile-condition decisions. Keep profile decisions in internal code where inputs and rules can be controlled directly.",
+          "implementation": "Excluded pregnancy, medication and underlying-condition fields from external LLM inputs. Connected internal profile decisions to symptom search results to provide personalized information.",
+          "verification": "Separated processing paths so those health-profile fields stayed out of external LLM inputs while remaining available for internal personalization."
+        }
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "name": "Fruition",
+      "label": "01 / AI KNOWLEDGE WORKSPACE",
+      "description": "An AI workspace that organizes uploaded documents into an LLM-generated Wiki, answers questions using source evidence through RAG, and edits documents in natural language.",
+      "href": "#fruition-agent",
+      "contributions": [
+        [
+          "Lead for all AI features",
+          "Led design, development and evaluation across PDF conversion, Wiki generation and organization, retrieval and grounded answers, and the document-editing Agent."
+        ],
+        [
+          "Team responsibilities",
+          "Teammates built the frontend and backend; an external designer created the UI design. These screens are team deliverables. I owned all AI features behind them."
+        ],
+        [
+          "MSA design contribution",
+          "Proposed the initial architecture, then finalized service boundaries, data ownership and communication with teammates and mentors."
+        ]
+      ],
+      "links": [
+        {
+          "label": "GitHub · local-pilot",
+          "url": "https://github.com/FruitionKR/local-pilot"
+        },
+        {
+          "label": "GitHub · AI repository",
+          "url": "https://github.com/FruitionKR/Fruition-ai"
+        }
+      ],
+      "gallery": [
+        {
+          "src": "assets/projects/fruition-workspace.jpg",
+          "alt": "Fruition document editor and AI assistant panel",
+          "caption": "Document editing and AI assistant — I led the AI features that interpret requests and generate and validate edits. Teammates implemented the editor and assistant UI.",
+          "width": 2000,
+          "height": 1125
+        },
+        {
+          "src": "assets/projects/fruition-wiki.jpg",
+          "alt": "Fruition document relationship graph and source evidence search",
+          "caption": "Wiki generation and retrieval — I led the AI features that organize and connect document knowledge and find evidence for questions. Teammates implemented the graph and search UI.",
+          "width": 2000,
+          "height": 1125
+        },
+        {
+          "src": "assets/projects/fruition-architecture.jpg",
+          "alt": "Fruition frontend, backend and AI service architecture",
+          "caption": "Service responsibilities — I led all AI features; teammates owned frontend and backend. We finalized MSA with mentors based on my initial design.",
+          "width": 2000,
+          "height": 1125
+        }
+      ],
+      "cover": {
+        "src": "assets/projects/fruition-slide-17.png",
+        "alt": "Fruition presentation, slide 17: AI document and knowledge workspace",
+        "width": 2880,
+        "height": 1620
+      }
+    },
+    {
+      "name": "Pilltip",
+      "label": "02 / PERSONALIZED MEDICATION",
+      "description": "A personalized AI medication service that explains drug information in plain language and helps users manage their own and their family’s medications and schedules.",
+      "href": "#pilltip-data",
+      "contributions": [
+        [
+          "Backend and AI development",
+          "Implemented drug-related backend features, reminders and logs, friend invitations, family profile switching, the data preparation pipeline and AI chatbot."
+        ],
+        [
+          "Team responsibilities",
+          "Teammates implemented the app and UI, questionnaires, user DB modeling, login and user features, and security including AES-GCM. The screens show their app; the features I built are listed below."
+        ],
+        [
+          "Drug modeling, search, autocomplete and risk information",
+          "Designed the drug DB and implemented search autocomplete with Elasticsearch and Redis, plus Drug Utilization Review (DUR) risk information."
+        ],
+        [
+          "Medication reminders and logs",
+          "Implemented reminders and medication logs using FCM."
+        ],
+        [
+          "Friends and family",
+          "Implemented deep-link friend invitations and family profile switching."
+        ],
+        [
+          "Data pipeline: $200 estimated → $11.18 spent, about 94% lower",
+          "Built a data preparation pipeline to rewrite all drug information covered by the service into friendly, everyday language."
+        ],
+        [
+          "RAG-based AI chatbot",
+          "Built an AI-orchestrated chatbot that retrieves relevant information and connects search and DUR checks according to each question."
+        ]
+      ],
+      "gallery": [
+        {
+          "src": "assets/projects/pilltip-search.jpg",
+          "alt": "Pilltip drug search results and personalized caution tags",
+          "caption": "Drug search and DUR — I owned the drug DB, search, autocomplete and risk information. My data pipeline rewrote descriptions in plain language. The image shows search results and caution tags.",
+          "width": 2000,
+          "height": 1125
+        },
+        {
+          "src": "assets/projects/pilltip-reminders.jpg",
+          "alt": "Pilltip medication schedules and taken/postponed logs",
+          "caption": "Medication reminders and logs — I implemented FCM notifications and medication records.",
+          "width": 2000,
+          "height": 1125
+        },
+        {
+          "src": "assets/projects/pilltip-family.jpg",
+          "alt": "Pilltip family profile switching and medication information",
+          "caption": "Family profiles — I implemented switching between family members to view their medication information, as well as deep-link friend invitations. This screen shows profile switching.",
+          "width": 2000,
+          "height": 1125
+        },
+        {
+          "src": "assets/projects/pilltip-chatbot.jpg",
+          "alt": "Pilltip chatbot architecture and conversation connecting question analysis, RAG and DUR tools",
+          "caption": "AI chatbot — I implemented orchestration between RAG search and DUR checks. This presentation example is not an evaluation of medical accuracy.",
+          "width": 2000,
+          "height": 1125
+        }
+      ],
+      "links": [
+        {
+          "label": "GitHub repository",
+          "url": "https://github.com/PillTipKR/Pilltip"
+        }
+      ],
+      "cover": {
+        "src": "assets/projects/pilltip-cover.png",
+        "alt": "Pilltip presentation cover",
+        "width": 1920,
+        "height": 1080
+      }
+    }
+  ],
+  "writings": [
+    {
+      "title": "Moving to MSA and learning from feedback",
+      "url": "https://velog.io/@kkuldangi3/MSA-전환과-피드백",
+      "label": "ARCHITECTURE / Data ownership",
+      "description": "Shifted from splitting by feature to defining data ownership. Documented both the benefits of asynchronous processing and the added operational burden."
+    },
+    {
+      "title": "Reflections on design thinking",
+      "url": "https://velog.io/@kkuldangi3/디자인-싱킹-회고",
+      "label": "PLANNING / Defining user problems",
+      "description": "Revisited feature-first planning and brought together the team’s difficulties finding documents to define the problem we would solve together."
+    }
+  ],
+  "resume": [
+    {
+      "title": "Introduction",
+      "fields": {
+        "text1": "RESUME / JAEHYEONG KIM",
+        "text2": "A developer who digs into root causes",
+        "text3": "and enjoys solving difficult problems",
+        "text4": "Backend Engineer · AI Application Developer",
+        "text5": "I enjoy taking a deep dive into problems.",
+        "text6": "I weigh accuracy, cost and processing time to choose an implementation that fits the service.",
+        "text7": "kkuldangi2@gmail.com",
+        "text8": "GitHub ↗",
+        "text9": "Blog ↗",
+        "text10": "Download resume PDF ↓",
+        "text131": "Download resume Word ↓"
+      }
+    },
+    {
+      "title": "Highlights",
+      "fields": {
+        "text11": "Highlights ",
+        "text12": "01 / PROFILE",
+        "text13": "PDF conversion pass rate: 45.17% → 89.89%",
+        "text14": "Compared selective repair with full AI conversion, then separated processing for body text, tables and equations. Improved content preservation in internal evaluations.",
+        "text15": "RAG evidence coverage: 66.25% → 91.25%",
+        "text16": "Questions with sufficient evidence increased from 53 to 73 out of 80 answerable questions versus hybrid retrieval. Tuning Jev candidates and concurrency reduced median time from 9.090s to 2.251s.",
+        "text17": "Drug description conversion: $200 estimated → $11.18 spent",
+        "text18": "Built a pipeline to deduplicate semantic text blocks, fill the missing 5% by ingredient, convert with GPT Batch API and map results back to drug IDs."
+      }
+    },
+    {
+      "title": "Projects",
+      "fields": {
+        "text19": "Projects ",
+        "text20": "02 / PROJECTS",
+        "text21": "Fruition",
+        "text22": "2026.04 — Present",
+        "text23": "LLM Wiki-based AI workspace · AI SW Maestro, 17th cohort",
+        "text24": "Team project / Lead for all AI features",
+        "text25": "Teammates built the frontend and backend. I proposed the initial MSA design and finalized service boundaries, data ownership and communication with teammates and mentors.",
+        "text114": "Converting and analyzing uploaded documents",
+        "text115": "Extracted and repaired PDFs for retrieval and grounded answers, and reduced waiting time when processing multiple documents.",
+        "text26": "PDF → Markdown conversion\nProblem: Open-source conversion damaged tables and equations; full AI conversion still had errors and high API usage.\nSolution: Compared PDF tools and adopted AnyDoc. Repaired damaged text with AI, processed tables and equations separately, and preserved original figures.\nResult: Internal pass rate on 30 PDF pages improved from 45.17% to 89.89%.",
+        "text28": "Parallel Wiki generation\nProblem: Later documents waited for earlier external AI responses.\nSolution: Compared worker counts and requests per worker. Capped workers at 4 to manage memory; rejected extra concurrency and GPU parallelism that slowed processing.\nResult: Analysis of 4 documents fell from 282.11s to 73.89s (about 74% less).",
+        "text116": "Improving retrieval for grounded AI answers",
+        "text117": "Retrieved relevant passages from stored documents for AI answers. Improved evidence coverage and recognition of questions the documents could not answer.",
+        "text27": "Evidence selection for RAG\nProblem: Retrieval missed required facts and returned evidence for unanswerable questions.\nSolution: Applied Jev after routing tests, then controlled candidates and return limits after a full-corpus trial. Tuned to 300 candidates and up to 4 parallel batches.\nResult: Across 9 papers, coverage on 80 answerable questions rose from 66.25% to 91.25%. False evidence returns on 20 unanswerable questions fell from 20 to 0. Median time before/after Jev tuning: 9.090s → 2.251s.",
+        "text118": "AI Agent and reusable Skills",
+        "text119": "Built natural-language document editing and folder organization, with changes applied after user approval and recurring tasks saved as reusable instructions.",
+        "text29": "User-defined task instructions (Skills)\nProblem: Developers cannot build every recurring workflow users need.\nSolution: Built drafting, review and publishing of natural-language instructions, with checks against bypassing permissions or approval. Document changes require separate preview and approval.\nResult: Published Skills became available to the Agent. In a 6-document check, no changes occurred before approval; 3 folders were created and documents moved afterward.",
+        "text30": "Document editing quality\nProblem: Some generated drafts did not fulfill editing intent.\nSolution: Improved how edit goals and retry inputs were passed, then added semantic evaluation and at most one rewrite.\nResult: Passes on the same 114 drafts increased from 94 to 104.",
+        "text120": "Service responsibilities and communication",
+        "text121": "Defined responsibilities, data ownership and communication for services including AI. Proposed the initial design and finalized it with teammates and mentors.",
+        "text35": "Proposed the initial MSA design, then jointly finalized service boundaries, data ownership and communication with teammates and mentors.",
+        "text36": "Internal evaluations. RAG timing compares Jev before/after tuning. Parallel document timing covers analysis only, excluding storage and post-processing.",
+        "text37": "PDF conversion ↗",
+        "text39": "Parallel document processing ↗",
+        "text40": "Agent Skill design ↗",
+        "text43": "RAG evidence selection ↗",
+        "text44": "Pilltip",
+        "text45": "2025.03 — 2025.12",
+        "text46": "Personalized AI medication service · Pusan National University",
+        "text47": "Team project / Backend and AI application development",
+        "text112": "Teammates owned Android, questionnaires, user DB modeling, login and other user features, and security including AES-GCM. The features below are my work.",
+        "text122": "Drug data preparation pipeline",
+        "text123": "Rewrote about 44,000 drug records in plain language. Converted repeated explanations once and mapped them back to each drug to reduce cost.",
+        "text50": "Problem: Converting all 44,000 drug records was estimated to cost about $200 in API calls.\nSolution: Removed exact duplicates, then semantically equivalent sentences. Filled the missing 5% with ingredient-specific precautions, converted via GPT Batch API and mapped results back to each drug.",
+        "text51": "Result: Conversion input shrank from 1GB to 326MB. Actual API spending was $11.18 versus about $200 estimated for all original text.",
+        "text54": "Estimated cost versus actual spending; preprocessing labor is excluded.",
+        "text124": "Medication chatbot with health-profile personalization",
+        "text125": "Found drug and medication information from natural-language symptoms. Evaluated health profiles internally, separately from information sent to external AI.",
+        "text52": "Problem: Everyday symptom language differed from drug indications, while sensitive health data needed to stay out of external AI inputs.\nSolution: Used Weaviate semantic search and AI orchestration for drug discovery, medication risks and dosage. Evaluated pregnancy, current medications and underlying conditions in internal code.\nResult: Implemented personalized symptom-based search while excluding those profile fields from external LLM inputs.",
+        "text126": "Backend implementation",
+        "text127": "Built server features for drug search, risk information, medication reminders and logs, and family profiles. Integrated with teammates responsible for the mobile app, users and security.",
+        "text48": "Designed the drug DB and implemented drug search, autocomplete and Drug Utilization Review (DUR) risk information with Java and Spring Boot.",
+        "text49": "Implemented FCM medication reminders and logs, deep-link friend invitations, and family profile switching.",
+        "text53": "Shared API documentation, meeting notes and architecture decision records in Notion.",
+        "text55": "Data pipeline case study ↗",
+        "text56": "Personalization case study ↗"
+      }
+    },
+    {
+      "title": "Skills",
+      "fields": {
+        "text57": "Skills ",
+        "text58": "03 / SKILLS",
+        "text59": "Backend",
+        "text60": "Java · Spring Boot · Spring AI · Python",
+        "text113": "Authentication and authorization (Spring Security, OAuth 2.0)",
+        "text128": "Personal shopping project · Login ↗",
+        "text129": "Todo web app · OAuth ↗",
+        "text61": "AI ",
+        "text62": "&",
+        "text63": " Search",
+        "text64": "LangChain · LangGraph · RAG · LLM Evaluation · Jev",
+        "text65": "Elasticsearch · Weaviate · BGE-M3 · BM25",
+        "text66": "Data ",
+        "text67": "&",
+        "text68": " Infra",
+        "text69": "MySQL · PostgreSQL · Redis · Kafka",
+        "text70": "Docker · Docker Compose · GitHub Actions"
+      }
+    },
+    {
+      "title": "Activities & contributions",
+      "fields": {
+        "text71": "Activities & contributions ",
+        "text72": "04 / EXPERIENCE",
+        "text73": "2026.06 — 2026.06",
+        "text74": "Rhwp open-source contributions",
+        "text75": "Investigated bugs, submitted fixes and addressed CI in a Rust HWP/HWPX project. Fixed textFlow attributes of images, tables and shapes being reset after saving.",
+        "text76": "PR #1213 · Merged ↗",
+        "text77": "PR #1351 · Submitted ↗",
+        "text78": "2025.03 — 2026.01",
+        "text79": "APPTIVE, Pusan National University",
+        "text80": "Backend mentee and mentor. Led 6 mentoring and code-review sessions for 12 mentees. Helped revise the curriculum to strengthen HTTP, Servlet, REST API and database foundations.",
+        "text130": "APPTIVE Backend Mentor Merit Award · 2026.01.09",
+        "text81": "2025.11 / 2025.07",
+        "text82": "SK AI SUMMIT · K-ICT WEEK in Busan",
+        "text83": "Represented Pusan National University at the Pilltip booth, demonstrating the service and answering technical questions."
+      }
+    },
+    {
+      "title": "Awards",
+      "fields": {
+        "text84": "Awards ",
+        "text85": "05 / AWARDS",
+        "text86": "2025.10",
+        "text87": "Capstone Design Gold Award",
+        "text88": "Software & AI division / College of Information and Biomedical Engineering, Pusan National University",
+        "text89": "2025.09",
+        "text90": "Busan DATA WEEK Top Excellence Award",
+        "text91": "Data utilization case competition / Busan Techno Park",
+        "text92": "2025.09",
+        "text93": "AI LAUNCH Career School Startup Hackathon Encouragement Award",
+        "text94": "KRYPTON X x Root Impact x Google.org",
+        "text95": "2025.08",
+        "text96": "SW University Digital Competition Sponsor Award",
+        "text97": "SW University Council"
+      }
+    },
+    {
+      "title": "Education & certification",
+      "fields": {
+        "text98": "Education & certification ",
+        "text99": "06 / EDUCATION",
+        "text100": "2022.02 — 2026.02 (Transfer)",
+        "text101": "Pusan National University",
+        "text102": "GPA 4.12 / 4.5",
+        "text103": "2019.03 — 2022.02 (Withdrew)",
+        "text104": "Daegu University",
+        "text105": "GPA 4.2 / 4.5",
+        "text106": "2025.09",
+        "text107": "Engineer Information Processing",
+        "text108": "Human Resources Development Service of Korea",
+        "text109": "Explore the problems, experiments and technical decisions behind these projects.",
+        "text110": "Read portfolio ↗"
+      }
+    }
+  ],
+  "overview": {
+    "eyebrow": "AI Agents · Data pipelines · Spring",
+    "title": "JH's PORTFOLIO",
+    "description": "The problems I encountered, the experiments and results, and the decisions that shaped each implementation.",
+    "experience1Title": "PDF tables and equations: pass rate 45.17% → 89.89%",
+    "experience1Description": "Designed and evaluated a pipeline that extracts, repairs and reassembles document regions.",
+    "experience2Title": "AI answer evidence: coverage 66.25% → 91.25% · about 75% faster after tuning",
+    "experience2Description": "Improved evidence coverage on 80 answerable questions versus the existing approach. Tuning candidates and parallel batches reduced median Jev time from 9.090s to 2.251s.",
+    "experience3Title": "Drug description API cost: about $200 estimated → $11.18 spent",
+    "experience3Description": "Removed exact and semantic duplicates, filled missing data by ingredient, then used Batch API and reused results across drugs.",
+    "profileRole": "Backend · AI Application Developer",
+    "profileLine1": "I learn from failures to find better solutions.",
+    "profileLine2": "I test hypotheses, evaluate outcomes and improve through feedback."
+  },
+  "activities": {
+    "title": "Awards and exhibitions",
+    "description": "Exhibited our services and shared project outcomes. Select a photo to view the original.",
+    "gallery": [
+      {
+        "src": "assets/evidence/pilltip-exhibition.jpeg",
+        "width": 4000,
+        "height": 3000,
+        "alt": "Pilltip chatbot demonstration at the exhibition booth",
+        "caption": "Demonstrated Pilltip and answered technical questions as part of Pusan National University’s representative exhibition team.",
+        "title": "Pilltip exhibition"
+      },
+      {
+        "src": "assets/evidence/data-week-award.jpeg",
+        "width": 5712,
+        "height": 4284,
+        "alt": "Busan DATA WEEK 2025 award ceremony",
+        "caption": "2025.09.23 · Top Excellence Award at the Busan DATA WEEK data utilization case competition.",
+        "title": "Busan DATA WEEK Top Excellence Award"
+      }
+    ]
+  },
+  "home": {
+    "hero": {
+      "eyebrow": "BACKEND / AI APPLICATION DEVELOPER",
+      "greeting": "Hello,",
+      "nameLine": "I’m Jaehyeong Kim."
+    },
+    "about": {
+      "eyebrow": "ABOUT ME",
+      "title": "About me",
+      "description": "I contributed to Fruition, an AI workspace that turns documents into knowledge, and Pilltip, a medication service that explains drug information in plain language."
+    },
+    "sections": {
+      "skillsEyebrow": "SKILLS",
+      "projectsEyebrow": "PROJECTS",
+      "projectsTitle": "Services I have built",
+      "writingsEyebrow": "ENGINEERING JOURNAL",
+      "writingsTitle": "Project reflections",
+      "writingsLinkLabel": "Read all blog posts (Korean)",
+      "writingsUrl": "https://velog.io/@kkuldangi3/posts"
+    },
+    "navigation": {
+      "homeLabel": "Home",
+      "aboutLabel": "About",
+      "skillsLabel": "Skills",
+      "projectsLabel": "Projects",
+      "activitiesLabel": "Activities"
+    },
+    "actions": {
+      "resume": {
+        "label": "Resume",
+        "dialogTitle": "Resume",
+        "pdfLabel": "View PDF",
+        "docxLabel": "Download Word"
+      },
+      "portfolio": {
+        "label": "Portfolio"
+      },
+      "linkedin": {
+        "label": "LinkedIn",
+        "url": "https://www.linkedin.com/in/%EC%9E%AC%ED%98%95-%EA%B9%80-b75920345/"
+      },
+      "github": {
+        "label": "GitHub",
+        "url": "https://github.com/Martinel2"
+      }
+    },
+    "projectLabels": {
+      "affiliationLabel": "Affiliation",
+      "roleLabel": "Role",
+      "detailsLabel": "Contributions & results"
+    }
+  }
+}

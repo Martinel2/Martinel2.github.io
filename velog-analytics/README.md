@@ -90,3 +90,7 @@ Node 22.13 이상 필요. 테스트는 실제 메모리 SQLite에 기록하고 �
 Cloudflare 지역 메타데이터는 테스트 값으로 주입합니다. 로컬 통과가 실제 Velog 수집 성공을 의미하지 않습니다.
 
 참고: [Cloudflare 요청 지역 정보](https://developers.cloudflare.com/workers/runtime-apis/request/#incomingrequestcfproperties)
+
+### 한국어·영문 콘텐츠
+
+관리자 화면의 ‘편집할 언어’로 한국어(`content.json`)와 영어(`content.en.json`)를 별도로 편집합니다. 관리자 UI는 한국어이며 자동 번역 API는 사용하지 않습니다. 한국어 내용을 고친 경우 영문도 별도로 수정해야 합니다. 저장 충돌 검사는 선택한 언어 파일의 SHA를 기준으로 하며, 언어 변경 시 미저장 내용이 있으면 먼저 확인합니다.

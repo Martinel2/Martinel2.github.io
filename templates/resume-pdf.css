@@ -6,3 +6,10 @@ section{margin-top:15px}h2{font-size:12px;letter-spacing:1px;margin:0 0 9px;bord
 .resume-section{margin-top:18px}.experience-row{display:grid;grid-template-columns:105px 1fr;gap:12px;margin-top:10px}.experience-row>span{color:#657185;font-size:9px}.experience-row h3{font-size:12px;margin-bottom:3px}.evidence-row{display:grid;grid-template-columns:60px minmax(0,1fr);gap:12px;align-items:start}.evidence-thumb{display:block;border:1px solid #dce2ec;border-radius:4px;overflow:hidden;background:white}.evidence-thumb img{display:block;width:100%;height:70px;object-fit:contain}.evidence-thumb span{display:none}.skill-rows>div{display:grid;grid-template-columns:95px 1fr;gap:12px;padding:8px 0;border-bottom:1px solid #e6ebf2}.skill-rows strong{font-size:10px}.award-list>div{display:grid;grid-template-columns:70px 1fr;gap:10px;padding:8px 0;border-bottom:1px solid #e6ebf2}.award-list>div>span{color:#657185;font-size:9px}.award-list p{white-space:normal}
 
 .profile-list li{white-space:normal}.resume-topic h4{margin-top:7px}
+
+html[lang="en"] body{line-height:1.4}
+html[lang="en"] section{margin-top:10px}
+html[lang="en"] .resume-project{padding:10px 14px}
+html[lang="en"] .resume-topic h4{margin-top:5px}
+html[lang="en"] .resume-topic li{margin-bottom:4px}
+html[lang="en"] .resume-hero{padding:10px 14px}

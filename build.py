@@ -9,6 +9,19 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 SITE = ROOT / "site"
+ASSETS = SITE / "assets"
+LANG = "ko"
+UI_EN = json.loads((ROOT / "ui.en.json").read_text())
+
+def localize_ui(html):
+    # Translate only text and descriptive attributes, never URLs or identifiers.
+    def translated(match):
+        value = match[0]
+        for ko, en in sorted(UI_EN.items(), key=lambda item: -len(item[0])):
+            value = value.replace(ko, en)
+        return value
+    return re.sub(r'>[^<>]*<|(?:alt|aria-label|download|content)="[^"]*"', translated, html)
+
 DATA = json.loads((ROOT / "content.json").read_text())
 CONTENT_VERSION = hashlib.sha256((ROOT / "content.json").read_bytes() + (ROOT / "templates/resume-pdf.css").read_bytes() + (ROOT / "scripts/build-resume-pdf.mjs").read_bytes() + (ROOT / "scripts/build-resume-docx.mjs").read_bytes()).hexdigest()[:10]
 
@@ -33,21 +46,30 @@ def page(title, description, body, resume=False):
     if measurement_id and not re.fullmatch(r'G-[A-Z0-9]+', measurement_id):
         raise ValueError('GA_MEASUREMENT_ID must be a G- measurement ID')
     analytics_meta = f'<meta name="ga-measurement-id" content="{measurement_id}">' if measurement_id else ''
-    return f'''<!doctype html>
+    switch_path = ('../' if LANG == 'en' else 'en/') + path
+    language_switch = f'<a class="language-switch" href="{switch_path}" hreflang="{"ko" if LANG == "en" else "en"}" lang="{"ko" if LANG == "en" else "en"}" aria-label="{"한국어로 보기" if LANG == "en" else "View in English"}">{"한국어" if LANG == "en" else "EN"}</a>'
+    html = f'''<!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{title} · 김재형</title><meta name="description" content="{description}">
 <meta name="theme-color" content="#f6f7f9"><meta property="og:title" content="{title} · 김재형">
 <meta property="og:description" content="{description}"><meta property="og:type" content="website">
 <meta property="og:locale" content="ko_KR"><meta property="og:image" content="https://Martinel2.github.io/assets/og.png">
 <link rel="canonical" href="https://Martinel2.github.io/{path}"><link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-{analytics_meta}<link rel="stylesheet" href="assets/style.css?v={hashlib.sha256((SITE / 'assets/style.css').read_bytes()).hexdigest()[:10]}"><script defer src="assets/site.js?v={hashlib.sha256((SITE / 'assets/site.js').read_bytes()).hexdigest()[:10]}"></script>
+{analytics_meta}<link rel="stylesheet" href="assets/style.css?v={hashlib.sha256((ASSETS / 'style.css').read_bytes()).hexdigest()[:10]}"><script defer src="assets/site.js?v={hashlib.sha256((ASSETS / 'site.js').read_bytes()).hexdigest()[:10]}"></script>
 </head><body id="top" class="{'resume-page' if resume else 'portfolio-page'}">
 <a class="skip" href="#main">본문으로 바로가기</a>
 <header class="header"><a class="identity" href="./"><span class="monogram">JH<span>.</span></span><span>김재형 <small>JAEHYEONG KIM</small></span></a>
-<nav aria-label="주 메뉴"><a href="./" {'aria-current="page"' if not path else ''}>{home_text('navigation', 'homeLabel')}</a><a href="./#about">{home_text("navigation", "aboutLabel")}</a><a href="./#skills">{home_text("navigation", "skillsLabel")}</a><a href="./#projects">{home_text("navigation", "projectsLabel")}</a><a href="./#activities">{home_text("navigation", "activitiesLabel")}</a></nav></header>
+<nav aria-label="주 메뉴"><a href="./" {'aria-current="page"' if not path else ''}>{home_text('navigation', 'homeLabel')}</a><a href="./#about">{home_text("navigation", "aboutLabel")}</a><a href="./#skills">{home_text("navigation", "skillsLabel")}</a><a href="./#projects">{home_text("navigation", "projectsLabel")}</a><a href="./#activities">{home_text("navigation", "activitiesLabel")}</a></nav>{language_switch}</header>
 <main id="main">{body}</main>
 <footer class="site-footer"><span>© {DATA['updated'][:4]} 김재형</span><div class="footer-links"><a href="mailto:kkuldangi2@gmail.com">Email ↗</a><a href="https://github.com/Martinel2">GitHub ↗</a><a href="https://velog.io/@kkuldangi3/posts">Blog ↗</a><a href="https://www.linkedin.com/in/%EC%9E%AC%ED%98%95-%EA%B9%80-b75920345/">LinkedIn ↗</a><a href="#top">맨 위로 ↑</a></div></footer>
 </body></html>'''.replace('href="resume.pdf"', f'href="resume.pdf?v={CONTENT_VERSION}"').replace('href="resume.docx"', f'href="resume.docx?v={CONTENT_VERSION}"')
+    alternates = f'<link rel="alternate" hreflang="ko" href="https://martinel2.github.io/{path}"><link rel="alternate" hreflang="en" href="https://martinel2.github.io/en/{path}">'
+    html = html.replace('</head>', alternates + '</head>')
+    if LANG == 'en':
+        html = localize_ui(html).replace('<html lang="ko">', '<html lang="en">').replace('content="ko_KR"', 'content="en_US"')
+        html = html.replace(f'rel="canonical" href="https://Martinel2.github.io/{path}"', f'rel="canonical" href="https://Martinel2.github.io/en/{path}"')
+        html = re.sub(r'(src|href)="assets/', r'\1="../assets/', html)
+    return html
 
 
 def case_html(c, i):
@@ -163,7 +185,14 @@ def home():
 
 if __name__ == '__main__':
     SITE.mkdir(exist_ok=True)
-    portfolio()
-    resume()
-    home()
-    print('Built home, portfolio and resume pages')
+    for language in ('ko', 'en'):
+        LANG = language
+        source = ROOT / ('content.en.json' if LANG == 'en' else 'content.json')
+        DATA = json.loads(source.read_text())
+        CONTENT_VERSION = hashlib.sha256(source.read_bytes() + (ROOT / 'templates/resume.html').read_bytes() + (ROOT / 'templates/resume-pdf.css').read_bytes() + (ROOT / 'scripts/build-resume-pdf.mjs').read_bytes() + (ROOT / 'scripts/build-resume-docx.mjs').read_bytes() + (ROOT / 'ui.en.json').read_bytes() + (ROOT / 'build.py').read_bytes()).hexdigest()[:10]
+        SITE = ROOT / 'site' / ('en' if LANG == 'en' else '')
+        SITE.mkdir(exist_ok=True)
+        portfolio()
+        resume()
+        home()
+    print('Built Korean and English home, portfolio and resume pages')

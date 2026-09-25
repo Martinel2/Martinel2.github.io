@@ -1,5 +1,17 @@
+// Keep the current section and referral query when changing language.
+const languageSwitch = document.querySelector('.language-switch');
+if (languageSwitch) {
+  const syncLanguageLink = () => {
+    const target = new URL(languageSwitch.href);
+    target.hash = location.hash;
+    target.search = location.search;
+    languageSwitch.href = target.href;
+  };
+  syncLanguageLink();
+  window.addEventListener('hashchange', syncLanguageLink);
+}
 // Preserve previously shared case links after the homepage split.
-if ((location.pathname === '/' || location.pathname.endsWith('/index.html')) && /^#(?:fruition-|pilltip-)/.test(location.hash)) location.replace('portfolio.html' + location.search + location.hash);
+if ((location.pathname === '/' || location.pathname === '/en/' || location.pathname.endsWith('/index.html')) && /^#(?:fruition-|pilltip-)/.test(location.hash)) location.replace('portfolio.html' + location.search + location.hash);
 // The dashboard is private in Google Analytics; no analytics credentials live here.
 const measurementId = document.querySelector('meta[name="ga-measurement-id"]')?.content;
 if (/^G-[A-Z0-9]+$/.test(measurementId || '')) {

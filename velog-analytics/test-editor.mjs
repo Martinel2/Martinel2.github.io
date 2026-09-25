@@ -9,9 +9,16 @@ validate(content,content);
 const changed=structuredClone(content);changed.cases[0].id='bad';assert.throws(()=>validate(changed,content));
 changed.cases[0].id=content.cases[0].id;changed.writings[0].url='javascript:alert(1)';assert.throws(()=>validate(changed,content));
 const badHome=structuredClone(content);badHome.home.sections.writingsUrl='javascript:alert(1)';assert.throws(()=>validate(badHome,content));
+const english=JSON.parse(readFileSync(new URL('../content.en.json',import.meta.url),'utf8'));
+let enStored=structuredClone(english),enSha='en-abc',enWrites=0;
 let stored=structuredClone(content),sha='abc',writes=0,fail=false;
 const nativeFetch=globalThis.fetch;
 globalThis.fetch=async(url,options={})=>{
+ const isEnglish=String(url).includes('content.en.json');
+ if(isEnglish){
+  if(options.method==='PUT'){const body=JSON.parse(options.body);assert.equal(body.sha,enSha);enStored=JSON.parse(Buffer.from(body.content,'base64').toString());enSha='en-next'+(++enWrites);return Response.json({content:{sha:enSha},commit:{html_url:'https://github.com/test'}});}
+  return Response.json({sha:enSha,content:Buffer.from(JSON.stringify(enStored)).toString('base64')});
+ }
  if(String(url).startsWith('https://raw.githubusercontent.com/'))return new Response(JSON.stringify(stored));
  assert.match(String(url),/^https:\/\/api.github.com\/repos\/Martinel2\/Martinel2.github.io\/contents\/content.json/);
  if(fail)return new Response('{}',{status:403});
@@ -31,6 +38,8 @@ assert.equal((await call('/admin/api/content',{method:'POST',headers:{Authorizat
 const postHeaders={Authorization:auth,Origin:'https://editor.test','X-Editor-Action':'save','Content-Type':'application/json'};
 assert.equal((await call('/admin/api/content',{method:'POST',headers:postHeaders,body:JSON.stringify({sha:'stale',data:content})})).status,409);
 assert.equal(writes,0);
+assert.equal((await call('/admin/api/content?lang=../../bad',{headers:{Authorization:auth}})).status,400);
+assert.equal((await call('/admin/api/content?lang=en',{method:'POST',headers:postHeaders,body:JSON.stringify({sha:'abc',data:english})})).status,409);
 const missing={...env,GITHUB_TOKEN:undefined};
 const readOnly=await worker.fetch(new Request('https://editor.test/admin/api/content',{headers:{Authorization:auth}}),missing,{});
 assert.equal(readOnly.status,200);const publicRead=await readOnly.json();assert.equal(publicRead.canSave,false);assert.match(publicRead.sha,/^[a-f0-9]{40}$/);assert.equal(publicRead.data.overview.title,content.overview.title);
@@ -45,6 +54,19 @@ try{
  await page.waitForSelector('#field-home-hero-greeting');
  assert.match(await page.$eval('#intro-preview',e=>e.textContent),/안녕하세요,[\s\S]*김재형입니다/);
  assert.ok(await page.$('[data-path="home.actions"]'));
+ await page.select('#content-language','en');
+ await page.waitForFunction(()=>document.querySelector('#field-home-hero-greeting')?.value==='Hello,');
+ await page.$eval('#field-home-hero-greeting',input=>{input.value='Welcome,';input.dispatchEvent(new Event('input',{bubbles:true}));});
+ page.once('dialog',dialog=>dialog.dismiss());
+ await page.select('#content-language','ko');
+ await page.waitForFunction(()=>document.querySelector('#content-language').value==='en');
+ assert.equal(await page.$eval('#field-home-hero-greeting',e=>e.value),'Welcome,');
+ await page.click('#review');await page.click('#save');
+ await page.waitForFunction(()=>document.querySelector('#status').textContent.includes('저장됐습니다'));
+ assert.equal(enStored.home.hero.greeting,'Welcome,');assert.equal(enWrites,1);assert.equal(writes,0);
+ await page.select('#content-language','ko');
+ await page.waitForFunction(()=>document.querySelector('#field-home-hero-greeting')?.value==='안녕하세요,');
+
  await page.$eval('#field-home-hero-greeting',input=>{input.value='반갑습니다,';input.dispatchEvent(new Event('input',{bubbles:true}));});
  assert.match(await page.$eval('#intro-preview',e=>e.textContent),/반갑습니다,/);
  // Resume editing order must follow the visible template, independently of text IDs.

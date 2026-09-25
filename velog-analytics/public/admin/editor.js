@@ -5,12 +5,13 @@ const resumeGroupStarts = new Set(['text21','text114','text116','text118','text1
 for(let n=114;n<=127;n++)resumeLabels['text'+n]=n%2===0?'분야 제목':'분야 설명';
 const locked = new Set(['id','project','name','src','width','height']);
 const matrixLabels = {experiments:['단계 제목','문제 상황','시도와 결과','판단'],options:['해결 방안','기대 효과','실험 결과','채택 여부와 이유'],metrics:['항목','수치','설명'],contributions:['담당 구분','기여 내용']};
+let language="ko";
 let data, original, sha, canSave=false, busy=false, active=0, sections=[];
 const fieldLabels=new Map();
 function el(tag,text,className){const node=document.createElement(tag);if(text!==undefined)node.textContent=text;if(className)node.className=className;return node;}
 function status(message,error=false){$('#status').textContent=message;$('#status').setAttribute('role',error?'alert':'status');$('#save-status').textContent=message;}
 function changed(a=data,b=original,path=[]){if(!a||!b)return [];if(typeof a==='string')return a===b?[]:[{path,before:b,after:a}];if(typeof a!=='object')return [];return Object.keys(a).flatMap(k=>changed(a[k],b[k],[...path,k]));}
-function refresh(){const intro=data&&(sections[active]?.path.join('.')==='home.hero'||(sections[active]?.kind==='resume'&&valueAt(sections[active].path).fields.text2!==undefined));$('#intro-preview').hidden=!intro;if(intro){const f=data.resume.find(r=>'text2' in r.fields).fields;$('#intro-preview').textContent=(data.home?.hero.greeting||'안녕하세요,')+'\n'+(data.home?.hero.nameLine||'김재형입니다.')+'\n\n'+f.text2+'\n'+f.text3;}const count=changed().length;$('#dirty').textContent=count?`${count}개 항목 수정됨 · 아직 저장하지 않았습니다.`:'저장된 내용과 같습니다.';$('#review').disabled=busy||!canSave||!count;$('#reload').disabled=busy||!data;$('#backup').disabled=busy||!data;$('#save').disabled=busy;$('#save').textContent=busy?'저장 중…':'저장하고 배포';$('#cancel').disabled=busy;document.querySelectorAll('#fields textarea,#menu button').forEach(n=>n.disabled=busy);}
+function refresh(){$('#content-language').disabled=busy;const intro=data&&(sections[active]?.path.join('.')==='home.hero'||(sections[active]?.kind==='resume'&&valueAt(sections[active].path).fields.text2!==undefined));$('#intro-preview').hidden=!intro;if(intro){const f=data.resume.find(r=>'text2' in r.fields).fields;$('#intro-preview').textContent=(data.home?.hero.greeting||'안녕하세요,')+'\n'+(data.home?.hero.nameLine||'김재형입니다.')+'\n\n'+f.text2+'\n'+f.text3;}const count=changed().length;$('#dirty').textContent=count?`${count}개 항목 수정됨 · 아직 저장하지 않았습니다.`:'저장된 내용과 같습니다.';$('#review').disabled=busy||!canSave||!count;$('#reload').disabled=busy||!data;$('#backup').disabled=busy||!data;$('#save').disabled=busy;$('#save').textContent=busy?'저장 중…':'저장하고 배포';$('#cancel').disabled=busy;document.querySelectorAll('#fields textarea,#menu button').forEach(n=>n.disabled=busy);}
 function valueAt(path){return path.reduce((v,k)=>v[k],data);}
 function setAt(path,value){const parent=valueAt(path.slice(0,-1));parent[path.at(-1)]=value;refresh();}
 function field(value,path,parent,label){const key=path.at(-1);if(locked.has(key))return;
@@ -58,18 +59,19 @@ function render(){sections=[];
  data.cases.forEach((c,i)=>sections.push({group:'상세 경험',title:c.short,path:['cases',String(i)]}));
  $('#menu').replaceChildren();let group='';sections.forEach((s,i)=>{if(s.group!==group){$('#menu').append(el('h2',s.group));group=s.group;}const button=el('button',s.title);button.dataset.path=s.path.join('.');button.addEventListener('click',()=>show(i));$('#menu').append(button);});show(Math.min(active,sections.length-1));
 }
-async function load(){if(data&&changed().length&&!confirm('저장하지 않은 변경을 버리고 다시 불러올까요?'))return;busy=true;refresh();status('최신 내용을 불러오는 중입니다.');try{
- const res=await fetch('/admin/api/content',{cache:'no-store',signal:AbortSignal.timeout(35000)});if(res.status===401)throw Error('로그인이 만료됐습니다. 새로고침해 다시 로그인해 주세요.');const body=await res.json();if(!res.ok)throw Error(body.error);
+async function load(nextLanguage=language){if(data&&changed().length&&!confirm('저장하지 않은 변경을 버리고 다시 불러올까요?')){$('#content-language').value=language;return;}busy=true;refresh();status('최신 내용을 불러오는 중입니다.');try{
+ const res=await fetch('/admin/api/content?lang='+nextLanguage,{cache:'no-store',signal:AbortSignal.timeout(35000)});if(res.status===401)throw Error('로그인이 만료됐습니다. 새로고침해 다시 로그인해 주세요.');const body=await res.json();if(!res.ok)throw Error(body.error);
  if(!body.data.overview||!body.data.resume)throw Error('관리자 편집용 사이트 업데이트를 기다리고 있습니다. 잠시 후 다시 불러와 주세요.');
- data=body.data;original=structuredClone(data);sha=body.sha;canSave=body.canSave;render();status(canSave?'최신 내용을 불러왔습니다.':'내용 편집과 백업은 가능합니다. 저장 기능은 아직 연결되지 않았습니다.');
- }catch(e){status(e.name==='TimeoutError'?'불러오기가 지연되고 있습니다. 잠시 후 다시 시도해 주세요.':e.message,true);}finally{busy=false;refresh();$('#reload').disabled=false;}}
-$('#reload').addEventListener('click',load);
-$('#backup').addEventListener('click',()=>{const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)+'\n'],{type:'application/json'}));const a=el('a');a.href=url;a.download='portfolio-content-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
+ language=nextLanguage;$('#content-language').value=language;data=body.data;original=structuredClone(data);sha=body.sha;canSave=body.canSave;render();status(canSave?(language==='en'?'영문 내용을 불러왔습니다. 한국어 수정은 자동 번역되지 않습니다.':'한국어 내용을 불러왔습니다. 영문은 편집할 언어에서 별도로 수정하세요.'):'내용 편집과 백업은 가능합니다. 저장 기능은 아직 연결되지 않았습니다.');
+ }catch(e){status(e.name==='TimeoutError'?'불러오기가 지연되고 있습니다. 잠시 후 다시 시도해 주세요.':e.message,true);}finally{$('#content-language').value=language;busy=false;refresh();$('#reload').disabled=false;}}
+$('#reload').addEventListener('click',()=>load());
+$('#content-language').addEventListener('change',event=>load(event.target.value));
+$('#backup').addEventListener('click',()=>{const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)+'\n'],{type:'application/json'}));const a=el('a');a.href=url;a.download=`portfolio-content-${language}-backup.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
 $('#review').addEventListener('click',()=>{$('#changes').replaceChildren();for(const c of changed()){const row=el('div',undefined,'change');row.append(el('strong',fieldLabels.get(c.path.join('.'))||c.path.join(' / ')),el('p','이전: '+c.before,'before'),el('p','변경: '+c.after,'after'));$('#changes').append(row);}$('#review-dialog').showModal();});
 $('#cancel').addEventListener('click',()=>$('#review-dialog').close());
 $('#review-dialog').addEventListener('cancel',e=>{if(busy)e.preventDefault();});
 $('#save').addEventListener('click',async()=>{busy=true;refresh();status('저장 중입니다. 창을 닫지 마세요.');try{
- const res=await fetch('/admin/api/content',{method:'POST',signal:AbortSignal.timeout(35000),headers:{'Content-Type':'application/json','X-Editor-Action':'save'},body:JSON.stringify({sha,data})});const result=await res.json();if(!res.ok)throw Error(result.error||'저장하지 못했습니다.');sha=result.sha;original=structuredClone(data);$('#review-dialog').close();status(result.unchanged?'변경된 내용이 없습니다.':'저장됐습니다. 사이트 배포가 시작됩니다. 반영 완료 여부는 배포 상태에서 확인하세요.');
+ const res=await fetch('/admin/api/content?lang='+language,{method:'POST',signal:AbortSignal.timeout(35000),headers:{'Content-Type':'application/json','X-Editor-Action':'save'},body:JSON.stringify({sha,data})});const result=await res.json();if(!res.ok)throw Error(result.error||'저장하지 못했습니다.');sha=result.sha;original=structuredClone(data);$('#review-dialog').close();status(result.unchanged?'변경된 내용이 없습니다.':'저장됐습니다. 사이트 배포가 시작됩니다. 반영 완료 여부는 배포 상태에서 확인하세요.');
  if(result.deployment){const a=el('a',' 배포 상태 확인 ↗');a.href=result.deployment;a.target='_blank';a.rel='noopener';$('#status').append(a);}
  }catch(e){$('#review-dialog').close();status((e.name==='TimeoutError'?'저장 응답이 지연되어 대기를 중단했습니다. 저장이 완료됐을 수도 있으므로 배포 상태를 확인해 주세요.':e.message)+' 입력 내용은 유지됩니다.',true);}finally{busy=false;refresh();$('#status').scrollIntoView({block:'center'});}});
 window.addEventListener('beforeunload',e=>{if(changed().length||busy){e.preventDefault();e.returnValue='';}});

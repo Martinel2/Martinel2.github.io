@@ -5,7 +5,7 @@
   "scripts": {
     "build": "python3 build.py && node scripts/build-resume-pdf.mjs",
     "dev": "python3 -m http.server 4173 --directory site",
-    "test": "npm run build && node test.mjs"
+    "test": "npm run build && node test.mjs && node scripts/test-languages.mjs"
   },
   "devDependencies": {
     "docx": "^9.7.2",
