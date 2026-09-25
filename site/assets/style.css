@@ -404,3 +404,6 @@ html[lang="en"] .home-intro h1{font-size:clamp(36px,6vw,64px)}
 @media(max-width:600px){.header{flex-wrap:wrap}.header nav{order:3;width:100%;justify-content:center;gap:16px}.language-switch{margin-left:auto}}
 
 @media print{.language-switch{display:none}}
+
+.experiment-timeline p>strong{display:block;margin-bottom:4px}
+.field-label{font-weight:700}

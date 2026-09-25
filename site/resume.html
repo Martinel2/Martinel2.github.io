@@ -5,7 +5,7 @@
 <meta property="og:description" content="김재형 · Backend Engineer / AI Application Developer. 프로젝트, 기술, 오픈소스 기여, 수상과 학력."><meta property="og:type" content="website">
 <meta property="og:locale" content="ko_KR"><meta property="og:image" content="https://Martinel2.github.io/assets/og.png">
 <link rel="canonical" href="https://Martinel2.github.io/resume.html"><link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="assets/style.css?v=2d0dca9183"><script defer src="assets/site.js?v=674345cd67"></script>
+<link rel="stylesheet" href="assets/style.css?v=844a7b5867"><script defer src="assets/site.js?v=674345cd67"></script>
 <link rel="alternate" hreflang="ko" href="https://martinel2.github.io/resume.html"><link rel="alternate" hreflang="en" href="https://martinel2.github.io/en/resume.html"></head><body id="top" class="resume-page">
 <a class="skip" href="#main">본문으로 바로가기</a>
 <header class="header"><a class="identity" href="./"><span class="monogram">JH<span>.</span></span><span>김재형 <small>JAEHYEONG KIM</small></span></a>
@@ -24,8 +24,8 @@
 <a href="https://www.linkedin.com/in/%EC%9E%AC%ED%98%95-%EA%B9%80-b75920345/">LinkedIn ↗</a>
 </div>
 </div>
-<a class="button resume-download" href="resume.pdf?v=a9082905fb" download="김재형_이력서.pdf">이력서 PDF 저장 ↓</a>
-<a class="button resume-download" href="resume.docx?v=a9082905fb" download="김재형_이력서.docx">이력서 Word 저장 ↓</a>
+<a class="button resume-download" href="resume.pdf?v=c56c56657f" download="김재형_이력서.pdf">이력서 PDF 저장 ↓</a>
+<a class="button resume-download" href="resume.docx?v=c56c56657f" download="김재형_이력서.docx">이력서 Word 저장 ↓</a>
 </section>
 <section class="resume-section">
 <h2>핵심 경험 <span>01 / PROFILE</span>
@@ -61,34 +61,49 @@
 <a class="text-link" href="https://github.com/FruitionKR/local-pilot">GitHub · local-pilot ↗</a>
 <a class="text-link" href="https://github.com/FruitionKR/Fruition-ai">GitHub · AI 분리 저장소 ↗</a>
 <div class="resume-topic">
-<h4>업로드한 문서의 변환과 분석</h4>
-<p class="topic-intro">사용자가 올린 PDF를 검색과 답변에 활용할 수 있도록 내용을 추출·복원하고, 여러 문서를 처리하는 대기 시간을 줄이는 작업입니다.</p>
+<h4>문서 확장자 변환 파이프라인 구축과 Wiki 생성 시간 개선</h4>
+<p class="topic-intro">사용자가 올린 PDF를 검색과 답변에 활용하도록 변환하고, 여러 문서의 Wiki 생성 시간을 줄였습니다. PDF 30쪽의 내부 평가 통과율은 45.17% → 89.89%, 문서 4개 분석 시간은 282.11초 → 73.89초로 개선했습니다.</p>
 <ul><li>PDF → Markdown 변환
-문제: 오픈소스 변환에서 표·수식이 손상됐고, 전체 AI 변환에도 오류와 호출 부담이 남음.
-해결: PDF 변환 오픈소스를 비교해 AnyDoc 채택. 깨진 본문만 AI로 복원. 표·수식은 별도 처리하고 그림은 원본 보존.
-성과: PDF 30쪽의 내부 평가 통과율 45.17% → 89.89%.</li><li>문서의 Wiki 생성 병렬화
-문제: 앞선 문서의 외부 AI 응답을 기다리는 동안 뒤의 문서 처리가 지연.
-해결: Worker 수와 내부 동시 요청 수를 각각 변경하며 비교. 메모리 증가를 고려해 Worker 최대 4개를 채택하고, 오히려 느려진 추가 동시 요청, GPU 병렬화는 제외.
-성과: 문서 4개 분석 시간 282.11초 → 73.89초(약 74% 감소)</li></ul>
+<strong class="field-label">문제</strong>
+오픈소스 변환에서 표·수식이 손상됐고, 전체 AI 변환에도 오류와 호출 부담이 남음.
+<strong class="field-label">해결</strong>
+PDF 변환 오픈소스를 비교해 AnyDoc 채택. 깨진 본문만 AI로 복원. 표·수식은 별도 처리하고 그림은 원본 보존.
+<strong class="field-label">성과</strong>
+PDF 30쪽의 내부 평가 통과율 45.17% → 89.89%.</li><li>문서의 Wiki 생성 병렬화
+<strong class="field-label">문제</strong>
+앞선 문서의 외부 AI 응답을 기다리는 동안 뒤의 문서 처리가 지연.
+<strong class="field-label">해결</strong>
+Worker 수와 내부 동시 요청 수를 각각 변경하며 비교. 메모리 증가를 고려해 Worker 최대 4개를 채택하고, 오히려 느려진 추가 동시 요청, GPU 병렬화는 제외.
+<strong class="field-label">성과</strong>
+문서 4개 분석 시간 282.11초 → 73.89초(약 74% 감소)</li></ul>
 </div>
 <div class="resume-topic">
 <h4>RAG 과정의 검색 정확도 개선</h4>
-<p class="topic-intro">사용자 질문과 관련된 내용을 저장된 문서에서 찾아 AI 답변의 근거로 제공하는 기능입니다. 필요한 근거를 빠뜨리지 않고, 답할 자료가 없는 질문은 구분하도록 개선했습니다.</p>
+<p class="topic-intro">저장된 문서에서 AI 답변에 필요한 근거를 찾는 기능입니다. 답이 있는 80문항의 근거 충족률을 66.25% → 91.25%로 높이고, 답 없는 20문항의 잘못된 근거 반환을 20 → 0건으로 줄였습니다.</p>
 <ul><li>답변 근거 선택 개선
-문제: 기존 검색이 필요한 근거를 놓치고, 답이 없는 질문에도 근거를 반환.
-해결: 라우팅에서 효과를 본 선택형 판단 모델 Jev를 RAG에 적용. 전체 근거 실험 후 동일 후보·반환량으로 비교 조건을 맞추고, 후보 300개·최대 4병렬로 조정.
-성과: 논문 9편의 평가에서 답이 있는 80문항의 근거 충족률 66.25% → 91.25%. 답 없는 20문항의 잘못된 근거 반환 20 → 0건. Jev 최적화 전후 시간 중앙값 9.090초 → 2.251초.</li></ul>
+<strong class="field-label">문제</strong>
+기존 검색이 필요한 근거를 놓치고, 답이 없는 질문에도 근거를 반환.
+<strong class="field-label">해결</strong>
+라우팅에서 효과를 본 선택형 판단 모델 Jev를 RAG에 적용. 전체 근거 실험 후 동일 후보·반환량으로 비교 조건을 맞추고, 후보 300개·최대 4병렬로 조정.
+<strong class="field-label">성과</strong>
+논문 9편의 평가에서 답이 있는 80문항의 근거 충족률 66.25% → 91.25%. 답 없는 20문항의 잘못된 근거 반환 20 → 0건. Jev 최적화 전후 시간 중앙값 9.090초 → 2.251초.</li></ul>
 </div>
 <div class="resume-topic">
-<h4>AI Agent와 Skill</h4>
-<p class="topic-intro">사용자가 말로 요청한 문서 편집과 폴더 정리를 AI가 수행하는 기능입니다. 또한, 변경 내용을 사용자가 승인한 뒤 반영하도록 하고, 반복 작업을 지침으로 저장해 재사용할 수 있게 만들었습니다.</p>
+<h4>Skill 기능 구현과 AI Agent 라우팅 성능 개선</h4>
+<p class="topic-intro">반복 작업을 Skill로 저장·재사용하고 실제 변경은 사용자 승인 후 반영하도록 구현했습니다. 요청을 질문·편집 등으로 분류하는 라우팅에는 Jev를 적용해 정답 77/98 → 81/98건, 판단시간 중앙값 8.967초 → 0.658초로 개선했습니다.</p>
 <ul><li>사용자 정의 작업 지침(Skill)
-문제: 사용자마다 다른 반복 작업을 개발자가 모두 기능으로 추가하기 어려움.
-해결: 자연어 지침의 작성·검토·게시 기능과 권한·승인 우회 검사를 구현. 실제 문서 변경은 미리보기를 확인한 뒤 별도로 승인하도록 설계.
-성과: 게시한 Skill을 Agent에서 사용가능하도록 구현. 문서 6개 검증에서 승인 전 변경 없이, 승인 후 폴더 3개 생성과 문서 이동 확인.</li><li>문서 편집 품질 개선
-문제: 생성한 편집 초안이 사용자의 편집 의도를 충족하지 못하는 사례 발생.
-해결: 편집 목적 전달과 재시도 입력을 개선하고, 의미 평가 후 최대 1회 재작성 적용.
-성과: 동일 초안 114개의 내부 평가 통과 94 → 104건.</li></ul>
+<strong class="field-label">문제</strong>
+사용자마다 다른 반복 작업을 개발자가 모두 기능으로 추가하기 어려움.
+<strong class="field-label">해결</strong>
+자연어 지침의 작성·검토·게시 기능과 권한·승인 우회 검사를 구현. 실제 문서 변경은 미리보기를 확인한 뒤 별도로 승인하도록 설계.
+<strong class="field-label">성과</strong>
+게시한 Skill을 Agent에서 사용가능하도록 구현. 문서 6개 검증에서 승인 전 변경 없이, 승인 후 폴더 3개 생성과 문서 이동 확인.</li><li>Jev 기반 요청 분류 개선
+<strong class="field-label">문제</strong>
+사용자 질문을 문서 편집으로 분류하는 등 잘못된 작업으로 연결.
+<strong class="field-label">해결</strong>
+질문·편집·문서 생성·폴더 정리 등 작업 종류와 부가 조건을 고르는 라우팅에 선택형 판단 모델 Jev 적용.
+<strong class="field-label">성과</strong>
+동일 요청 98개에서 작업 종류와 부가 조건을 모두 맞힌 수 77 → 81건. 판단시간 중앙값 8.967초 → 0.658초.</li></ul>
 </div>
 <div class="resume-topic">
 <h4>서비스별 책임과 통신 구조 설계</h4>
@@ -112,20 +127,26 @@
 <a class="text-link" href="https://github.com/PillTipKR/Pilltip">GitHub 저장소 ↗</a>
 <div class="resume-topic">
 <h4>데이터 정제 파이프라인 구축</h4>
-<p class="topic-intro">약 4만 4천 건의 의약품 원문을 사용자가 이해하기 쉬운 표현으로 바꾸는 작업입니다. 반복되는 설명은 한 번만 변환하고 각 약품에 연결해 비용을 줄였습니다.</p>
-<ul><li><p>문제: 약 4만 4천 건의 약품 원문을 모두 쉬운 설명으로 변환하면 API 비용 약 $200 예상.
-해결: 완전 일치 문장 → 의미가 같은 문장 순으로 중복 제거. 누락된 5%는 성분별 주의사항으로 보완하고, GPT Batch API로 변환한 뒤 약품별로 재연결.</p><p>성과: 변환 대상 1GB → 326MB. 전체 원문 변환 예상 비용 약 $200 대비 실제 API 지출 $11.18.</p>
+<p class="topic-intro">약 4만 4천 건의 의약품 원문을 쉬운 설명으로 바꾸는 작업입니다. 중복 제거로 변환 대상을 1GB → 326MB로 줄이고 누락 정보를 보완한 뒤, 전체 원문 처리 예상 약 $200 대비 실제 API 지출 $11.18로 변환했습니다.</p>
+<ul><li><p><strong class="field-label">문제</strong>
+약 4만 4천 건의 약품 원문을 모두 쉬운 설명으로 변환하면 API 비용 약 $200 예상.
+<strong class="field-label">해결</strong>
+완전 일치 문장 → 의미가 같은 문장 순으로 중복 제거. 누락된 5%는 성분별 주의사항으로 보완하고, GPT Batch API로 변환한 뒤 약품별로 재연결.</p><p><strong class="field-label">성과</strong>
+변환 대상 1GB → 326MB. 전체 원문 변환 예상 비용 약 $200 대비 실제 API 지출 $11.18.</p>
 <p class="scope-note">비용은 예상치와 실지출의 비교이며 전처리 인건비는 제외했습니다.</p></li></ul>
 </div>
 <div class="resume-topic">
-<h4>개인 건강 정보를 기반으로 답변하는 AI 복약 챗봇</h4>
+<h4>개인 건강 정보 기반 답변 제공 AI 복약 챗봇 개발</h4>
 <p class="topic-intro">사용자가 증상을 자연어로 물으면 관련 약품과 복약 정보를 찾는 기능입니다. 건강 프로필은 내부에서 판단해 개인화에 활용하고, 외부 AI에 보내는 정보와 분리했습니다.</p>
-<ul><li>문제: 일상적인 증상 표현과 약품 효능의 용어가 다르고, 개인화에 필요한 건강 정보는 외부 AI에 전달하기 어려움.
-해결: Weaviate 의미 검색과 AI 오케스트레이션으로 약품 탐색·복약 위험·섭취량별 처리 경로 구성. 임신 여부·복용약·기저질환은 내부 코드로 판단.
-성과: 자연어 증상으로 약품 정보를 탐색하고, 해당 건강 프로필을 외부 LLM 입력에서 제외한 개인화 흐름 구현.</li></ul>
+<ul><li><strong class="field-label">문제</strong>
+일상적인 증상 표현과 약품 효능의 용어가 다르고, 개인화에 필요한 건강 정보는 외부 AI에 전달하기 어려움.
+<strong class="field-label">해결</strong>
+Weaviate 의미 검색과 AI 오케스트레이션으로 약품 탐색·복약 위험·섭취량별 처리 경로 구성. 임신 여부·복용약·기저질환은 내부 코드로 판단.
+<strong class="field-label">성과</strong>
+자연어 증상으로 약품 정보를 탐색하고, 해당 건강 프로필을 외부 LLM 입력에서 제외한 개인화 흐름 구현.</li></ul>
 </div>
 <div class="resume-topic">
-<h4>백엔드 구현</h4>
+<h4>백엔드 기능 구현</h4>
 <p class="topic-intro">앱에서 약품을 찾고 복약 위험정보를 확인하며, 복약 알림·기록과 가족 프로필을 사용할 수 있도록 서버 기능을 구현했습니다. 모바일 앱과 사용자·보안 기능을 맡은 팀원과 연동했습니다.</p>
 <ul><li>Java·Spring Boot 기반 의약품 DB 설계, 의약품 검색·자동완성과 복약 위험정보(DUR) 표출 구현.</li><li>FCM을 활용한 복약 알림·복약 로그, 딥링크 기반 친구 초대, 가족 프로필 전환 기능 구현.</li><li>Notion에 API 문서, 회의록, ADR을 작성해 의사결정 내용 공유.</li></ul>
 </div>

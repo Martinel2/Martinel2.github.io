@@ -26,6 +26,11 @@ DATA = json.loads((ROOT / "content.json").read_text())
 CONTENT_VERSION = hashlib.sha256((ROOT / "content.json").read_bytes() + (ROOT / "templates/resume-pdf.css").read_bytes() + (ROOT / "scripts/build-resume-pdf.mjs").read_bytes() + (ROOT / "scripts/build-resume-docx.mjs").read_bytes()).hexdigest()[:10]
 
 
+def resume_text(value):
+    text = escape(value)
+    return re.sub(r'(?m)^(문제|해결|성과|판단|Problem|Solution|Result):[ \t]*', r'<strong class="field-label">\1</strong>\n', text)
+
+
 def home_text(group, key):
     return escape(DATA['home'][group][key])
 
@@ -138,7 +143,7 @@ def portfolio():
 
 def resume():
     fields = {key: value for section in DATA['resume'] for key, value in section['fields'].items()}
-    body = re.sub(r'@@(text\d+)@@', lambda match: escape(fields[match[1]]), (ROOT / 'templates/resume.html').read_text())
+    body = re.sub(r'@@(text\d+)@@', lambda match: resume_text(fields[match[1]]), (ROOT / 'templates/resume.html').read_text())
     (SITE / 'resume.html').write_text(page('이력서', '김재형 · Backend Engineer / AI Application Developer. 프로젝트, 기술, 오픈소스 기여, 수상과 학력.', body, True))
 
 
@@ -156,7 +161,7 @@ def home():
         details = f'<a class="text-link" href="{target}">{home_text("projectLabels", "detailsLabel")} ↗</a>'
         cover = project['cover']
         projects += f'<article class="home-project"><a class="project-cover" href="{escape(target)}"><img src="{escape(cover["src"])}" alt="{escape(cover["alt"])}" width="{cover["width"]}" height="{cover["height"]}" loading="lazy"></a><div class="project-card-body"><h3><a href="{escape(target)}">{escape(project["name"])}</a></h3><dl class="project-meta"><div><dt>{home_text("projectLabels", "affiliationLabel")}</dt><dd>{affiliation}</dd></div><div><dt>{home_text("projectLabels", "roleLabel")}</dt><dd>{role}</dd></div></dl><p>{escape(project["description"])}</p>{links}<div>{details}</div></div></article>'
-    resume_body = re.sub(r'@@(text\d+)@@', lambda match: escape(fields[match[1]]), (ROOT / 'templates/resume.html').read_text())
+    resume_body = re.sub(r'@@(text\d+)@@', lambda match: resume_text(fields[match[1]]), (ROOT / 'templates/resume.html').read_text())
     dialogs = ''
     for match in re.finditer(r'<article class="resume-project" id="([^"]+)">.*?</article>', resume_body, re.S):
         project_id, article = match[1], match[0]

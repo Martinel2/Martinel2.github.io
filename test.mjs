@@ -33,6 +33,13 @@ try {
       const response = await page.goto(`${base}${route}`, { waitUntil: 'networkidle2' });
       assert.equal(response.status(), 200);
       assert.equal(await page.$$eval('h1', els => els.length), 1);
+      const labelsBelow=await page.$$eval('.field-label,.experiment-timeline p>strong',labels=>labels.filter(label=>label.getClientRects().length).every(label=>{
+        const text=label.nextSibling;if(!text||text.nodeType!==Node.TEXT_NODE)return false;
+        const start=text.textContent.search(/\S/);if(start<0)return false;
+        const range=document.createRange();range.setStart(text,start);range.setEnd(text,start+1);
+        return range.getBoundingClientRect().top>=label.getBoundingClientRect().bottom-1;
+      }));
+      assert.ok(labelsBelow,'Problem/result/decision text must start below its label');
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `Overflow: ${width} ${route}`);
       const broken = await page.$$eval('a[href^="#"]', links => links.filter(a => !document.getElementById(decodeURIComponent(a.hash.slice(1)))).map(a => a.hash));
       assert.deepEqual(broken, []);
