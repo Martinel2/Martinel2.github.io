@@ -46,7 +46,7 @@ try {
       assert.deepEqual(broken, []);
       assert.equal(await page.$('.activity-gallery'),null);
       const evidence=await page.$$eval('.evidence-thumb img',async imgs=>{for(const i of imgs)i.loading='eager';await Promise.all(imgs.map(i=>i.decode()));return imgs.map(i=>({width:i.naturalWidth,height:i.getBoundingClientRect().height}));});
-      assert.equal(evidence.length,route==='/portfolio.html'?1:6);
+      assert.equal(evidence.length,route==='/portfolio.html'?2:7);
       assert.ok(evidence.every(i=>i.width>0&&i.height<=120),'Evidence thumbnails must load at compact sizes');
 
       if (route === '/') {
@@ -109,7 +109,7 @@ try {
           await Promise.all(imgs.map(img => img.decode()));
           return imgs.map(img => ({ loaded: img.naturalWidth > 0, alt: img.alt }));
         });
-        assert.equal(images.length, 8);
+        assert.equal(images.length, 9);
         assert.ok(images.every(img => img.loaded && img.alt.length > 10));
         assert.ok(await page.$('#fruition-jev-evidence'));
         assert.equal(await page.$$eval('.case[id^="fruition-jev-"]', els => els.length), 1);

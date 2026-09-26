@@ -449,6 +449,13 @@
           "caption": "서비스 역할 구분 — AI 기능 전체를 리드했고 프론트엔드·백엔드는 팀원이 담당했습니다. MSA는 제 초기 설계를 바탕으로 팀원·멘토와 논의해 완성했습니다.",
           "width": 2000,
           "height": 1125
+        },
+        {
+          "src": "assets/projects/fruition-system-architecture.jpg",
+          "alt": "Fruition 시스템 아키텍처: 전체 시스템 구성도와 프론트엔드·백엔드·llmPipeline·저장소 간 통신 구조",
+          "caption": "시스템 아키텍처 — 위는 전체 시스템, 아래는 Fruition 내부 구성입니다. 제 담당은 llmPipeline(FastAPI·Python·LangGraph)을 중심으로 한 AI 기능이며, 프론트엔드·백엔드와 AWS 배포는 팀원이 담당했습니다.",
+          "width": 2300,
+          "height": 1780
         }
       ],
       "cover": {

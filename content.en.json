@@ -449,6 +449,13 @@
           "caption": "Service responsibilities — I led all AI features; teammates owned frontend and backend. We finalized MSA with mentors based on my initial design.",
           "width": 2000,
           "height": 1125
+        },
+        {
+          "src": "assets/projects/fruition-system-architecture.jpg",
+          "alt": "Fruition system architecture: the overall system context and communication between frontend, backend, llmPipeline and storage",
+          "caption": "System architecture — the overall system (top) and Fruition’s internal components (bottom). I owned the AI features centred on llmPipeline (FastAPI · Python · LangGraph); teammates owned the frontend, backend and AWS deployment.",
+          "width": 2300,
+          "height": 1780
         }
       ],
       "cover": {
