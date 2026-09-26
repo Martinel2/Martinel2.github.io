@@ -29,6 +29,7 @@ export async function buildResumeDocx(page, lang = 'ko') {
     root.querySelector('.resume-section .resume-content').querySelectorAll('p').forEach(e=>e.remove());
     // Same section order as the PDF: summary, projects, skills, activities, education, awards.
     const sections=[...root.querySelectorAll(':scope>.resume-section')];
+    sections[3].querySelector('h2').dataset.pageBreak='1'; // activities start on a new page, as in the PDF
     sections[0].querySelector('h2').textContent='SUMMARY';sections[1].querySelector('h2').textContent='PROJECTS & EXPERIENCE';
     const ordered=[hero,sections[0],sections[1],sections[2],sections[3],sections[5],sections[4]];
     document.body.append(...ordered.map(el=>{const box=document.createElement('div');box.append(el);box.hidden=false;return box;}));
@@ -61,7 +62,7 @@ export async function buildResumeDocx(page, lang = 'ko') {
       }
       if(node.matches('h1,h2,h3,h4,p,li,a,span,strong')&&!node.querySelector('p,div,ul')){
         const style=node.matches('.eyebrow')?'name':node.matches('.resume-role')?'role':node.tagName.toLowerCase();
-        return [{style,note:node.matches('.scope-note,.topic-intro,.role'),runs:inline(node)}];
+        return [{style,note:node.matches('.scope-note,.topic-intro,.role'),pageBreak:node.dataset.pageBreak==='1',runs:inline(node)}];
       }
       if(node.tagName==='LI'){
         // One bullet paragraph per item, so its problem/solution/result lines share the bullet's indent.
@@ -133,7 +134,7 @@ export async function buildResumeDocx(page, lang = 'ko') {
         h2:{before:420,after:180},h3:{before:0,after:0},h4:{before:240,after:80},
         links:{before:80,after:80},li:{before:100,after:100},
       }[style]||{before:0,after:80};
-      result.push(new Paragraph({children,keepNext:heading||block.title,...(block.align==='right'?{alignment:AlignmentType.RIGHT}:{}),
+      result.push(new Paragraph({children,keepNext:heading||block.title,pageBreakBefore:!!block.pageBreak,...(block.align==='right'?{alignment:AlignmentType.RIGHT}:{}),
         spacing:{...spacing,line:heading?276:LINE},
         ...(style==='li'?{bullet:{level:0}}:{}),
         ...(block.indent?{indent:{left:720}}:{}),
