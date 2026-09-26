@@ -176,7 +176,7 @@ def home():
     sections = re.findall(r'<section class="resume-section".*?</section>', resume_body, re.S)
     skills = sections[2].replace('class="resume-section"', 'class="home-section home-skills" id="skills"')
     skills = re.sub(r'<h2>(.*?)<span>.*?</span>\s*</h2>', lambda m: '<p class="eyebrow">' + home_text('sections', 'skillsEyebrow') + '</p><h2>' + m[1] + '</h2>', skills, flags=re.S)
-    background = ''.join(sections[3:5]).replace('class="resume-section"', 'class="home-section home-background-section"')
+    background = ''.join(sections[3:6]).replace('class="resume-section"', 'class="home-section home-background-section"')
     background = re.sub(r'<h2>(.*?)<span>.*?</span>\s*</h2>', r'<h2>\1</h2>', background, flags=re.S)
     portfolio_html = (SITE / 'portfolio.html').read_text()
     writings = re.search(r'<section class="more-work writings"[^>]*>.*?</section>', portfolio_html, re.S)[0].replace(' id="writings"', '')
