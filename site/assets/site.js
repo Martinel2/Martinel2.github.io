@@ -52,7 +52,7 @@ if (cases.length) {
   const observer = new IntersectionObserver(entries => {
     for (const entry of entries) {
       if (!entry.isIntersecting) continue;
-      if (!viewed.has(entry.target.id)) {
+      if (entry.target.matches('.case') && !viewed.has(entry.target.id)) {
         window.gtag?.('event', 'view_case', { case_id: entry.target.id });
         viewed.add(entry.target.id);
       }
@@ -62,7 +62,8 @@ if (cases.length) {
       }
     }
   }, { rootMargin: '-5% 0px -65% 0px' });
-  cases.forEach(section => observer.observe(section));
+  // The sections after the cases are in the index too, but only cases count as case views.
+  [...cases, ...document.querySelectorAll('#beyond, #writings')].forEach(section => observer.observe(section));
 }
 
 async function renderDiagrams() {
@@ -121,3 +122,25 @@ if (resumeTrigger) {
     document.getElementById('resume-format-dialog').showModal();
   });
 }
+
+// Diagrams and lazy images can grow the page while an index link scrolls, leaving the view short
+// of its target. Once scrolling stops, move on to the target again until it is in place.
+document.querySelector('.toc nav')?.addEventListener('click', event => {
+  const link = event.target.closest('a[href^="#"]');
+  const target = link && document.getElementById(decodeURIComponent(link.hash.slice(1)));
+  if (!target) return;
+  let tries = 0;
+  const settle = () => {
+    const margin = (parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0) + (parseFloat(getComputedStyle(target).scrollMarginTop) || 0);
+    const atBottom = innerHeight + scrollY >= document.documentElement.scrollHeight - 2;
+    if (Math.abs(target.getBoundingClientRect().top - margin) > 40 && !atBottom && tries++ < 3) {
+      target.scrollIntoView({ behavior: 'smooth' });
+      wait();
+    }
+  };
+  const wait = () => {
+    if ('onscrollend' in window) window.addEventListener('scrollend', settle, { once: true });
+    else setTimeout(settle, 1200);
+  };
+  wait();
+});

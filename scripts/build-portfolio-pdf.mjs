@@ -29,7 +29,7 @@ export async function buildPortfolioPdf(browser, lang='ko') {
       highlights:[...ov.querySelectorAll('.experience-index a')].map(a=>({title:text(a,'strong'),text:text(a,'span')})),
       name:text(ov,'.engineering-profile h2'),role:text(ov,'.profile-role'),email:text(ov,'.profile-email'),
       summary:ov.querySelector('.profile-summary').innerText.trim()};
-    const contents=[...document.querySelectorAll('.toc nav a')].map(a=>({project:text(a,'small'),title:a.querySelector('span:nth-child(2)').lastChild.textContent.trim()}));
+    const contents=[...document.querySelectorAll('.toc nav a:not(.toc-extra)')].map(a=>({project:text(a,'small'),title:a.querySelector('span:nth-child(2)').lastChild.textContent.trim()}));
     const items=[];
     for(const el of document.querySelector('.cases').children){
       if(el.matches('.project-context')){
