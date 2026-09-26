@@ -414,3 +414,12 @@ html[lang="en"] .home-intro h1{font-size:clamp(36px,6vw,64px)}
 @media (min-width:900px){.more-work:not(.writings) .more-grid{grid-template-columns:repeat(3,1fr)}}
 .toc-group{margin:18px 0 4px;padding-left:12px;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--blue)}.toc-group:first-child{margin-top:4px}.toc nav a small{display:none}
 .project-origin{font-size:14px;line-height:1.85;color:#3c4a60}.project-role{font-size:13px;margin:0 0 10px;color:#3c4a60}.project-role strong{color:var(--blue);margin-right:8px}
+/* PDF download buttons on the portfolio page, matching the home actions */
+.pdf-buttons{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.pdf-buttons .button.pdf-button{gap:9px;padding:0 16px;height:42px;justify-content:center;background:#263650;border-color:#263650;color:white;font-size:13px}
+.pdf-buttons .button.pdf-button[href^="portfolio.pdf"]{background:#42665e;border-color:#42665e}
+.pdf-buttons .button.pdf-button img{width:18px;height:18px;flex-shrink:0;filter:brightness(0) invert(1)}
+@media print{.pdf-buttons{display:none}}
+.toc-foot.pdf-buttons{display:flex;flex-direction:row;gap:8px;margin-top:12px;padding:12px 0 0}.toc-foot.pdf-buttons a+a{margin-top:0}.toc-foot.pdf-buttons .button.pdf-button{flex:1;width:auto;height:38px;padding:0 8px;gap:6px;font-size:12px}
+.toc-foot.pdf-buttons .button.pdf-button img{width:15px;height:15px}
+@media(max-width:1000px){.toc-foot.pdf-buttons{display:none}}
