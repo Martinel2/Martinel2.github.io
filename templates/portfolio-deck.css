@@ -111,3 +111,4 @@ p,h1,h2,h3,h4,ul,ol,dl,dd,figure{margin:0}
 .project dl.many{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-content:center}.project dl.many div{padding:10px 14px}.project dl.many dt{font-size:13.5px}.project dl.many dd{font-size:12.5px;line-height:1.55}
 .gallery figure img{max-height:420px;object-fit:contain;background:#f4f6fa}
 .diagram .chart{flex:2.2}
+.diagram .chart svg text,.diagram .chart svg tspan,.diagram .chart svg .nodeLabel,.diagram .chart svg .edgeLabel{font-family:Deck,sans-serif!important}

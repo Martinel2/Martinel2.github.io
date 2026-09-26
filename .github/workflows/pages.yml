@@ -25,6 +25,8 @@ jobs:
         with:
           node-version: '22'
           cache: npm
+      # Chrome renders the PDFs; without a CJK font Korean text in diagrams and footers becomes boxes.
+      - run: sudo apt-get update && sudo apt-get install -y fonts-noto-cjk
       - run: npm ci
       - run: npm run build
         env:

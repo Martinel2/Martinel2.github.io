@@ -45,7 +45,7 @@ try{
  await page.$$eval('img',async imgs=>{for(const img of imgs)img.loading='eager';await Promise.all(imgs.map(img=>img.decode()));});
  await page.emulateMediaType('print');
  await page.pdf({path:dir+'/resume.pdf',format:'A4',printBackground:true,preferCSSPageSize:true,tagged:true,displayHeaderFooter:true,headerTemplate:'<span></span>',
-  footerTemplate:`<div style="width:100%;font-size:8px;color:#7d8da3;padding:0 14mm;display:flex;justify-content:space-between;font-family:Helvetica,Arial,sans-serif"><span>${name} · Backend / AI Application Developer</span><span><span class="pageNumber"></span> / <span class="totalPages"></span></span></div>`});
+  footerTemplate:`<div style="width:100%;font-size:8px;color:#7d8da3;padding:0 14mm;display:flex;justify-content:space-between;font-family:Helvetica,Arial,'Noto Sans CJK KR',sans-serif"><span>${name} · Backend / AI Application Developer</span><span><span class="pageNumber"></span> / <span class="totalPages"></span></span></div>`});
  console.log(`Built ${dir}/resume.pdf as one continuous flow.`);
  await buildResumeDocx(page, lang);
  await page.close();
