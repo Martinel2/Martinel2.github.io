@@ -190,3 +190,16 @@ p,h1,h2,h3,h4,ul,ol,dl,dd,figure{margin:0}
 .project .team dl div.me dt{color:var(--blue);font-size:14px;display:flex;align-items:center;gap:7px}
 .project .team dl div.me dt b{background:var(--blue);color:white;font-size:10px;letter-spacing:1.2px;border-radius:4px;padding:2px 6px}
 .project .team dl div.me dd{color:var(--ink);font-size:13px;font-weight:600}
+/* Project slide v2: my card (role + main work) leads the team column */
+.project .team{flex:1.25;margin-top:0;display:flex;flex-direction:column;justify-content:center;gap:10px}
+.project .me-card{background:white;color:var(--ink);border-radius:12px;padding:14px 18px;outline:2px solid #7fa2ea;outline-offset:2px}
+.project .me-role{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700;color:var(--blue);flex-wrap:wrap;margin-bottom:8px}
+.project .me-role b{background:var(--blue);color:white;font-size:10px;letter-spacing:1.2px;border-radius:4px;padding:2px 6px}
+.project .me-role span{flex-basis:100%;font-size:12.5px;font-weight:600;color:var(--ink)}
+.project .me-card ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.project .me-card li{background:#f1f5fd;border-left:3px solid var(--blue);border-radius:6px;padding:8px 10px}
+.project .me-card li b{display:block;font-size:12.5px;line-height:1.4;margin-bottom:2px}
+.project .me-card li span{font-size:11.5px;line-height:1.5;color:var(--muted)}
+.project .team dl div{opacity:.72}
+.project.dense .me-card li span{font-size:10.5px}.project.dense .me-card li b{font-size:12px}.project.dense .me-card li{padding:6px 9px}
+.project.denser .me-card li span{display:none}

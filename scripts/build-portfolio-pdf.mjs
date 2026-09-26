@@ -37,9 +37,9 @@ export async function buildPortfolioPdf(browser, lang='ko') {
         items.push({type:'project',eyebrow:text(el,'.eyebrow'),name:text(el,'h2'),description:el.querySelector('h2+p').textContent.trim(),
           originTitle:h3[0]?.textContent.trim(),origin:text(el,'.project-origin'),
           teamTitle:h3[1]?.textContent.trim(),roleLabel:text(el,'.project-role strong'),myRole:el.querySelector('.project-role')?.lastChild.textContent.trim()??'',
-          team:[...el.querySelectorAll('.team-list>div')].map(d=>[d.querySelector('dt').lastChild.textContent.trim(),text(d,'dd'),d.classList.contains('me')]),
-          workTitle:h3[2]?.textContent.trim(),contributions:[...el.querySelectorAll('.work-list>div')].map(d=>[text(d,'dt'),text(d,'dd')]),
-          links:[...el.querySelectorAll(':scope>.text-link')].map(link),galleryTitle:h3[3]?.textContent.trim(),
+          team:[...el.querySelectorAll('.team-list>div')].map(d=>[d.querySelector('dt').lastChild.textContent.trim(),d.classList.contains('me')?text(d,'.me-summary'):text(d,'dd'),d.classList.contains('me')]),
+          contributions:[...el.querySelectorAll('.me-work>li')].map(li=>[text(li,'b'),text(li,'span')]),
+          links:[...el.querySelectorAll(':scope>.text-link')].map(link),galleryTitle:h3[2]?.textContent.trim(),
           gallery:[...el.querySelectorAll('.project-figure')].map(f=>{const img=f.querySelector('img');return {src:img.src,caption:text(f,'figcaption'),ratio:img.width/img.height||(+img.getAttribute('width'))/(+img.getAttribute('height'))};})});
       }else if(el.matches('.case')){
         const parts=el.querySelectorAll('.case-part');
@@ -87,11 +87,14 @@ export async function buildPortfolioPdf(browser, lang='ko') {
   let caseNo=0;
   for(const it of data.items){
     if(it.type==='project'){
+      const [me,...others]=[...it.team.filter(t=>t[2]),...it.team.filter(t=>!t[2])];
       slides.push(slide('dark project fit',it.name,`<div class="left"><p class="eyebrow">${esc(it.eyebrow)}</p><h2>${esc(it.name)}</h2><p>${esc(it.description)}</p>
         <div class="origin"><span>${esc(it.originTitle)}</span><p>${esc(it.origin)}</p></div>
-        <div class="team"><span class="label">${esc(it.teamTitle)}</span><dl>${it.team.map(([t,d,me])=>me?`<div class="me"><dt><b>ME</b>${esc(t)}</dt><dd>${esc(d)}</dd></div>`:`<div><dt>${esc(t)}</dt><dd>${esc(d)}</dd></div>`).join('')}</dl></div>
         ${it.links.length?`<div class="links">${links(it.links)}</div>`:''}</div>
-        <div class="work-list"><span class="label">${esc(it.workTitle)}</span>${it.contributions.map(([t,d])=>`<div><b>${esc(t)}</b><p>${esc(d)}</p></div>`).join('')}</div>`));
+        <div class="team"><span class="label">${esc(it.teamTitle)}</span>
+        <div class="me-card"><p class="me-role"><b>ME</b>${esc(me[0])}<span>${esc(me[1])}</span></p>
+        <ul>${it.contributions.map(([t,d])=>`<li><b>${esc(t)}</b><span>${esc(d)}</span></li>`).join('')}</ul></div>
+        <dl>${others.map(([t,d])=>`<div><dt>${esc(t)}</dt><dd>${esc(d)}</dd></div>`).join('')}</dl></div>`));
       const figure=g=>{const [head,...rest]=g.caption.split(' — ');return `<figure><img src="${esc(g.src)}"><figcaption>${rest.length?`<b>${esc(head)}</b>${esc(rest.join(' — '))}`:esc(g.caption)}</figcaption></figure>`;};
       const wide=it.gallery.filter(g=>g.ratio>=1.5), tall=it.gallery.filter(g=>g.ratio<1.5);
       for(let i=0;i<wide.length;i+=4){

@@ -429,3 +429,12 @@ html[lang="en"] .home-intro h1{font-size:clamp(36px,6vw,64px)}
 .team-list>div.me dt{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700;color:var(--blue)}
 .team-list>div.me dd{font-size:14px;font-weight:600;color:var(--ink)}
 .me-badge{display:inline-block;background:var(--blue);color:white;font-size:10px;font-weight:700;letter-spacing:1.2px;border-radius:4px;padding:2px 7px}
+.team-list>div.me{display:block}
+.team-list>div.me dt{margin-bottom:6px}
+.me-summary{margin:0 0 12px;font-size:13.5px;font-weight:600;color:var(--ink)}
+.me-work{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.me-work li{background:white;border:1px solid #d7e1f5;border-radius:8px;padding:11px 14px}
+.me-work b{display:block;font-size:13.5px;color:var(--ink);margin-bottom:2px}
+.me-work span{font-size:13px;line-height:1.7;color:#4c5a70;font-weight:400}
+@media(min-width:900px){.me-work{grid-template-columns:1fr 1fr}}
+.me-work li{margin:0}
