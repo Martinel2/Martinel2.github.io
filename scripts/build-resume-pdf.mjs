@@ -36,8 +36,8 @@ try{
   continued.querySelector('h3').textContent+=lang==='en'?' — continued':' — 계속';
   return [
    html(hero)+section('SUMMARY',html(summary))+section('PROJECTS & EXPERIENCE',html(first)),
-   section('PROJECTS & EXPERIENCE',html(continued))+html(copy(sections[2])),
-   section('PROJECTS & EXPERIENCE',html(copy(projects[1]))),
+   section('PROJECTS & EXPERIENCE',html(continued)),
+   section('PROJECTS & EXPERIENCE',html(copy(projects[1])))+html(copy(sections[2])),
    html(copy(sections[3]))+html(copy(sections[5]))+html(copy(sections[4]))
   ];
  },{name,lang});

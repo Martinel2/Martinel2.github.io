@@ -28,7 +28,7 @@ CONTENT_VERSION = hashlib.sha256((ROOT / "content.json").read_bytes() + (ROOT / 
 
 def resume_text(value):
     text = escape(value)
-    return re.sub(r'(?m)^(문제|해결|성과|판단|Problem|Solution|Result):[ \t]*', r'<strong class="field-label">\1:</strong> ', text)
+    return re.sub(r'(?m)^(문제|해결|성과|판단|Problem|Solution|Result):[ \t]*', r'<strong class="field-label" data-label="\1">\1:</strong> ', text)
 
 
 def home_text(group, key):

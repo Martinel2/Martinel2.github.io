@@ -15,7 +15,7 @@ for lang in ('ko', 'en'):
         actual = ''.join(n.text or '' for n in root.findall('.//w:t', ns))
         expected = ''.join(json.loads(Path(f'artifacts/resume-docx-source{suffix}.json').read_text()))
         assert compact(actual) == compact(expected), 'DOCX text differs from PDF source'
-        assert len(root.findall('.//w:sectPr', ns)) == 4
+        assert len(root.findall(".//w:sectPr", ns)) == 1
         assert len(root.findall('.//w:drawing', ns)) == 6
         assert root.findall('.//w:tbl', ns), 'Editable layout tables are missing'
         rels = ET.fromstring(archive.read('word/_rels/document.xml.rels'))
@@ -26,4 +26,4 @@ for lang in ('ko', 'en'):
         if lang == 'en':
             assert not re.search('[가-힣]', actual), 'Untranslated English DOCX text'
             assert any('github.io/en/portfolio.html#' in url for url in links)
-print('PASS: KO/EN DOCX text parity, 4 sections, 6 images, editable tables, links and no editing lock')
+print('PASS: KO/EN DOCX text parity, 1 flowing section, 6 images, editable tables, links and no editing lock')

@@ -10,7 +10,7 @@
 <a class="skip" href="#main">Skip to content</a>
 <header class="header"><a class="identity" href="./"><span class="monogram">JH<span>.</span></span><span>Jaehyeong Kim <small>JAEHYEONG KIM</small></span></a>
 <nav aria-label="Main navigation"><a href="./" aria-current="page">Home</a><a href="./#about">About</a><a href="./#skills">Skills</a><a href="./#projects">Projects</a><a href="./#activities">Activities</a></nav><a class="language-switch" href="../" hreflang="ko" lang="ko" aria-label="한국어로 보기">한국어</a></header>
-<main id="main"><section class="home-hero"><div class="home-intro"><p class="eyebrow">BACKEND / AI APPLICATION DEVELOPER</p><h1>Hello,<br>I’m Jaehyeong Kim.</h1><h2>A developer who digs into root causes<br>and enjoys solving difficult problems</h2><div class="home-actions"><a class="button" href="resume.pdf?v=9fd08a53eb" target="_blank" rel="noopener"><img src="../assets/icons/file-text.svg" alt="" width="20" height="20">Resume</a><a class="button" href="portfolio.html"><img src="../assets/icons/briefcase.svg" alt="" width="20" height="20">Portfolio</a><a class="button" href="https://www.linkedin.com/in/%EC%9E%AC%ED%98%95-%EA%B9%80-b75920345/" target="_blank" rel="noopener"><img src="../assets/icons/linkedin.svg" alt="" width="20" height="20">LinkedIn</a><a class="button" href="https://github.com/Martinel2" target="_blank" rel="noopener"><img src="../assets/icons/github.svg" alt="" width="20" height="20">GitHub</a></div></div></section>
+<main id="main"><section class="home-hero"><div class="home-intro"><p class="eyebrow">BACKEND / AI APPLICATION DEVELOPER</p><h1>Hello,<br>I’m Jaehyeong Kim.</h1><h2>A developer who digs into root causes<br>and enjoys solving difficult problems</h2><div class="home-actions"><a class="button" href="resume.pdf?v=bc5b6e1dcf" target="_blank" rel="noopener"><img src="../assets/icons/file-text.svg" alt="" width="20" height="20">Resume</a><a class="button" href="portfolio.html"><img src="../assets/icons/briefcase.svg" alt="" width="20" height="20">Portfolio</a><a class="button" href="https://www.linkedin.com/in/%EC%9E%AC%ED%98%95-%EA%B9%80-b75920345/" target="_blank" rel="noopener"><img src="../assets/icons/linkedin.svg" alt="" width="20" height="20">LinkedIn</a><a class="button" href="https://github.com/Martinel2" target="_blank" rel="noopener"><img src="../assets/icons/github.svg" alt="" width="20" height="20">GitHub</a></div></div></section>
 <section class="home-about home-section" id="about"><p class="eyebrow">ABOUT ME</p><h2>About me</h2><p>I enjoy taking a deep dive into problems.</p><p>I weigh accuracy, cost and processing time to choose an implementation that fits the service.</p><p>I contributed to Fruition, an AI workspace that turns documents into knowledge, and Pilltip, a medication service that explains drug information in plain language.</p></section>
 <section class="home-section home-skills" id="skills">
 <p class="eyebrow">SKILLS</p><h2>Skills </h2>
@@ -106,31 +106,31 @@
 <h4>Document conversion pipeline and faster Wiki generation</h4>
 <p class="topic-intro">Converted uploaded PDFs for retrieval and grounded answers, and reduced Wiki generation time. Internal pass rate on 30 pages improved from 45.17% to 89.89%; analysis of 4 documents fell from 282.11s to 73.89s.</p>
 <ul><li>PDF → Markdown conversion
-<strong class="field-label">Problem:</strong> Open-source conversion damaged tables and equations; full AI conversion still had errors and high API usage.
-<strong class="field-label">Solution:</strong> Compared PDF tools and adopted AnyDoc. Repaired damaged text with AI, processed tables and equations separately, and preserved original figures.
-<strong class="field-label">Result:</strong> Internal pass rate on 30 PDF pages improved from 45.17% to 89.89%.</li><li>Parallel Wiki generation
-<strong class="field-label">Problem:</strong> Later documents waited for earlier external AI responses.
-<strong class="field-label">Solution:</strong> Compared worker counts and requests per worker. Capped workers at 4 to manage memory; rejected extra concurrency and GPU parallelism that slowed processing.
-<strong class="field-label">Result:</strong> Analysis of 4 documents fell from 282.11s to 73.89s (about 74% less).</li></ul>
+<strong class="field-label" data-label="Problem">Problem:</strong> Open-source conversion damaged tables and equations; full AI conversion still had errors and high API usage.
+<strong class="field-label" data-label="Solution">Solution:</strong> Compared PDF tools and adopted AnyDoc. Repaired damaged text with AI, processed tables and equations separately, and preserved original figures.
+<strong class="field-label" data-label="Result">Result:</strong> Internal pass rate on 30 PDF pages improved from 45.17% to 89.89%.</li><li>Parallel Wiki generation
+<strong class="field-label" data-label="Problem">Problem:</strong> Later documents waited for earlier external AI responses.
+<strong class="field-label" data-label="Solution">Solution:</strong> Compared worker counts and requests per worker. Capped workers at 4 to manage memory; rejected extra concurrency and GPU parallelism that slowed processing.
+<strong class="field-label" data-label="Result">Result:</strong> Analysis of 4 documents fell from 282.11s to 73.89s (about 74% less).</li></ul>
 </div>
 <div class="resume-topic">
 <h4>Improving retrieval for grounded AI answers</h4>
 <p class="topic-intro">Retrieved document evidence for AI answers. Coverage on 80 answerable questions rose from 66.25% to 91.25%, while false evidence returns on 20 unanswerable questions fell from 20 to 0.</p>
 <ul><li>Evidence selection for RAG
-<strong class="field-label">Problem:</strong> Retrieval missed required facts and returned evidence for unanswerable questions.
-<strong class="field-label">Solution:</strong> Applied Jev after routing tests, then controlled candidates and return limits after a full-corpus trial. Tuned to 300 candidates and up to 4 parallel batches.
-<strong class="field-label">Result:</strong> Across 9 papers, coverage on 80 answerable questions rose from 66.25% to 91.25%. False evidence returns on 20 unanswerable questions fell from 20 to 0. Median time before/after Jev tuning: 9.090s → 2.251s.</li></ul>
+<strong class="field-label" data-label="Problem">Problem:</strong> Retrieval missed required facts and returned evidence for unanswerable questions.
+<strong class="field-label" data-label="Solution">Solution:</strong> Applied Jev after routing tests, then controlled candidates and return limits after a full-corpus trial. Tuned to 300 candidates and up to 4 parallel batches.
+<strong class="field-label" data-label="Result">Result:</strong> Across 9 papers, coverage on 80 answerable questions rose from 66.25% to 91.25%. False evidence returns on 20 unanswerable questions fell from 20 to 0. Median time before/after Jev tuning: 9.090s → 2.251s.</li></ul>
 </div>
 <div class="resume-topic">
 <h4>Reusable Skills and improved AI Agent routing</h4>
 <p class="topic-intro">Built reusable Skills with user approval before changes. Applied Jev to route requests to questions, edits and other tasks: correct decisions rose from 77/98 to 81/98, and median decision time fell from 8.967s to 0.658s.</p>
 <ul><li>User-defined task instructions (Skills)
-<strong class="field-label">Problem:</strong> Developers cannot build every recurring workflow users need.
-<strong class="field-label">Solution:</strong> Built drafting, review and publishing of natural-language instructions, with checks against bypassing permissions or approval. Document changes require separate preview and approval.
-<strong class="field-label">Result:</strong> Published Skills became available to the Agent. In a 6-document check, no changes occurred before approval; 3 folders were created and documents moved afterward.</li><li>Jev-based request routing
-<strong class="field-label">Problem:</strong> Misclassifying questions as edits led to the wrong action.
-<strong class="field-label">Solution:</strong> Applied Jev to select task types and additional conditions for questions, edits, document creation and folder organization.
-<strong class="field-label">Result:</strong> Fully correct decisions on the same 98 requests rose from 77 to 81. Median decision time fell from 8.967s to 0.658s.</li></ul>
+<strong class="field-label" data-label="Problem">Problem:</strong> Developers cannot build every recurring workflow users need.
+<strong class="field-label" data-label="Solution">Solution:</strong> Built drafting, review and publishing of natural-language instructions, with checks against bypassing permissions or approval. Document changes require separate preview and approval.
+<strong class="field-label" data-label="Result">Result:</strong> Published Skills became available to the Agent. In a 6-document check, no changes occurred before approval; 3 folders were created and documents moved afterward.</li><li>Jev-based request routing
+<strong class="field-label" data-label="Problem">Problem:</strong> Misclassifying questions as edits led to the wrong action.
+<strong class="field-label" data-label="Solution">Solution:</strong> Applied Jev to select task types and additional conditions for questions, edits, document creation and folder organization.
+<strong class="field-label" data-label="Result">Result:</strong> Fully correct decisions on the same 98 requests rose from 77 to 81. Median decision time fell from 8.967s to 0.658s.</li></ul>
 </div>
 <div class="resume-topic">
 <h4>Service responsibilities and communication</h4>
@@ -154,16 +154,16 @@
 <div class="resume-topic">
 <h4>Drug data preparation pipeline</h4>
 <p class="topic-intro">Rewrote about 44,000 drug records in plain language. Deduplication reduced input from 1GB to 326MB; after filling missing information, conversion cost $11.18 in actual API spending versus about $200 estimated for the original text.</p>
-<ul><li><p><strong class="field-label">Problem:</strong> Converting all 44,000 drug records was estimated to cost about $200 in API calls.
-<strong class="field-label">Solution:</strong> Removed exact duplicates, then semantically equivalent sentences. Filled the missing 5% with ingredient-specific precautions, converted via GPT Batch API and mapped results back to each drug.</p><p><strong class="field-label">Result:</strong> Conversion input shrank from 1GB to 326MB. Actual API spending was $11.18 versus about $200 estimated for all original text.</p>
+<ul><li><p><strong class="field-label" data-label="Problem">Problem:</strong> Converting all 44,000 drug records was estimated to cost about $200 in API calls.
+<strong class="field-label" data-label="Solution">Solution:</strong> Removed exact duplicates, then semantically equivalent sentences. Filled the missing 5% with ingredient-specific precautions, converted via GPT Batch API and mapped results back to each drug.</p><p><strong class="field-label" data-label="Result">Result:</strong> Conversion input shrank from 1GB to 326MB. Actual API spending was $11.18 versus about $200 estimated for all original text.</p>
 <p class="scope-note">Estimated cost versus actual spending; preprocessing labor is excluded.</p></li></ul>
 </div>
 <div class="resume-topic">
 <h4>AI medication chatbot using health profiles</h4>
 <p class="topic-intro">Found drug and medication information from natural-language symptoms. Evaluated health profiles internally, separately from information sent to external AI.</p>
-<ul><li><strong class="field-label">Problem:</strong> Everyday symptom language differed from drug indications, while sensitive health data needed to stay out of external AI inputs.
-<strong class="field-label">Solution:</strong> Used Weaviate semantic search and AI orchestration for drug discovery, medication risks and dosage. Evaluated pregnancy, current medications and underlying conditions in internal code.
-<strong class="field-label">Result:</strong> Implemented personalized symptom-based search while excluding those profile fields from external LLM inputs.</li></ul>
+<ul><li><strong class="field-label" data-label="Problem">Problem:</strong> Everyday symptom language differed from drug indications, while sensitive health data needed to stay out of external AI inputs.
+<strong class="field-label" data-label="Solution">Solution:</strong> Used Weaviate semantic search and AI orchestration for drug discovery, medication risks and dosage. Evaluated pregnancy, current medications and underlying conditions in internal code.
+<strong class="field-label" data-label="Result">Result:</strong> Implemented personalized symptom-based search while excluding those profile fields from external LLM inputs.</li></ul>
 </div>
 <div class="resume-topic">
 <h4>Backend feature implementation</h4>
@@ -174,6 +174,6 @@
 <a class="text-link" href="portfolio.html#pilltip-data">Data pipeline case study ↗</a>
 <a class="text-link" href="portfolio.html#pilltip-personalization">Personalization case study ↗</a>
 </article></dialog>
-<dialog class="project-dialog resume-format-dialog" id="resume-format-dialog" aria-labelledby="resume-format-title"><form method="dialog"><button class="button" autofocus>Close ×</button></form><h2 id="resume-format-title">Resume</h2><div class="resume-formats"><a class="button" href="resume.pdf?v=9fd08a53eb" target="_blank" rel="noopener">View PDF</a><a class="button resume-download" href="resume.docx?v=9fd08a53eb" download="Jaehyeong_Kim_Resume.docx">Download Word</a></div></dialog></main>
+<dialog class="project-dialog resume-format-dialog" id="resume-format-dialog" aria-labelledby="resume-format-title"><form method="dialog"><button class="button" autofocus>Close ×</button></form><h2 id="resume-format-title">Resume</h2><div class="resume-formats"><a class="button" href="resume.pdf?v=bc5b6e1dcf" target="_blank" rel="noopener">View PDF</a><a class="button resume-download" href="resume.docx?v=bc5b6e1dcf" download="Jaehyeong_Kim_Resume.docx">Download Word</a></div></dialog></main>
 <footer class="site-footer"><span>© 2026 Jaehyeong Kim</span><div class="footer-links"><a href="mailto:kkuldangi2@gmail.com">Email ↗</a><a href="https://github.com/Martinel2">GitHub ↗</a><a href="https://velog.io/@kkuldangi3/posts">Blog ↗</a><a href="https://www.linkedin.com/in/%EC%9E%AC%ED%98%95-%EA%B9%80-b75920345/">LinkedIn ↗</a><a href="#top">Back to top ↑</a></div></footer>
 </body></html>
