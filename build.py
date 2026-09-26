@@ -194,7 +194,7 @@ if __name__ == '__main__':
         LANG = language
         source = ROOT / ('content.en.json' if LANG == 'en' else 'content.json')
         DATA = json.loads(source.read_text())
-        CONTENT_VERSION = hashlib.sha256(source.read_bytes() + (ROOT / 'templates/resume.html').read_bytes() + (ROOT / 'templates/resume-pdf.css').read_bytes() + (ROOT / 'scripts/build-resume-pdf.mjs').read_bytes() + (ROOT / 'scripts/build-resume-docx.mjs').read_bytes() + (ROOT / 'ui.en.json').read_bytes() + (ROOT / 'build.py').read_bytes() + (ROOT / 'site/assets/style.css').read_bytes() + (ROOT / 'scripts/build-portfolio-pdf.mjs').read_bytes()).hexdigest()[:10]
+        CONTENT_VERSION = hashlib.sha256(source.read_bytes() + (ROOT / 'templates/resume.html').read_bytes() + (ROOT / 'templates/resume-pdf.css').read_bytes() + (ROOT / 'scripts/build-resume-pdf.mjs').read_bytes() + (ROOT / 'scripts/build-resume-docx.mjs').read_bytes() + (ROOT / 'ui.en.json').read_bytes() + (ROOT / 'build.py').read_bytes() + (ROOT / 'site/assets/style.css').read_bytes() + (ROOT / 'scripts/build-portfolio-pdf.mjs').read_bytes() + (ROOT / 'templates/portfolio-deck.css').read_bytes()).hexdigest()[:10]
         SITE = ROOT / 'site' / ('en' if LANG == 'en' else '')
         SITE.mkdir(exist_ok=True)
         portfolio()
