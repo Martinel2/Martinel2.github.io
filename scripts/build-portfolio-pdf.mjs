@@ -92,7 +92,7 @@ export async function buildPortfolioPdf(browser, lang='ko') {
         <div class="origin"><span>${esc(it.originTitle)}</span><p>${esc(it.origin)}</p></div>
         ${it.links.length?`<div class="links">${links(it.links)}</div>`:''}</div>
         <div class="team"><span class="label">${esc(it.teamTitle)}</span>
-        <div class="me-card"><p class="me-role"><b>ME</b>${esc(me[0])}<span>${esc(me[1])}</span></p>
+        <div class="me-card"><p class="me-role"><b>MY ROLE</b>${esc(me[0])}<span>${esc(me[1])}</span></p>
         <ul>${it.contributions.map(([t,d])=>`<li><b>${esc(t)}</b><span>${esc(d)}</span></li>`).join('')}</ul></div>
         <dl>${others.map(([t,d])=>`<div><dt>${esc(t)}</dt><dd>${esc(d)}</dd></div>`).join('')}</dl></div>`));
       const figure=g=>{const [head,...rest]=g.caption.split(' — ');return `<figure><img src="${esc(g.src)}"><figcaption>${rest.length?`<b>${esc(head)}</b>${esc(rest.join(' — '))}`:esc(g.caption)}</figcaption></figure>`;};

@@ -438,3 +438,12 @@ html[lang="en"] .home-intro h1{font-size:clamp(36px,6vw,64px)}
 .me-work span{font-size:13px;line-height:1.7;color:#4c5a70;font-weight:400}
 @media(min-width:900px){.me-work{grid-template-columns:1fr 1fr}}
 .me-work li{margin:0}
+/* My role, refined: one calm panel, a small label, a numbered two-column list */
+.team-list>div.me{background:#f7f9fd;border:1px solid #dfe6f3;border-left:0;border-radius:12px;padding:22px 24px;margin:6px 0 10px}
+.team-list>div.me dt{display:block;font-size:19px;font-weight:700;color:var(--ink);letter-spacing:-.2px;margin-bottom:4px}
+.me-badge{display:block;background:none;color:var(--blue);padding:0;border-radius:0;font-size:10.5px;letter-spacing:2px;margin-bottom:6px}
+.me-summary{font-size:13.5px;font-weight:400;color:#4c5a70;margin:0 0 16px}
+.me-work{counter-reset:work;gap:0 28px;border-top:1px solid #dfe6f3}
+.me-work li{counter-increment:work;background:none;border:0;border-bottom:1px solid #e6ebf3;border-radius:0;padding:12px 0 12px 30px;position:relative}
+.me-work li::before{content:counter(work,decimal-leading-zero);position:absolute;left:0;top:13px;font-size:11px;font-weight:700;color:var(--blue);letter-spacing:.5px}
+.me-work b{font-size:14px}

@@ -203,3 +203,13 @@ p,h1,h2,h3,h4,ul,ol,dl,dd,figure{margin:0}
 .project .team dl div{opacity:.72}
 .project.dense .me-card li span{font-size:10.5px}.project.dense .me-card li b{font-size:12px}.project.dense .me-card li{padding:6px 9px}
 .project.denser .me-card li span{display:none}
+/* Slide my-role panel, refined */
+.project .me-card{background:rgba(255,255,255,.08);color:white;outline:0;border:1px solid rgba(159,184,236,.35);border-radius:14px;padding:16px 20px}
+.project .me-role{display:block;font-size:20px;color:white;margin-bottom:10px}
+.project .me-role b{display:block;background:none;color:#9fb8ec;padding:0;font-size:10.5px;letter-spacing:2px;margin-bottom:4px}
+.project .me-role span{display:block;font-size:12.5px;font-weight:400;color:#c9d5ea;margin-top:4px}
+.project .me-card ul{counter-reset:work;gap:0 22px;border-top:1px solid rgba(255,255,255,.14)}
+.project .me-card li{counter-increment:work;background:none;border:0;border-bottom:1px solid rgba(255,255,255,.1);border-radius:0;padding:8px 0 8px 26px;position:relative}
+.project .me-card li::before{content:counter(work,decimal-leading-zero);position:absolute;left:0;top:9px;font-size:10.5px;font-weight:700;color:#9fb8ec}
+.project .me-card li b{color:white}.project .me-card li span{color:#b9c6dc}
+.project.dense .me-card li{padding:6px 0 6px 24px}
