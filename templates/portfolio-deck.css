@@ -180,3 +180,7 @@ p,h1,h2,h3,h4,ul,ol,dl,dd,figure{margin:0}
 .case-head b{flex:none;background:var(--blue);color:white;border-radius:5px;padding:2px 9px;font-size:11px;letter-spacing:1.5px}
 .case-head span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .case-head em{flex:none;font-style:normal;font-weight:400;color:var(--muted)}.case-head em::before{content:'·';margin-right:10px}
+.contents .groups{grid-template-columns:1fr 1fr 1fr;gap:36px}
+.contents .groups li a{display:flex;align-items:baseline;gap:16px;width:100%;color:inherit}
+.contents .groups li i{margin-left:auto;font-style:normal;font-size:13px;color:var(--muted);font-weight:400;flex:none}
+.contents .groups li span{font-size:15.5px}

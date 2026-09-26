@@ -72,15 +72,18 @@ export async function buildPortfolioPdf(browser, lang='ko') {
   const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   const L=en?{contents:'Contents',cases:'Case studies',screens:'Screens and scope',contact:'Contact',portfolio:'Portfolio',continued:'continued'}
     :{contents:'목차',cases:'프로젝트 사례',screens:'담당 기능과 서비스 화면',contact:'Contact',portfolio:'포트폴리오',continued:'계속'};
-  const slide=(cls,section,body)=>`<section class="slide ${cls}" data-section="${esc(section)}"><div class="body">${body}</div><footer><span>${esc(data.overview.name)} · ${L.portfolio}</span><span class="section">${esc(section)}</span><span class="num"></span></footer></section>`;
+  const slide=(cls,section,body,id)=>`<section class="slide ${cls}"${id?` id="${id}"`:''} data-section="${esc(section)}"><div class="body">${body}</div><footer><span>${esc(data.overview.name)} · ${L.portfolio}</span><span class="section">${esc(section)}</span><span class="num"></span></footer></section>`;
   const links=list=>list.map(l=>`<a href="${esc(l.url)}">${esc(l.label)}</a>`).join('');
   const o=data.overview;
   const slides=[];
   slides.push(slide('dark cover','',`<div class="intro"><p class="eyebrow">${esc(o.eyebrow)}</p><h1>${esc(o.title)}</h1><p>${esc(o.description)}</p>
     <div class="who"><strong>${esc(o.name)}</strong>${esc(o.role)}<br><span class="muted">${esc(o.email)} · martinel2.github.io</span><p class="muted" style="margin-top:10px;white-space:pre-line">${esc(o.summary)}</p></div></div>
     <div class="highlights">${o.highlights.map(h=>`<div><strong>${esc(h.title)}</strong><span>${esc(h.text)}</span></div>`).join('')}</div>`));
+  const entry=(n,title,id)=>`<li><a href="#${id}"><b>${String(n).padStart(2,'0')}</b><span>${esc(title)}</span><i data-page="${id}"></i></a></li>`;
+  const more=[[data.closing.title,'beyond'],[data.closing.writingsTitle,'writings']];
   slides.push(slide('contents',L.contents,`<p class="eyebrow">${L.cases}</p><h2 class="slide-title">${L.contents}</h2>
-    <div class="groups">${[...new Set(data.contents.map(c=>c.project))].map(project=>`<div><p class="group">${esc(project)}</p><ol>${data.contents.map((c,i)=>c.project===project?`<li><b>${String(i+1).padStart(2,'0')}</b><span>${esc(c.title)}</span></li>`:'').join('')}</ol></div>`).join('')}</div>`));
+    <div class="groups">${[...new Set(data.contents.map(c=>c.project))].map(project=>`<div><p class="group">${esc(project)}</p><ol>${data.contents.map((c,i)=>c.project===project?entry(i+1,c.title,`case-${i+1}`):'').join('')}</ol></div>`).join('')}
+    <div><p class="group">MORE</p><ol>${more.map(([t,id],k)=>entry(data.contents.length+k+1,t,id)).join('')}</ol></div></div>`));
   let caseNo=0;
   for(const it of data.items){
     if(it.type==='project'){
@@ -112,7 +115,7 @@ export async function buildPortfolioPdf(browser, lang='ko') {
     slides.push(slide('dark case-open',section,`<div class="left"><div class="kicker"><b>${tag}</b><span>${esc(it.kicker[1]??'')}</span></div><h2>${esc(it.title)}</h2>
       <p class="summary">${esc(it.summary)}</p><p class="meta">${esc(it.meta)}</p><div class="tags">${it.tags.map(t=>`<span>${esc(t)}</span>`).join('')}</div></div>
       <div class="right"><div class="background"><span>${esc(it.backgroundTitle)}</span><p>${esc(it.background)}</p></div>
-      ${stats.length?`<div class="stat">${stats.map(([l,v])=>`<div><small>${esc(l)}</small><strong>${esc(v)}</strong></div>`).join('')}</div>`:''}</div>`));
+      ${stats.length?`<div class="stat">${stats.map(([l,v])=>`<div><small>${esc(l)}</small><strong>${esc(v)}</strong></div>`).join('')}</div>`:''}</div>`,`case-${caseNo}`));
     if(it.steps.length)slides.push(slide('process',section,`${head()}<h2 class="slide-title">${esc(it.processTitle)}</h2>
       <div class="steps">${it.steps.map((s,i)=>`<article class="step"><h4><b>${i+1}</b><span>${esc(s.title)}</span></h4>${s.fields.map(([l,t])=>`<p><strong>${esc(l)}</strong>${esc(t)}</p>`).join('')}</article>`).join('')}</div>`));
     else if(it.processTable)slides.push(slide('process result',section,`${head()}<h2 class="slide-title">${esc(it.processTitle)}</h2>${it.processTable}`));
@@ -133,11 +136,11 @@ export async function buildPortfolioPdf(browser, lang='ko') {
   }
   const c=data.closing;
   slides.push(slide('beyond',c.title,`<p class="eyebrow">${esc(c.eyebrow)}</p><h2 class="slide-title">${esc(c.title)}</h2>
-    <div class="cards">${c.items.map(i=>`<div class="item"><b>${esc(i.title)}</b><p>${esc(i.text)}</p>${links(i.links.filter(l=>!l.url.includes('#')))}</div>`).join('')}</div>`));
+    <div class="cards">${c.items.map(i=>`<div class="item"><b>${esc(i.title)}</b><p>${esc(i.text)}</p>${links(i.links.filter(l=>!l.url.includes('#')))}</div>`).join('')}</div>`,'beyond'));
   slides.push(slide('closing',c.writingsTitle,`<div class="col"><p class="eyebrow">${esc(c.writingsEyebrow)}</p><h2>${esc(c.writingsTitle)}</h2>
     ${c.writings.map(w=>`<div class="item"><a href="${esc(w.url)}"><small class="muted">${esc(w.kicker)}</small><b>${esc(w.title)}</b></a><p>${esc(w.text)}</p></div>`).join('')}
     <a href="${esc(c.more.url)}" style="font-size:13px">${esc(c.more.label)}</a></div>
-    <div class="col"><p class="eyebrow">${L.contact}</p><h2>${esc(o.name)}</h2><div class="contact" style="margin-top:0">${esc(o.role)}<br>${esc(o.email)}<br><a href="https://martinel2.github.io/${en?'en/':''}">martinel2.github.io</a><br><a href="https://github.com/Martinel2">github.com/Martinel2</a><p class="muted" style="margin-top:14px;white-space:pre-line;font-size:14px">${esc(o.summary)}</p></div></div>`));
+    <div class="col"><p class="eyebrow">${L.contact}</p><h2>${esc(o.name)}</h2><div class="contact" style="margin-top:0">${esc(o.role)}<br>${esc(o.email)}<br><a href="https://martinel2.github.io/${en?'en/':''}">martinel2.github.io</a><br><a href="https://github.com/Martinel2">github.com/Martinel2</a><p class="muted" style="margin-top:14px;white-space:pre-line;font-size:14px">${esc(o.summary)}</p></div></div>`,'writings'));
 
   const css=await readFile('templates/portfolio-deck.css','utf8');
   const baseHref=pathToFileURL(resolve(dir)+'/').href;
@@ -168,6 +171,7 @@ export async function buildPortfolioPdf(browser, lang='ko') {
       if(!fits(s))s.classList.add('denser');
     }
     const slides=[...document.querySelectorAll('.slide')];
+    document.querySelectorAll('[data-page]').forEach(el=>{const t=document.getElementById(el.dataset.page);el.textContent=t?`p.${slides.indexOf(t)+1}`:'';});
     slides.forEach((s,i)=>s.querySelector('.num').textContent=`${i+1} / ${slides.length}`);
     return slides.map((s,i)=>fits(s)?null:`${i+1}:${s.dataset.section}`).filter(Boolean);
   },L.continued);
