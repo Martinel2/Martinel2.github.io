@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "python3 build.py && node scripts/build-resume-pdf.mjs",
+    "build": "python3 build.py && node scripts/build-resume-pdf.mjs && node scripts/build-portfolio-pdf.mjs",
     "dev": "python3 -m http.server 4173 --directory site",
     "test": "npm run build && node test.mjs && node scripts/test-languages.mjs"
   },

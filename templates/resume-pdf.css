@@ -14,3 +14,4 @@ html[lang="en"] .resume-topic h4{margin-top:5px}
 html[lang="en"] .resume-topic li{margin-bottom:4px}
 html[lang="en"] .resume-hero{padding:10px 14px}
 .field-label{font-weight:700;color:#c0392b}.field-label[data-label="해결"],.field-label[data-label="Solution"]{color:#1f6feb}.field-label[data-label="성과"],.field-label[data-label="Result"]{color:#1e8449}.field-label[data-label="판단"]{color:#b9770e}
+.resume-project+.resume-project{margin-top:14px}

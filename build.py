@@ -67,7 +67,7 @@ def page(title, description, body, resume=False):
 <nav aria-label="주 메뉴"><a href="./" {'aria-current="page"' if not path else ''}>{home_text('navigation', 'homeLabel')}</a><a href="./#about">{home_text("navigation", "aboutLabel")}</a><a href="./#skills">{home_text("navigation", "skillsLabel")}</a><a href="./#projects">{home_text("navigation", "projectsLabel")}</a><a href="./#activities">{home_text("navigation", "activitiesLabel")}</a></nav>{language_switch}</header>
 <main id="main">{body}</main>
 <footer class="site-footer"><span>© {DATA['updated'][:4]} 김재형</span><div class="footer-links"><a href="mailto:kkuldangi2@gmail.com">Email ↗</a><a href="https://github.com/Martinel2">GitHub ↗</a><a href="https://velog.io/@kkuldangi3/posts">Blog ↗</a><a href="https://www.linkedin.com/in/%EC%9E%AC%ED%98%95-%EA%B9%80-b75920345/">LinkedIn ↗</a><a href="#top">맨 위로 ↑</a></div></footer>
-</body></html>'''.replace('href="resume.pdf"', f'href="resume.pdf?v={CONTENT_VERSION}"').replace('href="resume.docx"', f'href="resume.docx?v={CONTENT_VERSION}"')
+</body></html>'''.replace('href="resume.pdf"', f'href="resume.pdf?v={CONTENT_VERSION}"').replace('href="resume.docx"', f'href="resume.docx?v={CONTENT_VERSION}"').replace('href="portfolio.pdf"', f'href="portfolio.pdf?v={CONTENT_VERSION}"')
     alternates = f'<link rel="alternate" hreflang="ko" href="https://martinel2.github.io/{path}"><link rel="alternate" hreflang="en" href="https://martinel2.github.io/en/{path}">'
     html = html.replace('</head>', alternates + '</head>')
     if LANG == 'en':
@@ -132,9 +132,9 @@ def portfolio():
 <li><a href="#pilltip-data"><strong>{escape(DATA['overview']['experience3Title'])}</strong><span>{escape(DATA['overview']['experience3Description'])}</span></a></li>
 </ul></div>
 <aside class="engineering-profile" aria-label="개발자 프로필"><p class="eyebrow">ENGINEERING PROFILE</p><h2>김재형</h2><p class="profile-role">{escape(DATA['overview']['profileRole'])}</p><a class="profile-email" href="mailto:kkuldangi2@gmail.com">kkuldangi2@gmail.com</a>
-<p class="profile-summary">{escape(DATA['overview']['profileLine1'])}<br>{escape(DATA['overview']['profileLine2'])}</p><a class="profile-resume" href="resume.pdf" target="_blank" rel="noopener">이력서 PDF ↗</a></aside></section>
+<p class="profile-summary">{escape(DATA['overview']['profileLine1'])}<br>{escape(DATA['overview']['profileLine2'])}</p><a class="profile-resume" href="resume.pdf" target="_blank" rel="noopener">이력서 PDF ↗</a> <a class="profile-resume" href="portfolio.pdf" target="_blank" rel="noopener">포트폴리오 PDF ↗</a></aside></section>
 <div id="work" class="work-anchor"></div>
-<div class="work-layout"><aside class="toc"><div class="toc-inner"><p class="eyebrow">목차 <span>{len(DATA['cases']):02d}</span></p><nav aria-label="프로젝트 목차">{contents}</nav><div class="toc-foot"><span>READING GUIDE</span><p>문제 상황<br>실험과 개선 · 해결 방안 비교<br>구현과 구조<br>결과와 배운 점</p><a href="resume.pdf" target="_blank" rel="noopener">이력서 PDF ↗</a></div></div></aside><div class="cases">{''.join(project_sections)}</div></div>
+<div class="work-layout"><aside class="toc"><div class="toc-inner"><p class="eyebrow">목차 <span>{len(DATA['cases']):02d}</span></p><nav aria-label="프로젝트 목차">{contents}</nav><div class="toc-foot"><span>READING GUIDE</span><p>문제 상황<br>실험과 개선 · 해결 방안 비교<br>구현과 구조<br>결과와 배운 점</p><a href="resume.pdf" target="_blank" rel="noopener">이력서 PDF ↗</a><a href="portfolio.pdf" target="_blank" rel="noopener">포트폴리오 PDF ↗</a></div></div></aside><div class="cases">{''.join(project_sections)}</div></div>
 <section class="more-work"><span class="eyebrow">BEYOND THE PROJECTS</span><h2>코드 밖에서도 이어지는 경험</h2><div class="more-grid"><div><a href="https://github.com/edwardkim/rhwp/pull/1213"><span>OPEN SOURCE ↗</span><h3>Rhwp · HWPX 저장 오류 수정</h3><p>textFlow 속성 보존 오류를 수정한 PR #1213 병합. 이슈 분석부터 구현, 테스트와 CI 대응까지 기여했습니다.</p></a><a class="text-link" href="https://github.com/edwardkim/rhwp">GitHub 저장소 ↗</a></div>
 <div><h3>APPTIVE · 백엔드 멘토링</h3><div class="evidence-row"><a class="evidence-thumb" href="assets/evidence/apptive-merit.jpeg" target="_blank" rel="noopener"><img src="assets/evidence/apptive-merit.jpeg" alt="APPTIVE 백엔드 멘토 공로상" loading="lazy"><span>크게 보기 ↗</span></a><div><p>멘티 경험을 교육 개선으로 연결했습니다. 멘티 12명을 대상으로 6회의 멘토링과 코드 리뷰를 진행했습니다.</p><a class="text-link" href="./#activities">활동 내용 ↗</a></div></div></div></div></section>
 <section class="more-work writings"><span class="eyebrow">{home_text("sections", "writingsEyebrow")}</span><div class="writings-heading"><h2>{home_text("sections", "writingsTitle")}</h2><a class="button" href="{home_text("sections", "writingsUrl")}">{home_text("sections", "writingsLinkLabel")} ↗</a></div><div class="more-grid">{writings}</div></section>'''
@@ -194,7 +194,7 @@ if __name__ == '__main__':
         LANG = language
         source = ROOT / ('content.en.json' if LANG == 'en' else 'content.json')
         DATA = json.loads(source.read_text())
-        CONTENT_VERSION = hashlib.sha256(source.read_bytes() + (ROOT / 'templates/resume.html').read_bytes() + (ROOT / 'templates/resume-pdf.css').read_bytes() + (ROOT / 'scripts/build-resume-pdf.mjs').read_bytes() + (ROOT / 'scripts/build-resume-docx.mjs').read_bytes() + (ROOT / 'ui.en.json').read_bytes() + (ROOT / 'build.py').read_bytes()).hexdigest()[:10]
+        CONTENT_VERSION = hashlib.sha256(source.read_bytes() + (ROOT / 'templates/resume.html').read_bytes() + (ROOT / 'templates/resume-pdf.css').read_bytes() + (ROOT / 'scripts/build-resume-pdf.mjs').read_bytes() + (ROOT / 'scripts/build-resume-docx.mjs').read_bytes() + (ROOT / 'ui.en.json').read_bytes() + (ROOT / 'build.py').read_bytes() + (ROOT / 'site/assets/style.css').read_bytes() + (ROOT / 'scripts/build-portfolio-pdf.mjs').read_bytes()).hexdigest()[:10]
         SITE = ROOT / 'site' / ('en' if LANG == 'en' else '')
         SITE.mkdir(exist_ok=True)
         portfolio()
