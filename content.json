@@ -420,10 +420,6 @@
       ],
       "links": [
         {
-          "label": "GitHub · local-pilot",
-          "url": "https://github.com/FruitionKR/local-pilot"
-        },
-        {
           "label": "GitHub · AI 분리 저장소",
           "url": "https://github.com/FruitionKR/Fruition-ai"
         }
