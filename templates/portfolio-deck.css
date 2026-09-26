@@ -176,3 +176,7 @@ p,h1,h2,h3,h4,ul,ol,dl,dd,figure{margin:0}
 .gallery .grid.trio figure:nth-child(3){grid-column:1/-1;align-items:center;gap:26px}
 .gallery .grid.trio figure:nth-child(3) img{width:auto;height:100%;max-height:330px;aspect-ratio:16/9}
 .gallery .grid.trio figure:nth-child(3) figcaption{font-size:14px;line-height:1.7}
+.case-head{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:700;color:var(--ink);min-width:0}
+.case-head b{flex:none;background:var(--blue);color:white;border-radius:5px;padding:2px 9px;font-size:11px;letter-spacing:1.5px}
+.case-head span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.case-head em{flex:none;font-style:normal;font-weight:400;color:var(--muted)}.case-head em::before{content:'·';margin-right:10px}

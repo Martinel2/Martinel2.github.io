@@ -107,24 +107,26 @@ export async function buildPortfolioPdf(browser, lang='ko') {
     const tag=`CASE ${String(caseNo).padStart(2,'0')}`;
     const section=`${tag} · ${it.kicker[1]?.split(' / ')[0]??''}`;
     const stats=it.metrics.slice(0,3);
+    // Every slide of a case repeats its title top left, so readers keep their place.
+    const head=extra=>`<p class="case-head"><b>${tag}</b><span>${esc(data.contents[caseNo-1]?.title??it.title)}</span>${extra?`<em>${esc(extra)}</em>`:''}</p>`;
     slides.push(slide('dark case-open',section,`<div class="left"><div class="kicker"><b>${tag}</b><span>${esc(it.kicker[1]??'')}</span></div><h2>${esc(it.title)}</h2>
       <p class="summary">${esc(it.summary)}</p><p class="meta">${esc(it.meta)}</p><div class="tags">${it.tags.map(t=>`<span>${esc(t)}</span>`).join('')}</div></div>
       <div class="right"><div class="background"><span>${esc(it.backgroundTitle)}</span><p>${esc(it.background)}</p></div>
       ${stats.length?`<div class="stat">${stats.map(([l,v])=>`<div><small>${esc(l)}</small><strong>${esc(v)}</strong></div>`).join('')}</div>`:''}</div>`));
-    if(it.steps.length)slides.push(slide('process',section,`<p class="eyebrow">${tag}</p><h2 class="slide-title">${esc(it.processTitle)}</h2>
+    if(it.steps.length)slides.push(slide('process',section,`${head()}<h2 class="slide-title">${esc(it.processTitle)}</h2>
       <div class="steps">${it.steps.map((s,i)=>`<article class="step"><h4><b>${i+1}</b><span>${esc(s.title)}</span></h4>${s.fields.map(([l,t])=>`<p><strong>${esc(l)}</strong>${esc(t)}</p>`).join('')}</article>`).join('')}</div>`));
-    else if(it.processTable)slides.push(slide('process result',section,`<p class="eyebrow">${tag}</p><h2 class="slide-title">${esc(it.processTitle)}</h2>${it.processTable}`));
+    else if(it.processTable)slides.push(slide('process result',section,`${head()}<h2 class="slide-title">${esc(it.processTitle)}</h2>${it.processTable}`));
     const metricCards=it.metrics.map(([l,v,n])=>`<div><small>${esc(l)}</small><strong>${esc(v)}</strong><em>${esc(n)}</em></div>`).join('');
     if(it.svg&&!it.image){
-      slides.push(slide('analysis fit',section,`<p class="eyebrow">${tag} · ${esc(it.diagramTitle)} · ${esc(it.resultHeading)}</p>
+      slides.push(slide('analysis fit',section,`${head(`${it.diagramTitle} · ${it.resultHeading}`)}
         <div class="row"><div class="chart">${it.svg}</div><div class="summary"><h3>${esc(it.resultTitle)}</h3>
         ${metricCards?`<div class="metrics">${metricCards}</div>`:''}${it.result.map(p=>`<p>${esc(p)}</p>`).join('')}${it.comparison}
         <div class="limits"><strong>${esc(it.limitsTitle)}</strong><p>${esc(it.limits)}</p></div>${it.links.length?`<div class="links">${links(it.links)}</div>`:''}</div></div>`));
       continue;
     }
-    if(it.svg)slides.push(slide('diagram',section,`<p class="eyebrow">${tag}</p><h2 class="slide-title">${esc(it.diagramTitle)}</h2>
+    if(it.svg)slides.push(slide('diagram',section,`${head()}<h2 class="slide-title">${esc(it.diagramTitle)}</h2>
       <div class="row"><div class="chart">${it.svg}</div><div class="side">${it.image?`<img src="${esc(it.image)}">`:''}<p${it.image?' class="caption"':''}>${esc(it.diagramCaption)}</p></div></div>`));
-    slides.push(slide('result',section,`<p class="eyebrow">${tag} · ${esc(it.resultHeading)}</p>
+    slides.push(slide('result',section,`${head(it.resultHeading)}
       <div class="row" style="margin-top:10px"><div class="left"><h3>${esc(it.resultTitle)}</h3>${it.result.map(p=>`<p>${esc(p)}</p>`).join('')}${it.comparison}
       <div class="limits"><strong>${esc(it.limitsTitle)}</strong><p>${esc(it.limits)}</p></div>${it.links.length?`<div class="links">${links(it.links)}</div>`:''}</div>
       ${it.metrics.length?`<div class="metrics">${it.metrics.map(([l,v,n])=>`<div><small>${esc(l)}</small><strong>${esc(v)}</strong><em>${esc(n)}</em></div>`).join('')}</div>`:''}</div>`));
