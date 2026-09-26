@@ -110,16 +110,21 @@ def case_html(c, i):
 
 
 def portfolio():
-    contents = ''.join(f'<a href="#{c["id"]}"><span>{i:02d}</span><span><small>{escape(c["project"])}</small>{escape(c["short"])}</span><span class="toc-arrow">↗</span></a>' for i, c in enumerate(DATA['cases'], 1))
+    contents = ''
+    for i, c in enumerate(DATA['cases'], 1):
+        if i == 1 or DATA['cases'][i - 2]['project'] != c['project']:
+            contents += f'<p class="toc-group">{escape(c["project"])}</p>'
+        contents += f'<a href="#{c["id"]}"><span>{i:02d}</span><span><small>{escape(c["project"])}</small>{escape(c["short"])}</span><span class="toc-arrow">↗</span></a>'
     project_sections = []
     seen = set()
     for i, c in enumerate(DATA['cases'], 1):
         if c['project'] not in seen:
             project = next(p for p in DATA['projects'] if p['name'] == c['project'])
             contributions = ''.join(f'<div><dt>{escape(title)}</dt><dd>{escape(description)}</dd></div>' for title, description in project['contributions'])
+            team = ''.join(f'<div><dt>{escape(role)}</dt><dd>{escape(work)}</dd></div>' for role, work in project['team'])
             links = ''.join(f'<a class="text-link" href="{escape(link["url"])}">{escape(link["label"])} ↗</a>' for link in project.get('links', []))
             gallery = ''.join(picture(item) for item in project['gallery'])
-            project_sections.append(f'<section class="project-context" aria-label="{escape(project["name"]) } 프로젝트 소개"><p class="eyebrow">PROJECT OVERVIEW</p><h2>{escape(project["name"]) }</h2><p>{escape(project["description"]) }</p><h3>담당 범위와 협업</h3><dl class="contribution-list">{contributions}</dl>{links}<h3>담당 기능과 서비스 화면</h3><p class="gallery-note">팀 발표 자료의 서비스 화면과 구조입니다. 각 설명에 제 담당 범위를 표시했습니다. 이미지를 누르면 원본 크기로 볼 수 있습니다.</p><div class="project-gallery">{gallery}</div></section>')
+            project_sections.append(f'<section class="project-context" aria-label="{escape(project["name"]) } 프로젝트 소개"><p class="eyebrow">PROJECT OVERVIEW</p><h2>{escape(project["name"]) }</h2><p>{escape(project["description"]) }</p><h3>시작 계기</h3><p class="project-origin">{escape(project["origin"])} {escape(project["goal"])}</p><h3>팀 구성</h3><p class="project-role"><strong>내 역할</strong> {escape(project["myRole"])}</p><dl class="contribution-list team-list">{team}</dl><h3>내 주요 개발</h3><dl class="contribution-list work-list">{contributions}</dl>{links}<h3>담당 기능과 서비스 화면</h3><p class="gallery-note">팀 발표 자료의 서비스 화면과 구조입니다. 각 설명에 제 담당 범위를 표시했습니다. 이미지를 누르면 원본 크기로 볼 수 있습니다.</p><div class="project-gallery">{gallery}</div></section>')
             seen.add(c['project'])
         project_sections.append(case_html(c, i))
     writings = ''.join(f'<a href="{escape(w["url"])}"><span>{escape(w["label"])} ↗</span><h3>{escape(w["title"])}</h3><p>{escape(w["description"])}</p></a>' for w in DATA['writings'])
@@ -135,7 +140,8 @@ def portfolio():
 <p class="profile-summary">{escape(DATA['overview']['profileLine1'])}<br>{escape(DATA['overview']['profileLine2'])}</p><a class="profile-resume" href="resume.pdf" target="_blank" rel="noopener">이력서 PDF ↗</a> <a class="profile-resume" href="portfolio.pdf" target="_blank" rel="noopener">포트폴리오 PDF ↗</a></aside></section>
 <div id="work" class="work-anchor"></div>
 <div class="work-layout"><aside class="toc"><div class="toc-inner"><p class="eyebrow">목차 <span>{len(DATA['cases']):02d}</span></p><nav aria-label="프로젝트 목차">{contents}</nav><div class="toc-foot"><span>READING GUIDE</span><p>문제 상황<br>실험과 개선 · 해결 방안 비교<br>구현과 구조<br>결과와 배운 점</p><a href="resume.pdf" target="_blank" rel="noopener">이력서 PDF ↗</a><a href="portfolio.pdf" target="_blank" rel="noopener">포트폴리오 PDF ↗</a></div></div></aside><div class="cases">{''.join(project_sections)}</div></div>
-<section class="more-work"><span class="eyebrow">BEYOND THE PROJECTS</span><h2>코드 밖에서도 이어지는 경험</h2><div class="more-grid"><div><a href="https://github.com/edwardkim/rhwp/pull/1213"><span>OPEN SOURCE ↗</span><h3>Rhwp · HWPX 저장 오류 수정</h3><p>textFlow 속성 보존 오류를 수정한 PR #1213 병합. 이슈 분석부터 구현, 테스트와 CI 대응까지 기여했습니다.</p></a><a class="text-link" href="https://github.com/edwardkim/rhwp">GitHub 저장소 ↗</a></div>
+<section class="more-work"><span class="eyebrow">BEYOND THE PROJECTS</span><h2>코드 밖에서도 이어지는 경험</h2><div class="more-grid"><div><a href="https://github.com/Martinel2/BaekJoon"><span>CONSISTENCY ↗</span><h3>백준 945일 연속 문제 해결</h3><p>하루 한 문제를 목표로 solved.ac 기준 최장 945일 연속 문제를 해결했습니다. 누적 1,659문제, solved.ac Platinum IV.</p></a><a class="text-link" href="https://github.com/Martinel2/BaekJoon">풀이 저장소 ↗</a></div>
+<div><a href="https://github.com/edwardkim/rhwp/pull/1213"><span>OPEN SOURCE ↗</span><h3>Rhwp · HWPX 저장 오류 수정</h3><p>textFlow 속성 보존 오류를 수정한 PR #1213 병합. 이슈 분석부터 구현, 테스트와 CI 대응까지 기여했습니다.</p></a><a class="text-link" href="https://github.com/edwardkim/rhwp">GitHub 저장소 ↗</a></div>
 <div><h3>APPTIVE · 백엔드 멘토링</h3><div class="evidence-row"><a class="evidence-thumb" href="assets/evidence/apptive-merit.jpeg" target="_blank" rel="noopener"><img src="assets/evidence/apptive-merit.jpeg" alt="APPTIVE 백엔드 멘토 공로상" loading="lazy"><span>크게 보기 ↗</span></a><div><p>멘티 경험을 교육 개선으로 연결했습니다. 멘티 12명을 대상으로 6회의 멘토링과 코드 리뷰를 진행했습니다.</p><a class="text-link" href="./#activities">활동 내용 ↗</a></div></div></div></div></section>
 <section class="more-work writings"><span class="eyebrow">{home_text("sections", "writingsEyebrow")}</span><div class="writings-heading"><h2>{home_text("sections", "writingsTitle")}</h2><a class="button" href="{home_text("sections", "writingsUrl")}">{home_text("sections", "writingsLinkLabel")} ↗</a></div><div class="more-grid">{writings}</div></section>'''
     (SITE / 'portfolio.html').write_text(page('포트폴리오', '김재형의 Backend · AI 응용 개발 포트폴리오. Fruition과 Pilltip의 문제, 기술 선택, Mermaid 구조도, 평가 결과를 소개합니다.', body))

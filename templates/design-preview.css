@@ -1,0 +1,65 @@
+/* Original CSS study inspired by the visual direction of Magic Portfolio. */
+@media screen{
+:root{--paper:#13171d;--white:#20262e;--ink:#f0f1f2;--muted:#c0c7cf;--line:#45515d;--blue:#d8e4df;--pale:#202825;--night:#ededed;--max:1080px;background:var(--paper);color-scheme:dark}
+body.portfolio-page,body.resume-page{background:radial-gradient(ellipse 720px 620px at 0% 120px,#396e7252,transparent 76%),radial-gradient(ellipse 650px 550px at 100% 200px,#69609b38,transparent 76%),#13171d;background-repeat:no-repeat;line-height:1.8}
+::selection{background:#395851;color:#fff}
+main,footer{max-width:1000px;margin-inline:auto}
+.header,.portfolio-page .header{position:sticky;top:16px;z-index:10;width:calc(100% - 48px);max-width:1000px;min-height:64px;height:auto;margin:20px auto 0;padding:10px 16px;border:1px solid #b2d0e14d;border-radius:22px;background:#202831e8;backdrop-filter:blur(20px);box-shadow:inset 0 1px #d2f1ff24,0 0 32px #8dcdda0d,0 10px 30px #0003;gap:20px}
+.identity{font-size:13px;gap:10px}.identity small{font-size:8px;letter-spacing:1px}.monogram{font-size:26px}.monogram span{color:#8bc4b6}
+.header nav{gap:4px;font-size:12px;background:#ffffff04;border:1px solid #b2d0e126;border-radius:30px;padding:4px}
+.header nav a{padding:6px 13px;border-radius:24px;color:#c4ccd5;transition:background .2s,color .2s}
+.header nav a:hover,.header nav a[aria-current]{background:#b2d0e130;box-shadow:inset 0 0 0 1px #b2d0e12b;color:#fff}
+.language-switch{border-radius:30px;padding:6px 12px;background:#ffffff05;color:#ccd0d4}
+.eyebrow{font-size:10px;letter-spacing:2px;color:#95b5ac}
+.home-hero{padding:110px 48px 90px;max-width:900px}
+.home-hero .eyebrow{display:inline-block;letter-spacing:1.2px;font-size:10px;padding:5px 12px;border:1px solid #a5c9c02a;border-radius:30px;background:#a5c9c009}
+.home-hero h1{font-size:72px;font-weight:650;line-height:1.12;letter-spacing:-3.6px;margin:28px 0 24px;background:linear-gradient(130deg,#fff 25%,#bbc3c1);background-clip:text;-webkit-text-fill-color:transparent}
+html[lang=en] .home-intro h1{font-size:clamp(40px,5vw,66px)}
+.home-hero h2{font-size:22px;line-height:1.7;letter-spacing:-.4px;color:#d1d7dd;font-weight:400}
+.home-actions{gap:10px;margin-top:30px}
+.button,.home-actions .button,.home-actions .button[href]{background:#202326;border:1px solid #b2d0e14d;border-radius:30px;color:#e8ebed;box-shadow:inset 0 1px #ffffff06}
+.home-actions .button{width:128px;height:43px;font-size:12px;gap:8px}.home-actions .button img{width:16px;height:16px}
+.home-actions .button:first-child{background:#e8ecea;color:#141817;border-color:#e8ecea}.home-actions .button:first-child img{filter:brightness(0)}
+.button:hover,.home-actions .button:hover{background:#30363a;filter:none;transform:translateY(-2px)}.home-actions .button:first-child:hover{background:white}
+.button.primary{background:#e8ecea;color:#17201c;border-color:#e8ecea}
+.home-section{padding:56px 48px;border-top:1px solid #b2d0e12b}.home-section>h2{font-size:28px;letter-spacing:-.8px;margin:10px 0 24px}.home-about>p:not(.eyebrow){max-width:750px;font-size:17px;color:#c8ced5}
+.home-skills .skill-rows>div{padding:22px 0;grid-template-columns:150px 1fr;border-color:#b2d0e126}.home-skills .skill-rows strong{color:#e5e9e7;font-size:13px}.home-skills .skill-rows p{color:#c7ced6;font-size:15px}
+.home-projects{grid-template-columns:1fr;gap:48px}.home-project{border:0;background:transparent;border-radius:0;overflow:visible}.project-cover{border:1px solid #b2d0e14d;border-radius:20px;background:#191c1e;box-shadow:inset 0 1px #e0f7ff30,0 0 36px #8dcdda12,0 16px 40px #0003}.project-cover img{transition:transform .35s;aspect-ratio:16/9}.project-cover:hover img{transform:scale(1.012)}
+.project-card-body{padding:24px 6px 0}.home-project h3{font-size:30px;letter-spacing:-1px}.home-project p{font-size:16px;max-width:780px;margin:15px 0 5px}.project-meta{display:flex;flex-wrap:wrap;gap:4px 30px;font-size:12px;margin:10px 0}.project-meta>div{gap:10px}.project-meta dt{flex-basis:auto}.project-meta dd{font-weight:450;color:#c6cdcf}.text-link{color:#d1dbd7}.home-project .text-link{font-size:12px}
+.home-background .resume-content:not(.award-list){grid-template-columns:1fr}.home-background .experience-row{border:1px solid #b2d0e12b;background:#ffffff02;border-radius:16px;padding:26px}.home-background .experience-row>span{font-size:11px;color:#b3c7bf}.home-background .experience-row h3{font-size:18px}.home-background .award-list>div{border-color:#b2d0e12b}.home-background p{color:#c8ced5;font-size:15px}
+.evidence-thumb{background:#eeeeec;border-color:#b2d0e14d;border-radius:8px}.evidence-thumb span{background:#1d2124;color:#d5ded9}
+.writings{padding:56px 48px 20px}.writings-heading{margin-top:10px;gap:16px}.writings-heading h2{font-size:28px;letter-spacing:-.8px}.writings-heading .button{font-size:12px}
+.more-grid{gap:20px}.more-grid>a,.more-grid>div{background:#ffffff03;border:1px solid #b2d0e130;border-radius:16px;padding:24px}.more-grid>a:hover{background:#ffffff07}.more-grid h3{font-size:19px;color:#eaeeee}.more-grid p{color:#c5cdd5}.more-grid a>span{color:#9fb9b0}
+.site-footer{max-width:904px;margin:64px auto 0;padding:28px 0;border-color:#b2d0e12b;font-size:11px;color:#b3c1c7}
+.project-dialog{background:#191c1f;border-color:#41474a;border-radius:24px;box-shadow:0 30px 100px #0008}.project-dialog::backdrop{background:#07090bc9;backdrop-filter:blur(7px)}.project-dialog form button,.resume-formats .button{background:#292e31;color:#eee;border-color:#42484d}.project-dialog .resume-project{background:transparent}
+.resume-shell{max-width:1000px}.resume-hero{background:#ffffff03;border-color:#b2d0e13d;border-radius:22px}.resume-section{border-color:#b2d0e130}.resume-project{background:#ffffff02;border-color:#b2d0e13d;border-radius:16px}.resume-project-title h3{color:#f0f3f1}.resume-topic h4{color:#d4e4df}.resume-role,.role,.scope-note,.topic-intro{color:#bfc9d3}.resume-content p,.resume-content li,.project-dialog .resume-project li{color:#d0d6dd}.skill-rows>div,.award-list>div{border-color:#b2d0e130}.profile-list{background:#ffffff03}.resume-end{background:#ffffff03;border-color:#b2d0e130}
+.portfolio-overview{background:transparent;border:0;box-shadow:none;border-radius:0;padding:84px 24px 56px;gap:48px}.portfolio-overview h1{font-size:46px;color:#f1f3f2;letter-spacing:-2px}.overview-description{color:#c8d0d8}.engineering-profile{border-color:#b2d0e13d;background:transparent;color:#e6eeea}.engineering-profile .profile-role,.engineering-profile .profile-summary{color:#c0cbd4}.experience-index li,.experience-index a{border-color:#b2d0e138}.experience-index strong{color:#e1e7e4}.experience-index span{color:#c4cdd5}
+.work-layout{grid-template-columns:210px minmax(0,1fr);gap:28px}.portfolio-page .toc-inner{top:110px;background:#1c242b;border-color:#b2d0e138;max-height:calc(100vh - 130px)}.toc nav>a{border-radius:10px}.toc nav>a:hover,.toc nav>a[aria-current]{background:#263530;color:#ebf4ef;border-left-color:#a3caba}.toc-foot,.toc .eyebrow{border-color:#ffffff15}
+.project-context{background:#ffffff03;border-color:#b2d0e138;border-radius:20px}.project-context h2{color:#edf1ef}.project-context p,.contribution-list dd{color:#cad3db}.contribution-list>div{border-color:#b2d0e138}.project-gallery{gap:18px}.project-figure{border-color:#b2d0e138;background:#171b1d;border-radius:14px;overflow:hidden}.project-figure figcaption{color:#c4cfd6}.image-expand{background:#171b1dde;color:#eee}
+.case{border-color:#b2d0e13d;border-radius:20px;background:#1c222b;box-shadow:none}.case-header{background:linear-gradient(120deg,#24322d66,#181b1d);border-color:#b2d0e130}.case-header h2{color:#edf1ef}.case-summary,.case-meta,.case-part p,.case-part li{color:#ced6de}.case-part{border-color:#b2d0e130}.case-part h3,.case h4{color:#edf1ef}.case-part h3>span{color:#8daba0}.case-kicker{color:#94b4a8}.tags span{background:#ffffff07;color:#b8c7c0;border-color:#b2d0e12b}.experiment-timeline{border-color:#45544f}.experiment-timeline>li{border-color:#ffffff15}.experiment-timeline>li::before{background:#b9cfc5;color:#14201a}.experiment-timeline p>strong{color:#e1e9e5}.step-judgment,.limits,.decision{background:#ffffff04;border-color:#8ba99b}.limits strong{color:#dce7e1}.result-metrics{border-color:#b2d0e13d}.result-metrics>div{border-color:#b2d0e13d}.result-metrics strong{color:#d0e5db}
+.table-scroll{border-color:#b2d0e13d}th{background:#22282a;color:#e2eae5}td{background:#191e20;color:#bdc8c6;border-color:#b2d0e138}
+/* Diagrams retain a light canvas so existing Mermaid nodes stay legible. */
+.diagram{background:#e9efec;border-color:#d3ded8;color:#263c32}.diagram .diagram-caption,.diagram details{color:#435d50}.diagram figcaption,.diagram figcaption>span:last-child{color:#435d50}.diagram-source,.mermaid{color:#263c32}
+.more-work:not(.writings){border-color:#ffffff15}
+/* Soft edge lighting separates surfaces without washing out the text. */
+.home-background .experience-row,.more-grid>a,.more-grid>div,.project-context,.resume-project,.project-dialog{
+ background-color:#202731;border-color:#abcbd43d;
+ box-shadow:inset 0 1px #deefff22,0 0 24px #7fbdcb0b,0 12px 30px #0002;
+}
+.case{box-shadow:inset 0 1px #deefff22,0 0 26px #7fbdcb0c}
+.case-header{background:linear-gradient(120deg,#2b3e4666,#252b37);border-color:#abcbd43d}
+.home-section{position:relative}
+.home-section::before{content:"";position:absolute;top:-1px;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,#b6e5e965 25%,#babde050 65%,transparent);box-shadow:0 0 14px #a6dae52b;pointer-events:none}
+.header nav a{font-size:13px}
+.home-project .text-link,.text-link{font-size:13px}
+.project-meta{font-size:14px}
+.resume-content{font-size:15px}.resume-topic h4{font-size:16px}
+.resume-content p,.resume-project li{line-height:1.9}
+.case-part>p,.case-part li,.experiment-timeline p,.project-context>p:not(.eyebrow),.contribution-list dd{font-size:15px;line-height:1.95}
+.scope-note{font-size:12px}
+.more-grid p{font-size:15px}
+@media(max-width:1100px){main,footer{margin-inline:32px}.site-footer{margin-inline:80px}.header,.portfolio-page .header{width:calc(100% - 64px)}.home-hero{padding-left:40px}.work-layout{grid-template-columns:190px minmax(0,1fr);gap:20px}}
+@media(max-width:800px){.header,.portfolio-page .header{top:10px;width:calc(100% - 32px);padding:10px 12px;gap:10px;border-radius:20px}.header nav{order:3;width:100%;justify-content:center;font-size:11px;gap:0}.header nav a{padding:5px 12px}.language-switch{margin-left:auto}.identity small{display:none}.home-hero{padding:72px 12px 60px}.home-hero h1{font-size:58px}.home-section,.writings{padding:40px 12px}.home-background .resume-content:not(.award-list){grid-template-columns:1fr}.site-footer{margin-inline:44px}.work-layout{display:block}.toc-inner{position:static}.portfolio-overview{padding:50px 0;display:block}.engineering-profile{margin-top:30px;border-left:0;border-top:1px solid #b2d0e13d;padding-top:24px}}
+@media(max-width:480px){main,footer{margin-inline:20px}.home-hero{padding:58px 2px 50px}.home-hero h1{font-size:46px;letter-spacing:-2px}.home-hero h2{font-size:18px}.home-hero .eyebrow{font-size:8px;letter-spacing:1px}.home-actions .button{width:calc((100% - 10px)/2)}.home-section,.writings{padding:36px 2px}.home-section>h2,.writings-heading h2{font-size:24px}.home-about>p:not(.eyebrow){font-size:16px}.home-skills .skill-rows>div{grid-template-columns:1fr;gap:6px}.project-cover{border-radius:14px}.project-card-body{padding:20px 2px 0}.home-project h3{font-size:26px}.project-meta{display:block}.home-project p{font-size:15px}.home-background .experience-row{padding:18px}.site-footer{margin-inline:22px}.writings-heading .button{font-size:11px;padding:8px 12px}.portfolio-overview h1{font-size:32px}.resume-hero{padding:22px}.resume-shell{padding:0}.project-dialog{padding:16px}}
+@media(prefers-reduced-motion:reduce){.button,.project-cover img,.header nav a{transition:none}.button:hover{transform:none}}
+}

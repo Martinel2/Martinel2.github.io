@@ -35,8 +35,11 @@ export async function buildPortfolioPdf(browser, lang='ko') {
       if(el.matches('.project-context')){
         const h3=el.querySelectorAll('h3');
         items.push({type:'project',eyebrow:text(el,'.eyebrow'),name:text(el,'h2'),description:el.querySelector('h2+p').textContent.trim(),
-          contributionsTitle:h3[0]?.textContent.trim(),contributions:[...el.querySelectorAll('.contribution-list>div')].map(d=>[text(d,'dt'),text(d,'dd')]),
-          links:[...el.querySelectorAll(':scope>.text-link')].map(link),galleryTitle:h3[1]?.textContent.trim(),
+          originTitle:h3[0]?.textContent.trim(),origin:text(el,'.project-origin'),
+          teamTitle:h3[1]?.textContent.trim(),roleLabel:text(el,'.project-role strong'),myRole:el.querySelector('.project-role')?.lastChild.textContent.trim()??'',
+          team:[...el.querySelectorAll('.team-list>div')].map(d=>[text(d,'dt'),text(d,'dd')]),
+          workTitle:h3[2]?.textContent.trim(),contributions:[...el.querySelectorAll('.work-list>div')].map(d=>[text(d,'dt'),text(d,'dd')]),
+          links:[...el.querySelectorAll(':scope>.text-link')].map(link),galleryTitle:h3[3]?.textContent.trim(),
           gallery:[...el.querySelectorAll('.project-figure')].map(f=>({src:f.querySelector('img').src,caption:text(f,'figcaption')}))});
       }else if(el.matches('.case')){
         const parts=el.querySelectorAll('.case-part');
@@ -77,13 +80,17 @@ export async function buildPortfolioPdf(browser, lang='ko') {
     <div class="who"><strong>${esc(o.name)}</strong>${esc(o.role)}<br><span class="muted">${esc(o.email)} · martinel2.github.io</span><p class="muted" style="margin-top:10px;white-space:pre-line">${esc(o.summary)}</p></div></div>
     <div class="highlights">${o.highlights.map(h=>`<div><strong>${esc(h.title)}</strong><span>${esc(h.text)}</span></div>`).join('')}</div>`));
   slides.push(slide('contents',L.contents,`<p class="eyebrow">${L.cases}</p><h2 class="slide-title">${L.contents}</h2>
-    <ol>${data.contents.map((c,i)=>`<li><b>${String(i+1).padStart(2,'0')}</b><div><small>${esc(c.project)}</small><span>${esc(c.title)}</span></div></li>`).join('')}</ol>`));
+    <div class="groups">${[...new Set(data.contents.map(c=>c.project))].map(project=>`<div><p class="group">${esc(project)}</p><ol>${data.contents.map((c,i)=>c.project===project?`<li><b>${String(i+1).padStart(2,'0')}</b><span>${esc(c.title)}</span></li>`:'').join('')}</ol></div>`).join('')}</div>`));
   let caseNo=0;
   for(const it of data.items){
     if(it.type==='project'){
       slides.push(slide('dark project',it.name,`<div class="left"><p class="eyebrow">${esc(it.eyebrow)}</p><h2>${esc(it.name)}</h2><p>${esc(it.description)}</p>
+        <div class="origin"><span>${esc(it.originTitle)}</span><p>${esc(it.origin)}</p></div>
         ${it.links.length?`<div class="links">${links(it.links)}</div>`:''}</div>
-        <dl${it.contributions.length>3?' class="many"':''}>${it.contributions.map(([t,d])=>`<div><dt>${esc(t)}</dt><dd>${esc(d)}</dd></div>`).join('')}</dl>`));
+        <div class="team"><span class="eyebrow">${esc(it.teamTitle)}</span><p class="my-role"><b>${esc(it.roleLabel)}</b>${esc(it.myRole)}</p>
+        <dl>${it.team.map(([t,d])=>`<div><dt>${esc(t)}</dt><dd>${esc(d)}</dd></div>`).join('')}</dl></div>`));
+      slides.push(slide('work',it.name,`<p class="eyebrow">${esc(it.name)}</p><h2 class="slide-title">${esc(it.workTitle)} · ${esc(it.myRole)}</h2>
+        <div class="cards" style="--cols:${it.contributions.length>4?3:2}">${it.contributions.map(([t,d])=>`<div><b>${esc(t)}</b><p>${esc(d)}</p></div>`).join('')}</div>`));
       for(let i=0;i<it.gallery.length;i+=3){
         const group=it.gallery.slice(i,i+3);
         slides.push(slide('gallery',it.name,`<p class="eyebrow">${esc(it.name)}</p><h2 class="slide-title">${esc(it.galleryTitle||L.screens)}</h2>
@@ -110,12 +117,12 @@ export async function buildPortfolioPdf(browser, lang='ko') {
       ${it.metrics.length?`<div class="metrics">${it.metrics.map(([l,v,n])=>`<div><small>${esc(l)}</small><strong>${esc(v)}</strong><em>${esc(n)}</em></div>`).join('')}</div>`:''}</div>`));
   }
   const c=data.closing;
-  slides.push(slide('closing',c.title,`<div class="col"><p class="eyebrow">${esc(c.eyebrow)}</p><h2>${esc(c.title)}</h2>
-    ${c.items.map(i=>`<div class="item"><b>${esc(i.title)}</b><p>${esc(i.text)}</p>${links(i.links.filter(l=>!l.url.includes('#')))}</div>`).join('')}
-    <div class="contact"><b>${esc(o.name)}</b> · ${esc(o.role)}<br>${esc(o.email)}<br><a href="https://martinel2.github.io/${en?'en/':''}">martinel2.github.io</a> · <a href="https://github.com/Martinel2">github.com/Martinel2</a></div></div>
-    <div class="col"><p class="eyebrow">${esc(c.writingsEyebrow)}</p><h2>${esc(c.writingsTitle)}</h2>
+  slides.push(slide('beyond',c.title,`<p class="eyebrow">${esc(c.eyebrow)}</p><h2 class="slide-title">${esc(c.title)}</h2>
+    <div class="cards">${c.items.map(i=>`<div class="item"><b>${esc(i.title)}</b><p>${esc(i.text)}</p>${links(i.links.filter(l=>!l.url.includes('#')))}</div>`).join('')}</div>`));
+  slides.push(slide('closing',c.writingsTitle,`<div class="col"><p class="eyebrow">${esc(c.writingsEyebrow)}</p><h2>${esc(c.writingsTitle)}</h2>
     ${c.writings.map(w=>`<div class="item"><a href="${esc(w.url)}"><small class="muted">${esc(w.kicker)}</small><b>${esc(w.title)}</b></a><p>${esc(w.text)}</p></div>`).join('')}
-    <a href="${esc(c.more.url)}" style="font-size:13px">${esc(c.more.label)}</a></div>`));
+    <a href="${esc(c.more.url)}" style="font-size:13px">${esc(c.more.label)}</a></div>
+    <div class="col"><p class="eyebrow">${L.contact}</p><h2>${esc(o.name)}</h2><div class="contact" style="margin-top:0">${esc(o.role)}<br>${esc(o.email)}<br><a href="https://martinel2.github.io/${en?'en/':''}">martinel2.github.io</a><br><a href="https://github.com/Martinel2">github.com/Martinel2</a><p class="muted" style="margin-top:14px;white-space:pre-line;font-size:14px">${esc(o.summary)}</p></div></div>`));
 
   const css=await readFile('templates/portfolio-deck.css','utf8');
   const baseHref=pathToFileURL(resolve(dir)+'/').href;

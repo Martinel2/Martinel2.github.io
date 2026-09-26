@@ -382,15 +382,36 @@
       "name": "Fruition",
       "label": "01 / AI KNOWLEDGE WORKSPACE",
       "description": "An AI workspace that organizes uploaded documents into an LLM-generated Wiki, answers questions using source evidence through RAG, and edits documents in natural language.",
+      "origin": "Started when a teammate raised a pain point with managing documents, which we refined through design thinking.",
+      "goal": "The goal was to fix the frustration of saving many documents but failing to find them when needed.",
+      "myRole": "AI lead",
+      "team": [
+        [
+          "AI (me)",
+          "All AI features: PDF conversion, Wiki generation, RAG retrieval and grounded answers, the document-editing Agent"
+        ],
+        [
+          "Backend, 1",
+          "The entire Spring-based backend"
+        ],
+        [
+          "Frontend & DevOps, 1",
+          "The entire frontend and MSA-based deployment on AWS"
+        ],
+        [
+          "Design",
+          "External designer"
+        ],
+        [
+          "Mentors, 3",
+          "Gen AI quality and evaluation / backend / milestones, MSA design and documentation"
+        ]
+      ],
       "href": "#fruition-agent",
       "contributions": [
         [
           "Lead for all AI features",
           "Led design, development and evaluation across PDF conversion, Wiki generation and organization, retrieval and grounded answers, and the document-editing Agent."
-        ],
-        [
-          "Team responsibilities",
-          "Teammates built the frontend and backend; an external designer created the UI design. These screens are team deliverables. I owned all AI features behind them."
         ],
         [
           "MSA design contribution",
@@ -441,6 +462,27 @@
       "name": "Pilltip",
       "label": "02 / PERSONALIZED MEDICATION",
       "description": "A personalized AI medication service that explains drug information in plain language and helps users manage their own and their family’s medications and schedules.",
+      "origin": "Started as a Pusan National University capstone project.",
+      "goal": "Drug information is scattered, so it is hard to check whether a given medicine is safe for your current health condition. We set out to make that easy.",
+      "myRole": "Core backend features and data preparation",
+      "team": [
+        [
+          "Backend & AI (me)",
+          "Drug and supplement DB, search and autocomplete, reminders, risk and caution information, data preparation, AI chatbot"
+        ],
+        [
+          "Android, 1",
+          "The Kotlin-based Android app"
+        ],
+        [
+          "Backend & security, 1",
+          "User DB, login, questionnaires, AES-GCM encryption"
+        ],
+        [
+          "Design",
+          "Designer"
+        ]
+      ],
       "href": "#pilltip-data",
       "contributions": [
         [
@@ -448,12 +490,8 @@
           "Implemented drug-related backend features, reminders and logs, friend invitations, family profile switching, the data preparation pipeline and AI chatbot."
         ],
         [
-          "Team responsibilities",
-          "Teammates implemented the app and UI, questionnaires, user DB modeling, login and user features, and security including AES-GCM. The screens show their app; the features I built are listed below."
-        ],
-        [
-          "Drug modeling, search, autocomplete and risk information",
-          "Designed the drug DB and implemented search autocomplete with Elasticsearch and Redis, plus Drug Utilization Review (DUR) risk information."
+          "Drug and supplement modeling, search, autocomplete and risk information",
+          "Designed the drug and health-supplement DB and implemented search autocomplete with Elasticsearch and Redis, plus Drug Utilization Review (DUR) risk and caution information."
         ],
         [
           "Medication reminders and logs",
@@ -568,8 +606,8 @@
         "text21": "Fruition",
         "text22": "2026.04 — Present",
         "text23": "LLM Wiki-based AI workspace · AI SW Maestro, 17th cohort",
-        "text24": "Team project / Lead for all AI features",
-        "text25": "Teammates built the frontend and backend. I proposed the initial MSA design and finalized service boundaries, data ownership and communication with teammates and mentors.",
+        "text24": "Team project (3 + designer) / AI lead",
+        "text25": "How it started: a teammate’s pain point with managing documents, refined through design thinking — saved documents could not be found when needed.\nTeam: me (all AI), 1 backend (Spring backend), 1 frontend & DevOps (frontend, MSA deployment on AWS), external designer · 3 mentors",
         "text114": "Document conversion pipeline and faster Wiki generation",
         "text115": "Converted uploaded PDFs for retrieval and grounded answers, and reduced Wiki generation time. Internal pass rate on 30 pages improved from 45.17% to 89.89%; analysis of 4 documents fell from 282.11s to 73.89s.",
         "text26": "PDF → Markdown conversion\nProblem: Open-source conversion damaged tables and equations; full AI conversion still had errors and high API usage.\nSolution: Compared PDF tools and adopted AnyDoc. Repaired damaged text with AI, processed tables and equations separately, and preserved original figures.\nResult: Internal pass rate on 30 PDF pages improved from 45.17% to 89.89%.",
@@ -591,9 +629,9 @@
         "text43": "RAG evidence selection ↗",
         "text44": "Pilltip",
         "text45": "2025.03 — 2025.12",
-        "text46": "Personalized AI medication service · Pusan National University",
-        "text47": "Team project / Backend and AI application development",
-        "text112": "Teammates owned Android, questionnaires, user DB modeling, login and other user features, and security including AES-GCM. The features below are my work.",
+        "text46": "Personalized AI medication service · Pusan National University capstone",
+        "text47": "Team project (3 + designer) / Core backend · data preparation",
+        "text112": "How it started: drug information is scattered, making it hard to check whether a medicine is safe for your current health condition.\nTeam: me (backend & AI), 1 Android (Kotlin app), 1 backend & security (user DB, login, questionnaires, AES-GCM), designer. The features below are my work.",
         "text122": "Drug data preparation pipeline",
         "text123": "Rewrote about 44,000 drug records in plain language. Deduplication reduced input from 1GB to 326MB; after filling missing information, conversion cost $11.18 in actual API spending versus about $200 estimated for the original text.",
         "text50": "Problem: Converting all 44,000 drug records was estimated to cost about $200 in API calls.\nSolution: Removed exact duplicates, then semantically equivalent sentences. Filled the missing 5% with ingredient-specific precautions, converted via GPT Batch API and mapped results back to each drug.",
@@ -638,6 +676,10 @@
       "fields": {
         "text71": "Activities & contributions ",
         "text72": "04 / EXPERIENCE",
+        "text132": "2022.02 — 2025.07",
+        "text133": "945-day Baekjoon problem-solving streak",
+        "text134": "Aiming for one problem a day, I reached a longest streak of 945 consecutive days on solved.ac. 1,659 problems solved, solved.ac Platinum IV. Solutions are recorded in a GitHub repository.",
+        "text136": "Baekjoon solutions repository ↗",
         "text73": "2026.06 — 2026.06",
         "text74": "Rhwp open-source contributions",
         "text75": "Investigated bugs, submitted fixes and addressed CI in a Rust HWP/HWPX project. Fixed textFlow attributes of images, tables and shapes being reset after saving.",
