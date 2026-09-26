@@ -94,7 +94,7 @@ export async function buildPortfolioPdf(browser, lang='ko') {
       for(let i=0;i<wide.length;i+=4){
         const group=wide.slice(i,i+4);
         slides.push(slide('gallery',it.name,`<p class="eyebrow">${esc(it.name)}</p><h2 class="slide-title">${esc(it.galleryTitle||L.screens)}</h2>
-          <div class="grid${group.length>2?' quad':''}" style="--cols:${Math.min(group.length,2)}">${group.map(figure).join('')}</div>`));
+          <div class="grid${group.length===3?' trio':group.length>2?' quad':''}" style="--cols:${Math.min(group.length,2)}">${group.map(figure).join('')}</div>`));
       }
       for(const g of tall){
         const [head,...rest]=g.caption.split(' — ');
