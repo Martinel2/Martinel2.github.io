@@ -683,10 +683,6 @@
       "fields": {
         "text71": "Activities & contributions ",
         "text72": "04 / EXPERIENCE",
-        "text132": "2022.02 — 2025.07",
-        "text133": "945-day Baekjoon problem-solving streak",
-        "text134": "Aiming for one problem a day, I reached a longest streak of 945 consecutive days on solved.ac. 1,659 problems solved, solved.ac Platinum IV. Solutions are recorded in a GitHub repository.",
-        "text136": "Baekjoon solutions repository ↗",
         "text73": "2026.06 — 2026.06",
         "text74": "Rhwp open-source contributions",
         "text75": "Investigated bugs, submitted fixes and addressed CI in a Rust HWP/HWPX project. Fixed textFlow attributes of images, tables and shapes being reset after saving.",
@@ -698,7 +694,11 @@
         "text130": "APPTIVE Backend Mentor Merit Award · 2026.01.09",
         "text81": "2025.11 / 2025.07",
         "text82": "SK AI SUMMIT · K-ICT WEEK in Busan",
-        "text83": "Represented Pusan National University at the Pilltip booth, demonstrating the service and answering technical questions."
+        "text83": "Represented Pusan National University at the Pilltip booth, demonstrating the service and answering technical questions.",
+        "text132": "2022.02 — 2025.07",
+        "text133": "945-day Baekjoon problem-solving streak",
+        "text134": "Aiming for one problem a day, I reached a longest streak of 945 consecutive days on solved.ac. 1,659 problems solved, solved.ac Platinum IV. Solutions are recorded in a GitHub repository.",
+        "text136": "Baekjoon solutions repository ↗"
       }
     },
     {
