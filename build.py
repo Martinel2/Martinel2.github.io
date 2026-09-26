@@ -121,7 +121,9 @@ def portfolio():
         if c['project'] not in seen:
             project = next(p for p in DATA['projects'] if p['name'] == c['project'])
             contributions = ''.join(f'<div><dt>{escape(title)}</dt><dd>{escape(description)}</dd></div>' for title, description in project['contributions'])
-            team = ''.join(f'<div><dt>{escape(role)}</dt><dd>{escape(work)}</dd></div>' for role, work in project['team'])
+            # My own row stands out; the rest of the team reads as supporting context.
+            is_me = lambda role: '본인' in role or '(me)' in role
+            team = ''.join(f'<div class="me"><dt><span class="me-badge">ME</span>{escape(role.replace(" (본인)", "").replace(" (me)", ""))}</dt><dd>{escape(work)}</dd></div>' if is_me(role) else f'<div><dt>{escape(role)}</dt><dd>{escape(work)}</dd></div>' for role, work in project['team'])
             links = ''.join(f'<a class="text-link" href="{escape(link["url"])}">{escape(link["label"])} ↗</a>' for link in project.get('links', []))
             gallery = ''.join(picture(item) for item in project['gallery'])
             project_sections.append(f'<section class="project-context" aria-label="{escape(project["name"]) } 프로젝트 소개"><p class="eyebrow">PROJECT OVERVIEW</p><h2>{escape(project["name"]) }</h2><p>{escape(project["description"]) }</p><h3>시작 계기</h3><p class="project-origin">{escape(project["origin"])} {escape(project["goal"])}</p><h3>팀 구성</h3><dl class="contribution-list team-list">{team}</dl><h3>내 주요 개발</h3><dl class="contribution-list work-list">{contributions}</dl>{links}<h3>담당 기능과 서비스 화면</h3><p class="gallery-note">팀 발표 자료의 서비스 화면과 구조입니다. 각 설명에 제 담당 범위를 표시했습니다. 이미지를 누르면 원본 크기로 볼 수 있습니다.</p><div class="project-gallery">{gallery}</div></section>')

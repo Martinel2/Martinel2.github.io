@@ -423,3 +423,9 @@ html[lang="en"] .home-intro h1{font-size:clamp(36px,6vw,64px)}
 .toc-foot.pdf-buttons{display:flex;flex-direction:row;gap:8px;margin-top:12px;padding:12px 0 0}.toc-foot.pdf-buttons a+a{margin-top:0}.toc-foot.pdf-buttons .button.pdf-button{flex:1;width:auto;height:38px;padding:0 8px;gap:6px;font-size:12px}
 .toc-foot.pdf-buttons .button.pdf-button img{width:15px;height:15px}
 @media(max-width:1000px){.toc-foot.pdf-buttons{display:none}}
+/* Team list: my row leads, teammates recede */
+.team-list>div{color:#6a7688}.team-list>div dt{font-weight:600;color:#56637a}.team-list>div dd{color:#6a7688}
+.team-list>div.me{background:linear-gradient(90deg,#eaf0fc,#f6f8fd);border:1px solid #c9d6f2;border-left:4px solid var(--blue);border-radius:10px;padding:18px 20px;margin:4px 0 8px}
+.team-list>div.me dt{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700;color:var(--blue)}
+.team-list>div.me dd{font-size:14px;font-weight:600;color:var(--ink)}
+.me-badge{display:inline-block;background:var(--blue);color:white;font-size:10px;font-weight:700;letter-spacing:1.2px;border-radius:4px;padding:2px 7px}

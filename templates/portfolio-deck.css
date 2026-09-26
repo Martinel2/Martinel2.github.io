@@ -184,3 +184,9 @@ p,h1,h2,h3,h4,ul,ol,dl,dd,figure{margin:0}
 .contents .groups li a{display:flex;align-items:baseline;gap:16px;width:100%;color:inherit}
 .contents .groups li i{margin-left:auto;font-style:normal;font-size:13px;color:var(--muted);font-weight:400;flex:none}
 .contents .groups li span{font-size:15.5px}
+/* Slide team list: my row as a bright card, teammates dimmed */
+.project .team dl div{opacity:.72}
+.project .team dl div.me{opacity:1;background:white;border:0;border-radius:10px;padding:10px 14px;margin:2px 0 6px;outline:2px solid #7fa2ea;outline-offset:2px}
+.project .team dl div.me dt{color:var(--blue);font-size:14px;display:flex;align-items:center;gap:7px}
+.project .team dl div.me dt b{background:var(--blue);color:white;font-size:10px;letter-spacing:1.2px;border-radius:4px;padding:2px 6px}
+.project .team dl div.me dd{color:var(--ink);font-size:13px;font-weight:600}
