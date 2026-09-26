@@ -132,7 +132,7 @@ def portfolio():
         project_sections.append(case_html(c, i))
     writings = ''.join(f'<a href="{escape(w["url"])}"><span>{escape(w["label"])} ↗</span><h3>{escape(w["title"])}</h3><p>{escape(w["description"])}</p></a>' for w in DATA['writings'])
     body = f'''<section class="portfolio-overview" aria-labelledby="portfolio-title">
-<div class="overview-main"><p class="eyebrow">{escape(DATA['overview']['eyebrow'])}</p><h1 id="portfolio-title">{escape(DATA['overview']['title'])}</h1>
+<div class="overview-main"><p class="eyebrow">{escape(DATA['overview']['eyebrow'])}</p><h1 id="portfolio-title">{escape(DATA['overview']['title']).replace(chr(10), '<br>')}</h1>
 <p class="overview-description">{escape(DATA['overview']['description'])}</p>
 <h2 class="overview-label">주요 경험</h2><ul class="experience-index">
 <li><a href="#fruition-document"><strong>{escape(DATA['overview']['experience1Title'])}</strong><span>{escape(DATA['overview']['experience1Description'])}</span></a></li>

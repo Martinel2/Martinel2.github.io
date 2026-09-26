@@ -25,7 +25,7 @@ export async function buildPortfolioPdf(browser, lang='ko') {
     const text=(root,sel)=>root.querySelector(sel)?.textContent.trim()??'';
     const link=a=>({label:a.textContent.trim(),url:a.getAttribute('href').startsWith('#')?a.getAttribute('href'):new URL(a.getAttribute('href'),base).href});
     const ov=document.querySelector('.portfolio-overview');
-    const overview={eyebrow:text(ov,'.overview-main .eyebrow'),title:text(ov,'h1'),description:text(ov,'.overview-description'),
+    const overview={eyebrow:text(ov,'.overview-main .eyebrow'),title:ov.querySelector('h1').innerText.trim(),description:text(ov,'.overview-description'),
       highlights:[...ov.querySelectorAll('.experience-index a')].map(a=>({title:text(a,'strong'),text:text(a,'span')})),
       name:text(ov,'.engineering-profile h2'),role:text(ov,'.profile-role'),email:text(ov,'.profile-email'),
       summary:ov.querySelector('.profile-summary').innerText.trim()};

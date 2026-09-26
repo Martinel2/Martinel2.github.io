@@ -213,3 +213,5 @@ p,h1,h2,h3,h4,ul,ol,dl,dd,figure{margin:0}
 .project .me-card li::before{content:counter(work,decimal-leading-zero);position:absolute;left:0;top:9px;font-size:10.5px;font-weight:700;color:#9fb8ec}
 .project .me-card li b{color:white}.project .me-card li span{color:#b9c6dc}
 .project.dense .me-card li{padding:6px 0 6px 24px}
+.cover h1{font-size:44px;line-height:1.25;letter-spacing:-.8px;white-space:pre-line}
+html[lang="en"] .cover h1{font-size:36px}

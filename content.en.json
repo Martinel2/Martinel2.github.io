@@ -737,7 +737,7 @@
   ],
   "overview": {
     "eyebrow": "AI Agents · Data pipelines · Spring",
-    "title": "JH's PORTFOLIO",
+    "title": "A developer who digs into root causes and enjoys solving difficult problems",
     "description": "The problems I encountered, the experiments and results, and the decisions that shaped each implementation.",
     "experience1Title": "PDF tables and equations: pass rate 45.17% → 89.89%",
     "experience1Description": "Designed and evaluated a pipeline that extracts, repairs and reassembles document regions.",
@@ -746,8 +746,8 @@
     "experience3Title": "Drug description API cost: about $200 estimated → $11.18 spent",
     "experience3Description": "Removed exact and semantic duplicates, filled missing data by ingredient, then used Batch API and reused results across drugs.",
     "profileRole": "Backend · AI Application Developer",
-    "profileLine1": "I learn from failures to find better solutions.",
-    "profileLine2": "I test hypotheses, evaluate outcomes and improve through feedback."
+    "profileLine1": "I keep going through repeated failures, always moving toward the best answer.",
+    "profileLine2": "I test hypotheses, check the results and use feedback to get one step closer to a better answer."
   },
   "activities": {
     "title": "Awards and exhibitions",
