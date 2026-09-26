@@ -40,7 +40,7 @@ export async function buildPortfolioPdf(browser, lang='ko') {
           team:[...el.querySelectorAll('.team-list>div')].map(d=>[text(d,'dt'),text(d,'dd')]),
           workTitle:h3[2]?.textContent.trim(),contributions:[...el.querySelectorAll('.work-list>div')].map(d=>[text(d,'dt'),text(d,'dd')]),
           links:[...el.querySelectorAll(':scope>.text-link')].map(link),galleryTitle:h3[3]?.textContent.trim(),
-          gallery:[...el.querySelectorAll('.project-figure')].map(f=>({src:f.querySelector('img').src,caption:text(f,'figcaption')}))});
+          gallery:[...el.querySelectorAll('.project-figure')].map(f=>{const img=f.querySelector('img');return {src:img.src,caption:text(f,'figcaption'),ratio:img.width/img.height||(+img.getAttribute('width'))/(+img.getAttribute('height'))};})});
       }else if(el.matches('.case')){
         const parts=el.querySelectorAll('.case-part');
         const heading=p=>p.querySelector('h3').lastChild.textContent.trim();
@@ -84,17 +84,22 @@ export async function buildPortfolioPdf(browser, lang='ko') {
   let caseNo=0;
   for(const it of data.items){
     if(it.type==='project'){
-      slides.push(slide('dark project',it.name,`<div class="left"><p class="eyebrow">${esc(it.eyebrow)}</p><h2>${esc(it.name)}</h2><p>${esc(it.description)}</p>
+      slides.push(slide('dark project fit',it.name,`<div class="left"><p class="eyebrow">${esc(it.eyebrow)}</p><h2>${esc(it.name)}</h2><p>${esc(it.description)}</p>
         <div class="origin"><span>${esc(it.originTitle)}</span><p>${esc(it.origin)}</p></div>
+        <div class="team"><span class="label">${esc(it.teamTitle)}</span><dl>${it.team.map(([t,d])=>`<div><dt>${esc(t)}</dt><dd>${esc(d)}</dd></div>`).join('')}</dl></div>
         ${it.links.length?`<div class="links">${links(it.links)}</div>`:''}</div>
-        <div class="team"><span class="eyebrow">${esc(it.teamTitle)}</span><p class="my-role"><b>${esc(it.roleLabel)}</b>${esc(it.myRole)}</p>
-        <dl>${it.team.map(([t,d])=>`<div><dt>${esc(t)}</dt><dd>${esc(d)}</dd></div>`).join('')}</dl></div>`));
-      slides.push(slide('work',it.name,`<p class="eyebrow">${esc(it.name)}</p><h2 class="slide-title">${esc(it.workTitle)} · ${esc(it.myRole)}</h2>
-        <div class="cards" style="--cols:${it.contributions.length>4?3:2}">${it.contributions.map(([t,d])=>`<div><b>${esc(t)}</b><p>${esc(d)}</p></div>`).join('')}</div>`));
-      for(let i=0;i<it.gallery.length;i+=3){
-        const group=it.gallery.slice(i,i+3);
+        <div class="work-list"><span class="label">${esc(it.workTitle)}</span>${it.contributions.map(([t,d])=>`<div><b>${esc(t)}</b><p>${esc(d)}</p></div>`).join('')}</div>`));
+      const figure=g=>{const [head,...rest]=g.caption.split(' — ');return `<figure><img src="${esc(g.src)}"><figcaption>${rest.length?`<b>${esc(head)}</b>${esc(rest.join(' — '))}`:esc(g.caption)}</figcaption></figure>`;};
+      const wide=it.gallery.filter(g=>g.ratio>=1.5), tall=it.gallery.filter(g=>g.ratio<1.5);
+      for(let i=0;i<wide.length;i+=4){
+        const group=wide.slice(i,i+4);
         slides.push(slide('gallery',it.name,`<p class="eyebrow">${esc(it.name)}</p><h2 class="slide-title">${esc(it.galleryTitle||L.screens)}</h2>
-          <div class="grid" style="--cols:${group.length}">${group.map(g=>{const [head,...rest]=g.caption.split(' — ');return `<figure><img src="${esc(g.src)}"><figcaption>${rest.length?`<b>${esc(head)}</b>${esc(rest.join(' — '))}`:esc(g.caption)}</figcaption></figure>`;}).join('')}</div>`));
+          <div class="grid${group.length>2?' quad':''}" style="--cols:${Math.min(group.length,2)}">${group.map(figure).join('')}</div>`));
+      }
+      for(const g of tall){
+        const [head,...rest]=g.caption.split(' — ');
+        slides.push(slide('gallery tall',it.name,`<p class="eyebrow">${esc(it.name)}</p><h2 class="slide-title">${esc(rest.length?head:it.galleryTitle)}</h2>
+          <div class="row"><img src="${esc(g.src)}"><p class="caption">${esc(rest.length?rest.join(' — '):g.caption)}</p></div>`));
       }
       continue;
     }
@@ -109,6 +114,14 @@ export async function buildPortfolioPdf(browser, lang='ko') {
     if(it.steps.length)slides.push(slide('process',section,`<p class="eyebrow">${tag}</p><h2 class="slide-title">${esc(it.processTitle)}</h2>
       <div class="steps">${it.steps.map((s,i)=>`<article class="step"><h4><b>${i+1}</b><span>${esc(s.title)}</span></h4>${s.fields.map(([l,t])=>`<p><strong>${esc(l)}</strong>${esc(t)}</p>`).join('')}</article>`).join('')}</div>`));
     else if(it.processTable)slides.push(slide('process result',section,`<p class="eyebrow">${tag}</p><h2 class="slide-title">${esc(it.processTitle)}</h2>${it.processTable}`));
+    const metricCards=it.metrics.map(([l,v,n])=>`<div><small>${esc(l)}</small><strong>${esc(v)}</strong><em>${esc(n)}</em></div>`).join('');
+    if(it.svg&&!it.image){
+      slides.push(slide('analysis fit',section,`<p class="eyebrow">${tag} · ${esc(it.diagramTitle)} · ${esc(it.resultHeading)}</p>
+        <div class="row"><div class="chart">${it.svg}</div><div class="summary"><h3>${esc(it.resultTitle)}</h3>
+        ${metricCards?`<div class="metrics">${metricCards}</div>`:''}${it.result.map(p=>`<p>${esc(p)}</p>`).join('')}${it.comparison}
+        <div class="limits"><strong>${esc(it.limitsTitle)}</strong><p>${esc(it.limits)}</p></div>${it.links.length?`<div class="links">${links(it.links)}</div>`:''}</div></div>`));
+      continue;
+    }
     if(it.svg)slides.push(slide('diagram',section,`<p class="eyebrow">${tag}</p><h2 class="slide-title">${esc(it.diagramTitle)}</h2>
       <div class="row"><div class="chart">${it.svg}</div><div class="side">${it.image?`<img src="${esc(it.image)}">`:''}<p${it.image?' class="caption"':''}>${esc(it.diagramCaption)}</p></div></div>`));
     slides.push(slide('result',section,`<p class="eyebrow">${tag} · ${esc(it.resultHeading)}</p>
@@ -147,6 +160,10 @@ export async function buildPortfolioPdf(browser, lang='ko') {
         if(!fits(cur))cur.classList.add('dense');
         if(!fits(cur))cur.classList.add('denser');
       }
+    }
+    for(const s of document.querySelectorAll('.slide.fit')){
+      if(!fits(s))s.classList.add('dense');
+      if(!fits(s))s.classList.add('denser');
     }
     const slides=[...document.querySelectorAll('.slide')];
     slides.forEach((s,i)=>s.querySelector('.num').textContent=`${i+1} / ${slides.length}`);
