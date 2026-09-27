@@ -18,8 +18,14 @@ if (/^G-[A-Z0-9]+$/.test(measurementId || '')) {
   window.dataLayer = window.dataLayer || [];
   window.gtag = function () { window.dataLayer.push(arguments); };
   const params = new URLSearchParams(location.search);
+  // Keep only well-formed UTM parameters in the reported URL: GA4 reads campaigns from
+  // page_location, while any other query values stay out of analytics.
+  const utm = new URLSearchParams();
+  for (const [key, value] of params) {
+    if (/^utm_(source|medium|campaign|term|content)$/.test(key) && /^[a-zA-Z0-9_-]{1,100}$/.test(value)) utm.append(key, value);
+  }
   const config = {
-    page_location: location.origin + location.pathname,
+    page_location: location.origin + location.pathname + (utm.size ? `?${utm}` : ''),
     page_referrer: document.referrer.split(/[?#]/)[0],
     allow_google_signals: false,
     allow_ad_personalization_signals: false
