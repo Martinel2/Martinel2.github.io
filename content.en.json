@@ -76,7 +76,7 @@
       "title": "RAG evidence coverage: 66.25% → 91.25%, with 75% less time after tuning",
       "short": "RAG evidence coverage: 66.25% → 91.25%",
       "period": "2026.09",
-      "summary": "Jev improved both accuracy and speed when routing user requests to tasks such as questions or edits. I then applied it to RAG evidence selection, increasing coverage from 66.25% to 91.25%, and reduced its added latency by tuning candidates and parallel batches.",
+      "summary": "Jev is a decision-only model that must pick from a fixed set of options. Applied first to request routing, it scored 81/98 against 77/98 for the existing JSON approach and 63/98 for GPT-5-nano on the same options, with a shorter decision time. I then applied it to RAG evidence selection, increasing coverage from 66.25% to 91.25%, and reduced its added latency by tuning candidates and parallel batches.",
       "tags": [
         "Jev 1.13.0",
         "BGE-M3",
@@ -157,8 +157,8 @@
       "problem": "I tested parallelism separately for document analysis and embedding generation to reduce waiting in the document-to-Wiki pipeline.",
       "diagram": "flowchart TD\n A[Document processing request] --> K[Kafka distributes document jobs]\n K --> W[Multiple workers with per-worker request limits]\n W --> L[Lock writes within the same workspace]\n V[Embedding generation] --> G[Check contention on a shared GPU]\n L --> D[Check time, memory and content preservation]\n G --> D\n D --> R[Choose scaling policy per stage]",
       "diagramCaption": "Evaluated scaling separately for Wiki generation and embedding generation.",
-      "resultTitle": "73.8% less analysis time for 4 documents, with about 4× memory",
-      "result": "With 4 workers and 2 concurrent requests each, analysis time for 4 documents fell by about 73.8%. Memory rose about fourfold, and output quality varied with configuration. Replaying saved AI responses for 100 documents under 3 queue configurations processed all 300 jobs without omissions or failures.\n\nI adopted a maximum of 4 workers: although memory increased about fourfold, I judged that the AI service’s MSA deployment on EKS could distribute the load.",
+      "resultTitle": "73.8% less analysis time for 4 documents · 300 queued jobs with zero loss",
+      "result": "With 4 workers and 2 concurrent requests each, analysis time for 4 documents fell by about 73.8%. Memory rose about fourfold, and output quality varied with configuration.\n\nReplaying saved AI responses for 100 documents under 3 queue configurations processed all 300 jobs without omissions or failures.\n\nI adopted a maximum of 4 workers: although memory increased about fourfold, I judged that the AI service’s MSA deployment on EKS could distribute the load.",
       "metrics": [
         [
           "1 worker",
@@ -197,7 +197,7 @@
       "project": "Fruition",
       "category": "AI Agent · User-defined Skills · HITL · Prompt injection",
       "title": "User-defined Agent Skills with controlled execution",
-      "short": "Agent Skills: authoring, validation and approval",
+      "short": "Agent execution environment: authoring, validation and approval",
       "period": "2026.08 - 2026.09",
       "summary": "Built Agent Skills so users could define and reuse recurring document tasks, such as meeting notes. Connected instruction drafting and checks to user review and publication, followed by separate approval for actual changes.",
       "tags": [
@@ -207,7 +207,7 @@
         "LLM Evaluation",
         "Human-in-the-loop"
       ],
-      "problem": "Built a workflow from Skill authoring and publishing to actual document changes, allowing users to define and reuse their own recurring tasks.",
+      "problem": "Built a workflow from Skill authoring and publishing to actual document changes, allowing users to define and reuse their own recurring tasks. AI drafts the instructions and the edits, code checks permissions and execution scope, and the user decides what is published and applied.",
       "diagram": "flowchart TD\n U[User describes a recurring task] --> S[Draft Skill, mask personal data and check prompt injection]\n S --> P[User review and recheck on publication]\n P --> K[Store reusable instructions]\n Q[User requests document work] --> R[Router selects task and conditions]\n K -. Reuse when needed .-> R\n R --> E[Edit while preserving goal and scope]\n R --> F[Plan folder organization and compare with request]\n E --> V[Check format, edit scope, personal data and injection]\n V --> D[Show validated changes and diff]\n F --> D\n D --> A{User approval}\n A -->|Approve| W[Apply edits or organize folders]\n A -->|Cancel| N[Keep originals]",
       "diagramCaption": "User-defined instructions and the document workflow that uses them. Executors do not reclassify the task; they validate proposed changes and apply them after user approval.",
       "resultTitle": "Reusable tasks and approval workflow; editing passes 94/114 → 104/114",
@@ -381,7 +381,7 @@
     {
       "name": "Fruition",
       "label": "01 / AI KNOWLEDGE WORKSPACE",
-      "description": "An AI workspace that organizes uploaded documents into an LLM-generated Wiki, answers questions using source evidence through RAG, and edits documents in natural language.",
+      "description": "An AI workspace that organizes uploaded documents into an LLM-generated Wiki, answers questions using source evidence through RAG, and edits documents in natural language. It is currently deployed on AWS EKS and undergoing QA.",
       "origin": "Started when a teammate raised a pain point with managing documents, which we refined through design thinking.",
       "goal": "The goal was to fix the frustration of saving many documents but failing to find them when needed.",
       "myRole": "AI lead",
@@ -596,7 +596,7 @@
         "text13": "PDF conversion pass rate: 45.17% → 89.89%",
         "text14": "Compared selective repair with full AI conversion, then separated processing for body text, tables and equations. Improved content preservation in internal evaluations.",
         "text15": "RAG evidence coverage: 66.25% → 91.25%",
-        "text16": "Questions with sufficient evidence increased from 53 to 73 out of 80 answerable questions versus hybrid retrieval. Tuning Jev candidates and concurrency reduced median time from 9.090s to 2.251s.",
+        "text16": "Questions with sufficient evidence increased from 53 to 73 out of 80 answerable questions versus hybrid retrieval. Tuning candidates and concurrency for Jev, a decision-only model, reduced median time from 9.090s to 2.251s.",
         "text17": "Drug description conversion: $200 estimated → $11.18 spent",
         "text18": "Built a pipeline to deduplicate semantic text blocks, fill the missing 5% by ingredient, convert with GPT Batch API and map results back to drug IDs."
       }
@@ -608,7 +608,7 @@
         "text20": "02 / PROJECTS",
         "text21": "Fruition",
         "text22": "2026.04 — Present",
-        "text23": "LLM Wiki-based AI workspace · AI SW Maestro, 17th cohort",
+        "text23": "LLM Wiki-based AI workspace · AI SW Maestro, 17th cohort · Deployed on AWS EKS, in QA",
         "text24": "Team project (3 + designer) / AI lead",
         "text25": "How it started: a teammate’s pain point with managing documents, refined through design thinking — saved documents could not be found when needed.\nTeam: me (all AI), 1 backend (Spring backend), 1 frontend & DevOps (frontend, MSA deployment on AWS), external designer · 3 mentors",
         "text114": "Document conversion pipeline and faster Wiki generation",
@@ -621,14 +621,14 @@
         "text118": "Reusable Skills and improved AI Agent routing",
         "text119": "Built reusable Skills with user approval before changes. Applied Jev to route requests to questions, edits and other tasks: correct decisions rose from 77/98 to 81/98, and median decision time fell from 8.967s to 0.658s.",
         "text29": "User-defined task instructions (Skills)\nProblem: Developers cannot build every recurring workflow users need.\nSolution: Built drafting, review and publishing of natural-language instructions, with checks against bypassing permissions or approval. Document changes require separate preview and approval.\nResult: Published Skills became available to the Agent. In a 6-document check, no changes occurred before approval; 3 folders were created and documents moved afterward.",
-        "text30": "Jev-based request routing\nProblem: Misclassifying questions as edits led to the wrong action.\nSolution: Applied Jev to select task types and additional conditions for questions, edits, document creation and folder organization.\nResult: Fully correct decisions on the same 98 requests rose from 77 to 81. Median decision time fell from 8.967s to 0.658s.",
+        "text30": "Jev-based request routing\nProblem: Misclassifying questions as edits led to the wrong action.\nSolution: Applied Jev, a model that picks only from a fixed set of options, to select task types and additional conditions for questions, edits, document creation and folder organization.\nResult: Fully correct decisions on the same 98 requests rose from 77 to 81 (63 for GPT-5-nano on the same options). Median decision time fell from 8.967s to 0.658s.",
         "text120": "Service responsibilities and communication",
         "text121": "Defined responsibilities, data ownership and communication for services including AI. Proposed the initial design and finalized it with teammates and mentors.",
         "text35": "Proposed the initial MSA design, then jointly finalized service boundaries, data ownership and communication with teammates and mentors.",
         "text36": "Internal evaluations. RAG timing compares Jev before/after tuning. Parallel document timing covers analysis only, excluding storage and post-processing.",
         "text37": "PDF conversion ↗",
         "text39": "Parallel document processing ↗",
-        "text40": "Agent Skill design ↗",
+        "text40": "Agent execution environment ↗",
         "text43": "RAG evidence selection ↗",
         "text44": "Pilltip",
         "text45": "2025.03 — 2025.12",
@@ -736,7 +736,7 @@
     }
   ],
   "overview": {
-    "eyebrow": "AI Agents · Data pipelines · Spring",
+    "eyebrow": "AI Agents · Execution environment design · Data pipelines",
     "title": "A developer who digs into root causes and enjoys solving difficult problems",
     "description": "The problems I encountered, the experiments and results, and the decisions that shaped each implementation.",
     "experience1Title": "PDF tables and equations: pass rate 45.17% → 89.89%",
