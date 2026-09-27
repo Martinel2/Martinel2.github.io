@@ -225,7 +225,8 @@ try {
   await analyticsPage.waitForFunction(() => window.dataLayer?.some(args => args[1] === 'view_case'));
   let events = await analyticsPage.evaluate(() => window.dataLayer.map(args => Array.from(args)));
   const config = events.find(args => args[0] === 'config')[2];
-  assert.equal(config.page_location, `${localBase}/analytics-check`);
+  // UTM stays in the reported URL for GA4 campaign attribution; other query values and the hash do not.
+  assert.equal(config.page_location, `${localBase}/analytics-check?utm_source=application&utm_medium=resume&utm_campaign=company-a`);
   assert.equal(config.campaign_name, 'company-a');
   assert.equal(config.campaign_source, 'application');
   assert.equal(config.allow_google_signals, false);
