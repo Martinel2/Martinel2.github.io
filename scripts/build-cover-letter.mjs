@@ -24,7 +24,7 @@ async function sectionHtml() {
   const body = lines.filter(l => !l.startsWith('# ')).join('\n');
   const paragraphs = body.split(/\n\s*\n/).map(p => p.trim().replace(/\s*\n\s*/g, ' ')).filter(Boolean);
   if (!paragraphs.length) throw new Error(`${source}에 본문이 없습니다`);
-  return `<section class="resume-section"><h2>${escape(heading)}<span>MOTIVATION</span></h2>`
+  return `<section class="resume-section resume-lead"><h2>${escape(heading)}<span>MOTIVATION</span></h2>`
     + `<div class="resume-content">${paragraphs.map(p => `<p>${inline(p)}</p>`).join('')}</div></section>`;
 }
 

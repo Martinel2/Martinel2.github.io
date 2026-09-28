@@ -15,7 +15,10 @@ try{
  // Chrome paginates it, so nothing is held back for a fixed page layout.
  await page.goto(pathToFileURL(resolve(dir,'resume.html')).href,{waitUntil:'load'});
  const body=await page.evaluate(({name,lang})=>{
-  const sections=[...document.querySelectorAll('.resume-section')];
+  const all=[...document.querySelectorAll('.resume-section')];
+  // A .resume-lead section reads before the summary but stays out of the fixed indices below.
+  const lead=all.filter(el=>el.classList.contains('resume-lead'));
+  const sections=all.filter(el=>!el.classList.contains('resume-lead'));
   const copy=el=>el.cloneNode(true);
   const html=el=>{el.querySelectorAll('a').forEach(a=>a.href=new URL(a.getAttribute('href'),'https://martinel2.github.io/'+(lang==='en'?'en/':'')).href);el.querySelectorAll('.resume-download,.resume-section>h2>span').forEach(e=>e.remove());return el.outerHTML;};
   const section=(title,body)=>`<section><h2>${title}</h2>${body}</section>`;
@@ -34,7 +37,7 @@ try{
    else el.append(tail);
    return html(el);
   }).join('');
-  return html(hero)+section('SUMMARY',html(summary))+section('PROJECTS & EXPERIENCE',projects)
+  return html(hero)+lead.map(el=>html(copy(el))).join('')+section('SUMMARY',html(summary))+section('PROJECTS & EXPERIENCE',projects)
    +[2,3,5,4,...[...sections.keys()].filter(i=>i>5)].map(i=>html(copy(sections[i]))).join('');
  },{name,lang});
  const css=await readFile('templates/resume-pdf.css','utf8');

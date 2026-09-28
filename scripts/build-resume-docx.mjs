@@ -31,10 +31,12 @@ export async function buildResumeDocx(page, lang = 'ko') {
     hero.querySelectorAll('h1 br').forEach(e=>e.replaceWith(document.createTextNode(' ')));
     root.querySelector('.resume-section .resume-content').querySelectorAll('p').forEach(e=>e.remove());
     // Same section order as the PDF: summary, projects, skills, activities, education, awards.
-    const sections=[...root.querySelectorAll(':scope>.resume-section')];
+    const all=[...root.querySelectorAll(':scope>.resume-section')];
+    const lead=all.filter(el=>el.classList.contains('resume-lead'));
+    const sections=all.filter(el=>!el.classList.contains('resume-lead'));
     // No forced break before activities: the PDF flow stopped forcing one, so neither does Word.
     sections[0].querySelector('h2').textContent='SUMMARY';sections[1].querySelector('h2').textContent='PROJECTS & EXPERIENCE';
-    const ordered=[hero,sections[0],sections[1],sections[2],sections[3],sections[5],sections[4],...sections.slice(6)];
+    const ordered=[hero,...lead,sections[0],sections[1],sections[2],sections[3],sections[5],sections[4],...sections.slice(6)];
     document.body.append(...ordered.map(el=>{const box=document.createElement('div');box.append(el);box.hidden=false;return box;}));
 
     const inline=node=>{
