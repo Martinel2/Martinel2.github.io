@@ -869,7 +869,7 @@
     "about": {
       "eyebrow": "ABOUT ME",
       "title": "About me",
-      "description": "I owned the entire AI side of Fruition, an AI workspace that turns documents into knowledge, and the backend and AI of Pilltip, a medication service that explains drug information in plain language. Both handle sensitive personal data, so I drew an explicit line between what the model sees and what application code decides."
+      "description": "I owned the entire AI side of Fruition, an AI workspace that turns documents into knowledge, and the backend and AI of Pilltip, a medication service that explains drug information in plain language. Both handle sensitive personal data, so I drew an explicit line between what the model sees and what application code decides. Outside of code, I have been weight training for two years."
     },
     "sections": {
       "skillsEyebrow": "SKILLS",
