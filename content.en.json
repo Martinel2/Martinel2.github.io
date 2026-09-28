@@ -16,7 +16,7 @@
         "RAG",
         "Quality evaluation"
       ],
-      "problem": "To choose appropriate tasks and answer evidence more reliably, I evaluated Jev first for routing and then expanded it to RAG. Retrieval stays a fixed pipeline that gathers source evidence through semantic and keyword search plus wiki graph traversal, and the answer is presented separately from its evidence, related pages and traversal path. A query agent that plans its own retrieval strategy was deferred: the fixed pipeline was enough, and the trigger for revisiting it is a need for compound retrieval plans and feedback loops.",
+      "problem": "To choose appropriate tasks and answer evidence more reliably, I evaluated Jev first for routing and then expanded it to RAG. Retrieval stays a fixed pipeline that gathers source evidence through semantic and keyword search plus wiki graph traversal, and the answer is presented separately from its evidence, related pages and traversal path. A query agent that plans its own retrieval strategy was deferred. The threshold for adding agents is a single question that demands several retrieval plans and replanning on intermediate results; below it, the fixed pipeline gathers the same evidence in fewer calls and keeps failure points easier to trace.",
       "diagram": "flowchart TD\n Q[User question] --> S[Collect semantic and keyword search candidates]\n S --> C[Top 300 candidates]\n C --> J[Jev selects evidence in up to 4 parallel batches]\n J --> E{Sufficient evidence?}\n E -->|Yes| A[Pass selected evidence to answer generation]\n E -->|No| N[No evidence]\n",
       "diagramCaption": "The evaluated evidence-selection design. Reference answers were used only for evaluation, never as retrieval or model inputs.",
       "resultTitle": "Questions with sufficient evidence: 53/80 → 73/80; total median time 2.251s",
@@ -38,7 +38,7 @@
           "Original selector → tuned Jev"
         ]
       ],
-      "tradeoff": "The speedup compares Jev before and after its own settings changed. Retrieval gathers candidates and Jev makes the final evidence call, so the selection stage can be swapped on its own. Jev is an external decision model released in September 2026, so I have no long-run operational evidence for it yet, and even after tuning it stays slower than the previous selector. The candidate-generator comparison is a ranking replay over stored scores, and it measures candidate preservation rather than final answer accuracy.",
+      "tradeoff": "The speedup compares Jev before and after its own settings changed. Retrieval gathers candidates and Jev makes the final evidence call, so the selection stage can be swapped on its own. Jev is an external decision model released in September 2026, so I have no long-run operational evidence for it yet, and even after tuning it stays slower than the previous selector. Answers stream to the user, but evidence selection has to finish before generation starts, so the 2.251s remains user-visible waiting and shortening it is still open work. The candidate-generator comparison is a ranking replay over stored scores, and it measures candidate preservation rather than final answer accuracy.",
       "links": [
         {
           "label": "Introducing Jev · TypeSafe AI",
