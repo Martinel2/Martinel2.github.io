@@ -184,6 +184,12 @@ p,h1,h2,h3,h4,ul,ol,dl,dd,figure{margin:0}
 .contents .groups li a{display:flex;align-items:baseline;gap:16px;width:100%;color:inherit}
 .contents .groups li i{margin-left:auto;font-style:normal;font-size:13px;color:var(--muted);font-weight:400;flex:none}
 .contents .groups li span{font-size:15.5px}
+/* Only entry 08 carries sub-items, since its title alone does not say what is
+   inside; the case titles already do. An entry holding a list stacks instead
+   of sitting on one baseline. */
+.contents .groups li{flex-direction:column;align-items:stretch;gap:0}
+.contents .toc-subs{list-style:none;margin:6px 0 0;padding:0 0 0 64px}
+.contents .toc-subs li{display:block;padding:1px 0;border:0;font-size:12px;line-height:1.5;color:var(--muted)}
 /* Slide team list: my row as a bright card, teammates dimmed */
 .project .team dl div{opacity:.72}
 .project .team dl div.me{opacity:1;background:white;border:0;border-radius:10px;padding:10px 14px;margin:2px 0 6px;outline:2px solid #7fa2ea;outline-offset:2px}

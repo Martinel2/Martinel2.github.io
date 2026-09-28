@@ -29,7 +29,9 @@ export async function buildPortfolioPdf(browser, lang='ko') {
       highlights:[...ov.querySelectorAll('.experience-index a')].map(a=>({title:text(a,'strong'),text:text(a,'span')})),
       name:text(ov,'.engineering-profile h2'),role:text(ov,'.profile-role'),email:text(ov,'.profile-email'),
       summary:ov.querySelector('.profile-summary').innerText.trim()};
-    const contents=[...document.querySelectorAll('.toc nav a:not(.toc-extra)')].map(a=>({project:text(a,'small'),title:a.querySelector('span:nth-child(2)').lastChild.textContent.trim()}));
+    const subsAfter=a=>a.nextElementSibling?.matches('.toc-subs')?[...a.nextElementSibling.children].map(li=>li.textContent.trim()):[];
+    const contents=[...document.querySelectorAll('.toc nav a:not(.toc-extra)')].map(a=>({project:text(a,'small'),title:a.querySelector('span:nth-child(2)').lastChild.textContent.trim(),subs:subsAfter(a)}));
+    const extraSubs=[...document.querySelectorAll('.toc nav a.toc-extra')].map(subsAfter);
     const items=[];
     for(const el of document.querySelector('.cases').children){
       if(el.matches('.project-context')){
@@ -67,7 +69,7 @@ export async function buildPortfolioPdf(browser, lang='ko') {
       writings:[...writings.querySelectorAll('.more-grid>a')].map(a=>({kicker:text(a,'span').replace(' ↗',''),title:text(a,'h3'),text:text(a,'p'),url:a.href})),
       more:link(writings.querySelector('.writings-heading a'))};
     const guide=document.querySelector('.toc-guide')?.textContent.trim()||'';
-    return {overview,contents,guide,items,closing};
+    return {overview,contents,extraSubs,guide,items,closing};
   },'https://martinel2.github.io/'+(en?'en/':''));
 
   const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -80,11 +82,12 @@ export async function buildPortfolioPdf(browser, lang='ko') {
   slides.push(slide('dark cover','',`<div class="intro"><p class="eyebrow">${esc(o.eyebrow)}</p><h1>${esc(o.title)}</h1><p>${esc(o.description)}</p>
     <div class="who"><strong>${esc(o.name)}</strong>${esc(o.role)}<br><span class="muted">${esc(o.email)} · martinel2.github.io</span><p class="muted" style="margin-top:10px;white-space:pre-line">${esc(o.summary)}</p></div></div>
     <div class="highlights">${o.highlights.map(h=>`<div><strong>${esc(h.title)}</strong><span>${esc(h.text)}</span></div>`).join('')}</div>`));
-  const entry=(n,title,id)=>`<li><a href="#${id}"><b>${String(n).padStart(2,'0')}</b><span>${esc(title)}</span><i data-page="${id}"></i></a></li>`;
+  const subList=subs=>subs?.length?`<ul class="toc-subs">${subs.map(s=>`<li>${esc(s)}</li>`).join('')}</ul>`:'';
+  const entry=(n,title,id,subs)=>`<li><a href="#${id}"><b>${String(n).padStart(2,'0')}</b><span>${esc(title)}</span><i data-page="${id}"></i></a>${subList(subs)}</li>`;
   const more=[[data.closing.title,'beyond'],[data.closing.writingsTitle,'writings']];
   slides.push(slide('contents',L.contents,`<p class="eyebrow">${L.cases}</p><h2 class="slide-title">${L.contents}</h2>${data.guide?`<p class="toc-guide">${esc(data.guide)}</p>`:''}
-    <div class="groups">${[...new Set(data.contents.map(c=>c.project))].map(project=>`<div><p class="group">${esc(project)}</p><ol>${data.contents.map((c,i)=>c.project===project?entry(i+1,c.title,`case-${i+1}`):'').join('')}</ol></div>`).join('')}
-    <div><p class="group">MORE</p><ol>${more.map(([t,id],k)=>entry(data.contents.length+k+1,t,id)).join('')}</ol></div></div>`));
+    <div class="groups">${[...new Set(data.contents.map(c=>c.project))].map(project=>`<div><p class="group">${esc(project)}</p><ol>${data.contents.map((c,i)=>c.project===project?entry(i+1,c.title,`case-${i+1}`,c.subs):'').join('')}</ol></div>`).join('')}
+    <div><p class="group">MORE</p><ol>${more.map(([t,id],k)=>entry(data.contents.length+k+1,t,id,data.extraSubs?.[k])).join('')}</ol></div></div>`));
   let caseNo=0;
   for(const it of data.items){
     if(it.type==='project'){
