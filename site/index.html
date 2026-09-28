@@ -10,7 +10,7 @@
 <a class="skip" href="#main">본문으로 바로가기</a>
 <header class="header"><a class="identity" href="./"><span class="monogram">JH<span>.</span></span><span>김재형 <small>JAEHYEONG KIM</small></span></a>
 <nav aria-label="주 메뉴"><a href="./" aria-current="page">홈</a><a href="./#about">소개</a><a href="./#skills">기술</a><a href="./#projects">프로젝트</a><a href="./#activities">활동</a></nav><a class="language-switch" href="en/" hreflang="en" lang="en" aria-label="View in English">EN</a></header>
-<main id="main"><section class="home-hero"><div class="home-intro"><p class="eyebrow">AI APPLICATION DEVELOPER / BACKEND ENGINEER</p><h1>안녕하세요,<br>김재형입니다.</h1><h2>실패의 원인을 깊이 파고들어<br>해결하는 것을 좋아하는 개발자</h2><div class="home-actions"><a class="button" href="resume.pdf?v=e246a51756" target="_blank" rel="noopener"><img src="assets/icons/file-text.svg" alt="" width="20" height="20">이력서</a><a class="button" href="portfolio.html"><img src="assets/icons/briefcase.svg" alt="" width="20" height="20">포트폴리오</a><a class="button" href="https://www.linkedin.com/in/%EC%9E%AC%ED%98%95-%EA%B9%80-b75920345/" target="_blank" rel="noopener"><img src="assets/icons/linkedin.svg" alt="" width="20" height="20">LinkedIn</a><a class="button" href="https://github.com/Martinel2" target="_blank" rel="noopener"><img src="assets/icons/github.svg" alt="" width="20" height="20">GitHub</a></div></div></section>
+<main id="main"><section class="home-hero"><div class="home-intro"><p class="eyebrow">AI APPLICATION DEVELOPER / BACKEND ENGINEER</p><h1>안녕하세요,<br>김재형입니다.</h1><h2>실패의 원인을 깊이 파고들어<br>해결하는 것을 좋아하는 개발자</h2><div class="home-actions"><a class="button" href="resume.pdf?v=97aee93eb7" target="_blank" rel="noopener"><img src="assets/icons/file-text.svg" alt="" width="20" height="20">이력서</a><a class="button" href="portfolio.html"><img src="assets/icons/briefcase.svg" alt="" width="20" height="20">포트폴리오</a><a class="button" href="https://www.linkedin.com/in/%EC%9E%AC%ED%98%95-%EA%B9%80-b75920345/" target="_blank" rel="noopener"><img src="assets/icons/linkedin.svg" alt="" width="20" height="20">LinkedIn</a><a class="button" href="https://github.com/Martinel2" target="_blank" rel="noopener"><img src="assets/icons/github.svg" alt="" width="20" height="20">GitHub</a></div></div></section>
 <section class="home-about home-section" id="about"><p class="eyebrow">ABOUT ME</p><h2>어떤 개발자인가요?</h2><p>문제에 Deep Dive 하는 것을 좋아합니다.</p><p>정확도와 비용, 처리 시간을 고려하여 서비스에 맞는 구현을 선택합니다.</p><p>문서를 지식으로 활용하는 AI 워크스페이스 Fruition에서 AI 기능 전체를, 의약품 정보를 쉽게 전달하는 복약 서비스 Pilltip에서 백엔드와 AI를 맡았습니다. 두 서비스 모두 민감한 개인 정보를 다루어, 모델에 보낼 정보와 코드가 판단할 정보를 나누는 설계를 했습니다.</p></section>
 <section class="home-section home-skills" id="skills">
 <p class="eyebrow">SKILLS</p><h2>기술 </h2>
@@ -140,26 +140,30 @@
 <strong class="field-label" data-label="성과">성과:</strong> 논문 9편의 평가에서 답이 있는 80문항의 근거 충족률 66.25% → 91.25%. 답 없는 20문항의 잘못된 근거 반환 20 → 0건. Jev 최적화 전후 시간 중앙값 9.090초 → 2.251초.</li></ul>
 </div>
 <div class="resume-topic">
-<h4>Skill 기능 구현과 AI Agent 라우팅 성능 개선</h4>
-<p class="topic-intro">반복 작업을 Skill로 저장·재사용하고 실제 변경은 사용자 승인 후 반영하도록 구현했습니다. 요청을 질문·편집 등으로 분류하는 라우팅에는 Jev를 적용해 정답 77/98 → 81/98건, 판단시간 중앙값 8.967초 → 0.658초로 개선했습니다.</p>
+<h4>에이전트 실행 환경 - Skill·승인·라우팅과 대화 맥락</h4>
+<p class="topic-intro">반복 작업을 Skill로 저장·재사용하고 실제 변경은 사용자 승인 후 반영하도록 구현했습니다. 요청 분류 라우팅에는 Jev를 적용해 정답 77/98 → 81/98건, 판단시간 중앙값 8.967초 → 0.658초로 개선했고, 모델에 보낼 대화 맥락과 편집 입력의 범위도 함께 정했습니다.</p>
 <ul><li>사용자 정의 작업 지침(Skill)
 <strong class="field-label" data-label="문제">문제:</strong> 사용자마다 다른 반복 작업을 개발자가 모두 기능으로 추가하기 어려움.
 <strong class="field-label" data-label="해결">해결:</strong> 자연어 지침의 작성·검토·게시 기능과 권한·승인 우회 검사를 구현. 실제 문서 변경은 미리보기를 확인한 뒤 별도로 승인하도록 설계.
 <strong class="field-label" data-label="성과">성과:</strong> 게시한 Skill을 Agent에서 사용할 수 있도록 구현. 문서 6개 검증에서 승인 전 변경 없이, 승인 후 폴더 3개 생성과 문서 이동 확인.</li><li>Jev 기반 요청 분류 개선
 <strong class="field-label" data-label="문제">문제:</strong> 사용자 질문을 문서 편집으로 분류하는 등 잘못된 작업으로 연결.
 <strong class="field-label" data-label="해결">해결:</strong> 질문·편집·문서 생성·폴더 정리 등 작업 종류와 부가 조건을 고르는 라우팅에 선택형 판단 모델 Jev(정해진 선택지 중에서만 답을 고르는 모델) 적용.
-<strong class="field-label" data-label="성과">성과:</strong> 동일 요청 98개에서 작업 종류와 부가 조건을 모두 맞힌 수 77 → 81건(같은 선택지를 준 GPT-5-nano 63건). 판단시간 중앙값 8.967초 → 0.658초.</li></ul>
+<strong class="field-label" data-label="성과">성과:</strong> 동일 요청 98개에서 작업 종류와 부가 조건을 모두 맞힌 수 77 → 81건(같은 선택지를 준 GPT-5-nano 63건). 판단시간 중앙값 8.967초 → 0.658초.</li><li>대화 메모리
+<strong class="field-label" data-label="문제">문제:</strong> 대화가 길어지면 이전 턴을 전부 모델에 넣을 수 없음.
+<strong class="field-label" data-label="해결">해결:</strong> 최근 여섯 턴은 원문, 그 이전은 누적 요약으로 압축하고 요약 호출 실패 시 이전 요약을 유지. 라우터에 이전 턴의 라우팅 결정까지 전달해 지시어가 가리키는 대상을 해소.</li><li>편집 입력 범위 제한
+<strong class="field-label" data-label="문제">문제:</strong> 문서 전체를 모델에 보내면 비용과 지연이 커짐.
+<strong class="field-label" data-label="해결">해결:</strong> 대상 줄 범위와 주변 문맥만 전달하고 표·코드 블록 경계를 걸치는 범위는 거절. 원문 대비 입력 비율과 처리 시간 평균·p95를 벤치마크로 확인.</li></ul>
 </div>
 <div class="resume-topic">
-<h4>대화 맥락과 편집 입력 구성</h4>
-<p class="topic-intro">대화가 길어져도 맥락을 유지하고, 문서 편집에서 모델에 보내는 입력을 줄이는 작업입니다. 최근 여섯 턴은 원문으로 두고 그 이전은 누적 요약으로 압축했습니다.</p>
-<ul><li>대화 메모리
-<strong class="field-label" data-label="문제">문제:</strong> 대화가 길어지면 이전 턴을 전부 모델에 넣을 수 없음.
-<strong class="field-label" data-label="해결">해결:</strong> 최근 여섯 턴은 원문 유지, 그 이전은 누적 요약으로 압축. 요약 호출 실패 시 이전 요약을 유지. 라우터에는 요약·최근 메시지와 이전 턴의 라우팅 결정까지 전달.
-<strong class="field-label" data-label="성과">성과:</strong> 지시어가 가리키는 대상을 이전 턴에서 찾아 라우팅에 반영.</li><li>편집 입력 범위 제한
-<strong class="field-label" data-label="문제">문제:</strong> 문서 전체를 모델에 보내면 비용과 지연이 커짐.
-<strong class="field-label" data-label="해결">해결:</strong> 편집 대상 줄 범위와 위아래 문맥만 전달하고, 표·코드 블록 경계를 걸치는 범위는 거절. 원문 대비 입력 비율과 처리 시간 평균·p95를 벤치마크로 확인.
-<strong class="field-label" data-label="성과">성과:</strong> 문서 길이와 무관하게 편집 입력을 대상 범위 중심으로 유지.</li></ul>
+<h4>실행 신뢰성과 LLM 추적</h4>
+<p class="topic-intro">AI가 이미 저장한 변경을 되돌리고, 실행 과정을 단계 단위로 확인할 수 있게 하는 작업입니다. 여러 저장소에 걸친 실행을 하나의 트랜잭션으로 묶을 수 없어 역작업으로 복구했습니다.</p>
+<ul><li>취소한 작업의 역순 복구
+<strong class="field-label" data-label="문제">문제:</strong> AI 작업이 모델 호출 사이에 문서·폴더·Wiki·Skill을 여러 번 저장해, 실행만 멈추면 일부 변경이 남음.
+<strong class="field-label" data-label="해결">해결:</strong> 취소 상태를 먼저 저장해 후속 쓰기를 막고, 변경 전 snapshot과 승인에 연결된 멱등키로 자식부터 역순 복구. 복구는 모델 호출 없이 실행 기록만 쓰고, 전체 복구를 확인해야 취소가 확정.</li><li>다른 작업의 기여를 지우지 않는 복구
+<strong class="field-label" data-label="문제">문제:</strong> 개념 페이지가 여러 문서의 기여를 합친 결과라, 과거 snapshot으로 덮으면 다른 문서의 정상 기여까지 사라짐.
+<strong class="field-label" data-label="해결">해결:</strong> 작업·revision·문서별 기여를 덧붙이기만 하는 이력으로 남기고 복구 시 대상 기여만 제외해 재조립. 물리 삭제 대신 삭제 표시로 감사 이력 보존.</li><li>LLM 실행 추적과 민감정보 경계
+<strong class="field-label" data-label="문제">문제:</strong> 평가 루프가 일반 Python 흐름이라 단계별로 볼 수 없고, 추적에 보내는 내용에 민감정보가 섞일 수 있었음.
+<strong class="field-label" data-label="해결">해결:</strong> 평가 루프를 LangGraph 그래프로 재구성해 생성·평가·재시도를 노드 단위로 추적. Agent 그래프는 추적을 끄고 도구 조회 원문을 상태 저장에서 제외하며, 자체 프롬프트 로그는 기록 전 숫자 개인정보를 마스킹. 시간을 재는 실험은 추적과 로그를 모두 끄고 실행.</li></ul>
 </div>
 <div class="resume-topic">
 <h4>문서 확장자 변환 파이프라인 구축과 Wiki 생성 시간 개선</h4>
@@ -172,25 +176,7 @@
 <strong class="field-label" data-label="해결">해결:</strong> Worker 수와 내부 동시 요청 수를 각각 변경하며 비교. 메모리 증가를 고려해 Worker 최대 4개를 채택하고, 오히려 느려진 추가 동시 요청, GPU 병렬화는 제외.
 <strong class="field-label" data-label="성과">성과:</strong> 문서 4개 분석 시간 282.11초 → 73.89초(약 74% 감소)</li></ul>
 </div>
-<div class="resume-topic">
-<h4>서비스별 책임과 통신 구조, LLM 추적 환경 구성</h4>
-<p class="topic-intro">AI 기능을 포함한 서비스의 책임과 데이터 소유권, 서비스 간 통신 방식을 정하고, AI 실행 과정을 단계 단위로 확인할 수 있는 추적 환경을 붙이는 작업입니다.</p>
-<ul><li>MSA 초기 설계 제안 후 팀원·멘토와 데이터 소유권, 서비스 경계, 통신 방식을 논의해 최종 구조 공동 설계.</li><li>LLM 실행 추적과 민감정보 경계
-<strong class="field-label" data-label="문제">문제:</strong> 평가 루프가 일반 Python 흐름이라 의미 추출·평가·재시도 단계를 나눠 볼 수 없었고, 추적 도구에 보내는 내용에 민감정보가 섞일 수 있었음.
-<strong class="field-label" data-label="해결">해결:</strong> 평가 루프를 LangGraph 그래프로 재구성해 응답 생성·평가·재시도를 노드 단위로 추적. LangSmith 키가 없으면 그래프 실행은 유지하고 추적만 생략. Agent 그래프는 추적을 끄고 도구 조회 원문을 상태 저장에서 제외하며, 보관 기간이 끝나면 저장 상태를 먼저 삭제. 자체 프롬프트 로그는 기록 전에 숫자 개인정보를 마스킹.
-<strong class="field-label" data-label="성과">성과:</strong> 요청 실행에서 그래프 노드와 모델 호출 구간을 확인. 시간을 재는 실험에서는 추적과 프롬프트 로그를 모두 끄고 실행해 계측 부담이 측정값에 섞이지 않게 했습니다.</li></ul>
-</div>
-<div class="resume-topic">
-<h4>작업 취소와 저장한 변경의 복구</h4>
-<p class="topic-intro">AI가 이미 저장한 변경을 되돌리고, 무엇을 되돌렸는지 남기는 작업입니다. 여러 저장소에 걸친 실행을 하나의 트랜잭션으로 묶을 수 없어 역작업으로 복구했습니다.</p>
-<ul><li>취소한 작업의 역순 복구
-<strong class="field-label" data-label="문제">문제:</strong> AI 작업이 모델 호출 사이에 문서·폴더·Wiki·Skill을 여러 번 저장해, 실행만 멈추면 일부 변경이 남음.
-<strong class="field-label" data-label="해결">해결:</strong> 취소 상태를 먼저 저장해 후속 쓰기를 막고, 변경 전 snapshot과 승인에 연결된 멱등키로 자식부터 역순 복구. Agent 턴과 복구가 같은 실행 잠금을 쓰고, 본문은 새 revision으로 저장해 늦은 이벤트의 덮어쓰기를 방지. 복구는 모델 호출 없이 실행 기록만 사용.
-<strong class="field-label" data-label="성과">성과:</strong> 전체 복구를 확인해야 취소가 확정되고, 충돌은 재시도 상태로 보존.</li><li>다른 작업의 기여를 지우지 않는 복구
-<strong class="field-label" data-label="문제">문제:</strong> 개념 페이지가 여러 문서의 기여를 합친 결과라, 과거 snapshot으로 덮으면 다른 문서의 정상 기여까지 사라짐.
-<strong class="field-label" data-label="해결">해결:</strong> 작업·페이지 revision·문서별 기여를 덧붙이기만 하는 이력으로 남기고, 복구 시 대상 기여만 제외해 재조립. 물리 삭제 대신 삭제 표시로 감사 이력 보존.
-<strong class="field-label" data-label="성과">성과:</strong> 비동기 복구 중 상태 변화를 revision과 기여 hash로 검증하고, 복구 자체도 새 이력으로 기록.</li></ul>
-</div>
+<p class="scope-note">MSA 초기 설계 제안 후 팀원·멘토와 데이터 소유권, 서비스 경계, 통신 방식을 논의해 최종 구조 공동 설계.</p>
 <p class="scope-note">수치는 내부 평가 기준이며, RAG 시간 단축은 Jev 최적화 전후 비교입니다. 문서 병렬 처리 시간은 저장·후처리를 제외한 분석 단계 기준입니다.</p>
 <p class="scope-note">문제 해결 과정과 실험 결과는 상세 포트폴리오에서 볼 수 있습니다.</p>
 <a class="text-link" href="portfolio.html#fruition-jev-evidence">RAG 근거 선택 ↗</a>
@@ -229,15 +215,15 @@
 <h4>전시 현장 피드백을 반영한 기능 확장</h4>
 <p class="topic-intro">부산대학교 대표 전시팀으로 부스를 운영하며 받은 피드백을 다음 개발 범위에 반영했습니다. 첫 전시에서 나온 건강기능식품 요청을 보유한 데이터 범위에서 기능으로 연결했습니다.</p>
 <ul><li>건강기능식품 지원 확대
-피드백: 첫 전시에서 의약품만이 아니라 건강기능식품도 함께 확인하고 싶다는 요청을 받았습니다.
-반영: 보유한 건강기능식품 데이터 범위에서 검색·자동완성 대상에 추가하고, 복용 주의·병용 정보 표출, 복약 알림·기록 등록, 챗봇 답변 대상까지 확장했습니다.
-범위: 확보한 데이터에 한정되며, 의약품과 같은 수준의 전수 정보는 아닙니다.</li><li>반영하지 못한 지적
+<strong class="field-label" data-label="문제">문제:</strong> 첫 전시에서 의약품만 확인할 수 있어, 건강기능식품도 함께 보고 싶다는 요청을 받음.
+<strong class="field-label" data-label="해결">해결:</strong> 보유한 건강기능식품 데이터 범위에서 검색·자동완성 대상에 추가하고, 복용 주의·병용 정보 표출, 복약 알림·기록 등록, 챗봇 답변 대상까지 확장.
+<strong class="field-label" data-label="성과">성과:</strong> 전시에서 받은 요청을 다음 개발 범위로 연결. 확보한 데이터에 한정되며 의약품과 같은 전수 정보는 아님.</li><li>반영하지 못한 지적
 실행 환경을 컨테이너로 옮기는 편이 낫다는 지적을 받았지만 졸업과제 기간 내에는 적용하지 못했습니다. 이후 Fruition에서는 컨테이너 기반 배포를 전제로 AI 서비스를 나눴습니다.</li></ul>
 </div>
 <p class="scope-note">문제 해결 과정과 실험 결과는 상세 포트폴리오에서 볼 수 있습니다.</p>
 <a class="text-link" href="portfolio.html#pilltip-data">데이터 파이프라인 사례 ↗</a>
 <a class="text-link" href="portfolio.html#pilltip-personalization">개인화 설계 사례 ↗</a>
 </article></dialog>
-<dialog class="project-dialog resume-format-dialog" id="resume-format-dialog" aria-labelledby="resume-format-title"><form method="dialog"><button class="button" autofocus>닫기 ×</button></form><h2 id="resume-format-title">이력서</h2><div class="resume-formats"><a class="button" href="resume.pdf?v=e246a51756" target="_blank" rel="noopener">PDF 보기</a><a class="button resume-download" href="resume.docx?v=e246a51756" download="김재형_이력서.docx">Word 다운로드</a></div></dialog></main>
+<dialog class="project-dialog resume-format-dialog" id="resume-format-dialog" aria-labelledby="resume-format-title"><form method="dialog"><button class="button" autofocus>닫기 ×</button></form><h2 id="resume-format-title">이력서</h2><div class="resume-formats"><a class="button" href="resume.pdf?v=97aee93eb7" target="_blank" rel="noopener">PDF 보기</a><a class="button resume-download" href="resume.docx?v=97aee93eb7" download="김재형_이력서.docx">Word 다운로드</a></div></dialog></main>
 <footer class="site-footer"><span>© 2026 김재형</span><div class="footer-links"><a href="mailto:kkuldangi2@gmail.com">Email ↗</a><a href="https://github.com/Martinel2">GitHub ↗</a><a href="https://velog.io/@kkuldangi3/posts">Blog ↗</a><a href="https://www.linkedin.com/in/%EC%9E%AC%ED%98%95-%EA%B9%80-b75920345/">LinkedIn ↗</a><a href="#top">맨 위로 ↑</a></div></footer>
 </body></html>
