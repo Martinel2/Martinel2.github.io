@@ -23,7 +23,7 @@ export async function buildResumeDocx(page, lang = 'ko') {
     root.querySelectorAll('.resume-download,.resume-end,.resume-section>h2>span,.evidence-thumb>span').forEach(e=>e.remove());
     root.querySelectorAll('a').forEach(a=>a.href=new URL(a.getAttribute('href'),base).href);
     const hero=root.querySelector('.resume-hero');
-    hero.querySelector('.eyebrow').textContent=name+' · Backend / AI Application Developer';
+    hero.querySelector('.eyebrow').textContent=name+' · AI Application Developer / Backend Engineer';
     hero.querySelectorAll('p:not(.eyebrow):not(.resume-role)').forEach(e=>e.remove());
     hero.querySelectorAll('h1 br').forEach(e=>e.replaceWith(document.createTextNode(' ')));
     root.querySelector('.resume-section .resume-content').querySelectorAll('p').forEach(e=>e.remove());
@@ -150,7 +150,7 @@ export async function buildResumeDocx(page, lang = 'ko') {
   }
 
   const footer=new Footer({children:[new Paragraph({tabStops:[{type:TabStopType.RIGHT,position:pageWidth}],children:[
-    run(name+' · Backend / AI Application Developer',{size:16,color:'7D8DA3'}),new TextRun({children:[new Tab()]}),
+    run(name+' · AI Application Developer / Backend Engineer',{size:16,color:'7D8DA3'}),new TextRun({children:[new Tab()]}),
     new TextRun({children:[PageNumber.CURRENT,' / ',PageNumber.TOTAL_PAGES],size:16,color:'7D8DA3'})]})]});
   const doc=new Document({creator:name,title:name+(lang==='en'?' Resume':' 이력서'),
     styles:{default:{document:{run:{font:{ascii:'Malgun Gothic',hAnsi:'Malgun Gothic',eastAsia:'Malgun Gothic',cs:'Malgun Gothic'},size:SIZE.body,color:COLOR.text,language:{value:lang==='en'?'en-US':'ko-KR',eastAsia:'ko-KR'}},paragraph:{spacing:{after:60,line:LINE}}}}},
