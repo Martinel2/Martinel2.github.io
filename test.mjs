@@ -132,7 +132,7 @@ try {
           assert.equal(await page.$$eval(`#${c.id} table`, els => els.length), 0);
           if (c.designSteps) {
             assert.deepEqual(await page.$$eval(`#${c.id} .experiment-timeline li:first-child strong`, els => els.map(el => el.textContent)), ['문제 상황', '판단', '구현', '확인한 결과']);
-          } else {
+          } else if (c.experiments.length) {
             assert.ok(c.experiments.every(row => row.length === 4));
             assert.deepEqual(await page.$$eval(`#${c.id} .experiment-timeline li:first-child strong`, els => els.map(el => el.textContent)), ['문제 상황', '시도와 결과', '판단']);
           }

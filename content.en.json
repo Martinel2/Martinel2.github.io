@@ -314,11 +314,11 @@
         "PostgreSQL",
         "Concurrency and memory"
       ],
-      "problem": "I tested parallelism separately for document analysis and embedding generation to reduce waiting in the document-to-Wiki pipeline.",
+      "problem": "Sequential processing left later documents waiting for earlier external AI responses. Raising workers from 1 to 4 cut analysis time for 4 documents from 282.11s to 73.89s, so I tested whether more concurrency kept helping. Raising concurrent AI requests per worker from 2 to 4 slowed it to 95.92s, and running 2 embedding processes on the same GPU raised each from about 9.5s to 19–21s. Analysis waiting on external responses and embeddings sharing a device scale differently, so I set separate thresholds per stage.",
       "diagram": "flowchart TD\n A[Document processing request] --> K[Kafka distributes document jobs]\n K --> W[Multiple workers with per-worker request limits]\n W --> L[Lock writes within the same workspace]\n V[Embedding generation] --> G[Check contention on a shared GPU]\n L --> D[Check time, memory and content preservation]\n G --> D\n D --> R[Choose scaling policy per stage]",
       "diagramCaption": "Evaluated scaling separately for Wiki generation and embedding generation.",
       "resultTitle": "73.8% less analysis time for 4 documents · 300 queued jobs with zero loss",
-      "result": "With 4 workers and 2 concurrent requests each, analysis time for 4 documents fell by about 73.8%. Memory rose about fourfold, and output quality varied with configuration.\n\nReplaying saved AI responses for 100 documents under 3 queue configurations processed all 300 jobs without omissions or failures.\n\nI adopted a maximum of 4 workers: although memory increased about fourfold, I judged that the AI service’s MSA deployment on EKS could distribute the load.",
+      "result": "With 4 workers and 2 concurrent requests each, analysis time for 4 documents fell by about 73.8%. Combined process memory rose from 351.7MiB to 1,401.0MiB — about fourfold — and output quality varied with configuration.\n\nI rejected both raising concurrent requests further and parallelising embedding generation on the same GPU, since each made things slower. My initial assumption that more concurrency is always faster did not hold, and I began treating external-response waits and device contention as separate problems.\n\nReplaying saved AI responses for 100 documents under 3 queue configurations processed all 300 jobs without omissions or failures.\n\nI adopted a maximum of 4 workers: although memory increased about fourfold, I judged that the AI service’s MSA deployment on EKS could distribute the load.",
       "metrics": [
         [
           "1 worker",
@@ -337,20 +337,7 @@
         ]
       ],
       "tradeoff": "One analysis run per configuration on the same documents. These are not end-to-end timings including storage and post-processing.",
-      "experiments": [
-        [
-          "Worker count: analysis time versus memory",
-          "Sequential processing left later documents waiting for earlier external AI responses. I needed to measure both speed gains and memory cost from adding workers.",
-          "Increasing workers from 1 to 4 for the same 4 documents reduced analysis time from 282.11s to 73.89s. Combined process memory rose from about 352MiB to 1,401MiB. I also checked that writes to the same workspace waited on a lock while different workspaces proceeded in parallel.",
-          "Processing another document during API waits helped, but resources grew with worker count. I decided to evaluate document workers separately from concurrent requests within each worker, and tested whether more concurrent requests could help further."
-        ],
-        [
-          "Extra concurrent requests and GPU contention",
-          "More workers reduced analysis time, but it still felt slow. It was unclear whether more requests per worker or more embedding processes on the same GPU would help.",
-          "With 4 workers, raising concurrent AI requests per worker from 2 to 4 increased time from 73.89s to 95.92s. Running 2 embedding processes on the same GPU also raised each process’s time from about 9.5s to 19–21s.",
-          "Analysis waiting on external responses and embeddings sharing a device behaved differently. Higher concurrency did not always improve speed, so I rejected these changes."
-        ]
-      ]
+      "experiments": []
     },
     {
       "id": "pilltip-data",
