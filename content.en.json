@@ -16,7 +16,7 @@
         "RAG",
         "Quality evaluation"
       ],
-      "problem": "To choose appropriate tasks and answer evidence more reliably, I evaluated Jev first for routing and then expanded it to RAG.",
+      "problem": "To choose appropriate tasks and answer evidence more reliably, I evaluated Jev first for routing and then expanded it to RAG. Retrieval stays a fixed pipeline that gathers source evidence through semantic and keyword search plus wiki graph traversal, and the answer is presented separately from its evidence, related pages and traversal path. A query agent that plans its own retrieval strategy was deferred: the fixed pipeline was enough, and the trigger for revisiting it is a need for compound retrieval plans and feedback loops.",
       "diagram": "flowchart TD\n Q[User question] --> S[Collect semantic and keyword search candidates]\n S --> C[Top 300 candidates]\n C --> J[Jev selects evidence in up to 4 parallel batches]\n J --> E{Sufficient evidence?}\n E -->|Yes| A[Pass selected evidence to answer generation]\n E -->|No| N[No evidence]\n",
       "diagramCaption": "The evaluated evidence-selection design. Reference answers were used only for evaluation, never as retrieval or model inputs.",
       "resultTitle": "Questions with sufficient evidence: 53/80 → 73/80; total median time 2.251s",
@@ -136,7 +136,7 @@
           "title": "Authoring and publishing user-defined instructions",
           "problem": "Recurring tasks such as meeting notes vary by user; developers cannot prebuild every workflow.",
           "judgment": "Let users define and reuse natural-language instructions instead of adding each workflow as a feature. Treat AI-generated instructions as proposals until users review them.",
-          "implementation": "Turned natural-language requests into reusable Markdown Skills. Users review and edit drafts; the Skill and version are stored on final publication.",
+          "implementation": "Turned natural-language requests into reusable Markdown Skills. Users review and edit drafts; the Skill and version are stored on final publication. A published skill is appended as an immutable version rather than overwritten, with a separate pointer to the version that runs. Which run used which version of the instructions stays traceable, so an earlier definition survives a problematic new version.",
           "verification": "Neither Skills nor temporary drafts persist in the DB before publication. Published instructions can be reused in later tasks."
         },
         {
@@ -166,6 +166,69 @@
           "judgment": "I separated what has to be observable from what must not leave the system. Graphs that decide answer quality get node-level tracing; the agent graph that edits a user’s own documents runs with tracing off and keeps raw content out of persisted state.",
           "implementation": "Rebuilt the evaluation loop as a LangGraph graph so answer generation, evaluation and retry each surface as their own node. Even with tracing configured on, a missing key leaves graph execution intact and skips only tracing, which avoids warnings and pointless network retries. The agent graph disables tracing and excludes raw tool lookups from persisted state, and that state is deleted before the run record once retention ends. The prompt log I write myself masks numeric personal data before writing.",
           "verification": "Ran real requests and confirmed that graph nodes and model call spans appear in the trace. Timing experiments run with tracing and prompt logging both disabled, so instrumentation overhead stays out of the measured times."
+        }
+      ]
+    },
+    {
+      "id": "fruition-rollback",
+      "project": "Fruition",
+      "category": "AI Agent · Compensating recovery · Audit history",
+      "title": "Cancelling an AI task and undoing what it already saved",
+      "short": "Task cancellation - undoing saved changes in reverse",
+      "period": "2026.08 — 2026.09",
+      "summary": "An AI task saves documents, folders, wiki pages and skills several times between model calls. Stopping execution alone leaves part of a cancelled task behind, so I built a path that undoes already-committed changes in reverse order. Contributions left by other tasks survive, because recovery excludes only the target contribution from an append-only history.",
+      "tags": [
+        "Compensating recovery",
+        "Idempotency keys",
+        "Append-only history",
+        "PostgreSQL execution lock",
+        "Audit history"
+      ],
+      "problem": "An AI task runs across several stores and cannot be wrapped in one long transaction, so I had to decide what a cancellation should undo and how far it should reach.",
+      "diagram": "flowchart TD\n A[User cancels] --> B[Persist cancellation first · block later writes]\n B --> C[Wait for the running handler to finish]\n C --> D[Derive reverse actions from the run record · no model call]\n D --> E[Undo children first, in reverse]\n E --> F{Current values and references unchanged}\n F -->|Yes| G[Atomic recovery · body saved as a new revision]\n F -->|No| H[Leave as rollback_failed for retry]\n G --> I{Full recovery confirmed}\n I -->|Yes| J[cancelled]\n I -->|No| H",
+      "diagramCaption": "Cancellation is persisted first to block later writes, then reverse actions derived from the run record undo children first. Cancellation is only final once full recovery is confirmed; otherwise it stays retryable.",
+      "resultTitle": "A cancelled task’s changes are undone while other tasks’ contributions survive",
+      "result": "Content, names, parents and ordering that users see are restored, while version, audit and idempotency records are kept. Recovery runs from the run record alone, with no model settings or calls, and it checks current values and downstream references so it never overwrites another task’s work. Cancellation is final only once full recovery is confirmed; conflicts and unclear outcomes stay retryable. For a feature where AI edits a user’s documents, I settled what could be undone and what had to be recorded before building it.",
+      "metrics": [
+        [
+          "Stores covered by recovery",
+          "3",
+          "core DB · AI DB · object storage"
+        ],
+        [
+          "Recovery execution",
+          "No model calls",
+          "Reverse actions from the run record only"
+        ],
+        [
+          "Cancellation becomes final",
+          "On confirmed recovery",
+          "Otherwise kept retryable"
+        ]
+      ],
+      "tradeoff": "This case is about design and unit-level verification; I did not measure a recovery success rate under production traffic. Preserving per-source contributions from ingest onward costs storage. Without a snapshot of the remaining combination a page has to be reassembled, and older tasks carried no snapshot, so runs and queues had to be drained before deploying.",
+      "processTitle": "Decisions and implementation",
+      "designSteps": [
+        {
+          "title": "Deciding that stopping execution was not enough",
+          "problem": "An AI task saves documents, folders, wiki pages and skills several times between model calls, so stopping execution left part of a cancelled task in place. Execution spanning the core DB, the AI DB and object storage could not be wrapped in one long transaction.",
+          "judgment": "I chose to undo already-committed changes too. Asking the model to perform the inverse was rejected because it cannot guarantee original values, approval scope or idempotency, and locking the whole service in one transaction was rejected because it cannot absorb long-running model, HTTP and object-storage work or its failures.",
+          "implementation": "The AI side derives reverse actions from the run record while the backend performs atomic recovery of business data. Agent tools store a pre-change snapshot with reverse-action arguments and an idempotency key tied to the original approval, and ordinary tasks record before and after values through each database’s triggers inside the same transaction. Object storage persists the original and the intended result before writing.",
+          "verification": "Confirmed that recovery runs from the run record alone, with no model settings or calls."
+        },
+        {
+          "title": "Blocking later writes and undoing children first",
+          "problem": "A handler still running after a cancellation would overwrite recovered values, and undoing a parent first left the changes its children had made behind.",
+          "judgment": "Persist the cancellation first to block later writes, wait for the running handler to finish, then undo children first in reverse order.",
+          "implementation": "The agent turn and recovery share one PostgreSQL execution lock. The lock releases when a worker connection ends, so a leftover in-progress record cannot block recovery. Body recovery is saved as a new revision, so a late event cannot overwrite the source again.",
+          "verification": "Cancellation becomes final only once full recovery is confirmed; conflicts and unclear outcomes are left in a retryable state."
+        },
+        {
+          "title": "Recovering without erasing other tasks’ contributions",
+          "problem": "A wiki concept page merges contributions from several documents, so overwriting it with an older snapshot also removed valid contributions added later by other documents.",
+          "judgment": "Removing just the relevant part from the finished result was rejected because which sentence came from which document cannot be told apart reliably, and restoring an entire older snapshot was rejected too. Instead the history is append-only and recovery excludes only the target contribution before reassembling.",
+          "implementation": "Operations, page revisions and per-document contributions are recorded append-only, and recovery restores or reassembles the page with the target contribution excluded. Pages and history are soft-deleted rather than removed, which preserves the audit trail.",
+          "verification": "Verified through revision and contribution hashes that state had not shifted during asynchronous recovery, and recorded the recovery itself as a new operation and revision."
         }
       ]
     },
@@ -685,7 +748,11 @@
         "text140": "Feedback I could not act on\nSomeone pointed out that the service would be better off running in containers, but I could not adopt it inside the capstone timeline. On Fruition I designed the AI services around a container-based deployment from the start.",
         "text55": "Data pipeline case study ↗",
         "text56": "Personalization case study ↗",
-        "text145": "LLM run tracing and the boundary around sensitive data\nProblem: the evaluation loop ran as plain Python, so extraction, evaluation and retry could not be inspected separately — yet tracing everything would send raw tool lookups and personal data outside.\nApproach: rebuilt the loop as a LangGraph graph so generation, evaluation and retry each became a traced node. A missing LangSmith key skips tracing but still runs the graph. The agent graph keeps tracing off, excludes raw tool lookups from persisted state, and deletes that state ahead of the run record at end of retention. My own prompt log masks numeric personal data before writing.\nResult: graph nodes and model call spans are visible on real requests. Timing runs disable tracing and prompt logging so instrumentation stays out of the numbers."
+        "text145": "LLM run tracing and the boundary around sensitive data\nProblem: the evaluation loop ran as plain Python, so extraction, evaluation and retry could not be inspected separately — yet tracing everything would send raw tool lookups and personal data outside.\nApproach: rebuilt the loop as a LangGraph graph so generation, evaluation and retry each became a traced node. A missing LangSmith key skips tracing but still runs the graph. The agent graph keeps tracing off, excludes raw tool lookups from persisted state, and deletes that state ahead of the run record at end of retention. My own prompt log masks numeric personal data before writing.\nResult: graph nodes and model call spans are visible on real requests. Timing runs disable tracing and prompt logging so instrumentation stays out of the numbers.",
+        "text146": "Task cancellation and undoing saved changes",
+        "text147": "Undoing changes an AI task already saved, and recording what was undone. Execution spans several stores and cannot be one transaction, so recovery runs as reverse actions.",
+        "text148": "Undoing a cancelled task in reverse\nProblem: an AI task saves documents, folders, wiki pages and skills between model calls, so stopping execution leaves some changes behind.\nApproach: persist the cancellation first to block later writes, then undo children first using a pre-change snapshot and an idempotency key tied to the approval. The agent turn and recovery share one execution lock, and bodies are saved as a new revision so late events cannot overwrite them. Recovery uses the run record only, never a model call.\nResult: cancellation is final only once full recovery is confirmed; conflicts stay retryable.",
+        "text149": "Recovering without erasing other tasks’ contributions\nProblem: a concept page merges contributions from several documents, so an older snapshot would erase valid contributions from other documents.\nApproach: record operations, page revisions and per-document contributions append-only, and reassemble with only the target contribution excluded. Soft delete instead of removal keeps the audit trail.\nResult: revision and contribution hashes verify state during asynchronous recovery, and the recovery itself is recorded as new history."
       }
     },
     {

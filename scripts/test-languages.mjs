@@ -4,6 +4,7 @@ import {readFile,stat} from 'node:fs/promises';
 import {resolve,extname} from 'node:path';
 import puppeteer from 'puppeteer';
 const root=resolve('site');
+const caseCount=JSON.parse(await readFile('content.en.json','utf8')).cases.length;
 const server=createServer(async(req,res)=>{try{
  const path=new URL(req.url,'http://localhost').pathname;
  const file=resolve(root,'.'+(path.endsWith('/')?path+'index.html':path));
@@ -29,7 +30,7 @@ try{
    assert.ok(documents.length);assert.ok(documents.every(path=>path.startsWith('/en/')));
    if(route==='portfolio.html'){
     await page.waitForFunction(()=>document.documentElement.dataset.diagrams==='ready');
-    assert.equal(await page.$$eval('.mermaid svg',els=>els.length),6);
+    assert.equal(await page.$$eval('.mermaid svg',els=>els.length),caseCount);
    }
    if(route===''){
     await page.click('.home-actions a[href^="resume.pdf"]');

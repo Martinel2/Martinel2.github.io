@@ -24,8 +24,8 @@
 <a href="https://www.linkedin.com/in/%EC%9E%AC%ED%98%95-%EA%B9%80-b75920345/">LinkedIn ↗</a>
 </div>
 </div>
-<a class="button resume-download" href="resume.pdf?v=2c53fd7f82" download="Jaehyeong_Kim_Resume.pdf">Download resume PDF ↓</a>
-<a class="button resume-download" href="resume.docx?v=2c53fd7f82" download="Jaehyeong_Kim_Resume.docx">Download resume Word ↓</a>
+<a class="button resume-download" href="resume.pdf?v=04bca33459" download="Jaehyeong_Kim_Resume.pdf">Download resume PDF ↓</a>
+<a class="button resume-download" href="resume.docx?v=04bca33459" download="Jaehyeong_Kim_Resume.docx">Download resume Word ↓</a>
 </section>
 <section class="resume-section">
 <h2>Highlights <span>01 / PROFILE</span>
@@ -108,6 +108,17 @@ Approach: send only the target line range plus context, and reject ranges stradd
 <strong class="field-label" data-label="Problem">Problem:</strong> the evaluation loop ran as plain Python, so extraction, evaluation and retry could not be inspected separately — yet tracing everything would send raw tool lookups and personal data outside.
 Approach: rebuilt the loop as a LangGraph graph so generation, evaluation and retry each became a traced node. A missing LangSmith key skips tracing but still runs the graph. The agent graph keeps tracing off, excludes raw tool lookups from persisted state, and deletes that state ahead of the run record at end of retention. My own prompt log masks numeric personal data before writing.
 <strong class="field-label" data-label="Result">Result:</strong> graph nodes and model call spans are visible on real requests. Timing runs disable tracing and prompt logging so instrumentation stays out of the numbers.</li></ul>
+</div>
+<div class="resume-topic">
+<h4>Task cancellation and undoing saved changes</h4>
+<p class="topic-intro">Undoing changes an AI task already saved, and recording what was undone. Execution spans several stores and cannot be one transaction, so recovery runs as reverse actions.</p>
+<ul><li>Undoing a cancelled task in reverse
+<strong class="field-label" data-label="Problem">Problem:</strong> an AI task saves documents, folders, wiki pages and skills between model calls, so stopping execution leaves some changes behind.
+Approach: persist the cancellation first to block later writes, then undo children first using a pre-change snapshot and an idempotency key tied to the approval. The agent turn and recovery share one execution lock, and bodies are saved as a new revision so late events cannot overwrite them. Recovery uses the run record only, never a model call.
+<strong class="field-label" data-label="Result">Result:</strong> cancellation is final only once full recovery is confirmed; conflicts stay retryable.</li><li>Recovering without erasing other tasks’ contributions
+<strong class="field-label" data-label="Problem">Problem:</strong> a concept page merges contributions from several documents, so an older snapshot would erase valid contributions from other documents.
+Approach: record operations, page revisions and per-document contributions append-only, and reassemble with only the target contribution excluded. Soft delete instead of removal keeps the audit trail.
+<strong class="field-label" data-label="Result">Result:</strong> revision and contribution hashes verify state during asynchronous recovery, and the recovery itself is recorded as new history.</li></ul>
 </div>
 <p class="scope-note">Internal evaluations. RAG timing compares Jev before/after tuning. Parallel document timing covers analysis only, excluding storage and post-processing.</p>
 <p class="scope-note">See the detailed portfolio for the problem-solving process and experimental results.</p>
