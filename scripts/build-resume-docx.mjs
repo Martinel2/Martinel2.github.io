@@ -71,6 +71,8 @@ export async function buildResumeDocx(page, lang = 'ko') {
         const style=node.matches('.eyebrow')?'name':node.matches('.resume-role')?'role':node.tagName.toLowerCase();
         return [{style,note:node.matches('.scope-note,.topic-intro,.role'),pageBreak:node.dataset.pageBreak==='1',runs:inline(node)}];
       }
+      // A bare image outside an evidence row, such as the local build's profile photo.
+      if(node.tagName==='IMG')return [{style:'p',runs:inline(node)}];
       if(node.tagName==='LI'){
         // One bullet paragraph per item, so its problem/solution/result lines share the bullet's indent.
         const parts=[...node.children].flatMap(walk), main=parts.filter(b=>!b.note);
