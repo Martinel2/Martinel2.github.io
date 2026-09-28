@@ -93,7 +93,9 @@
         "LLM Evaluation",
         "Human-in-the-loop",
         "Context engineering",
-        "Rolling conversation memory"
+        "Rolling conversation memory",
+        "LangSmith",
+        "LLM observability"
       ],
       "problem": "Built a workflow from Skill authoring and publishing to actual document changes, allowing users to define and reuse their own recurring tasks. AI drafts the instructions and the edits, code checks permissions and execution scope, and the user decides what is published and applied.",
       "diagram": "flowchart TD\n U[User describes a recurring task] --> S[Draft Skill, mask personal data and check prompt injection]\n S --> P[User review and recheck on publication]\n P --> K[Store reusable instructions]\n Q[User requests document work] --> R[Router selects task and conditions]\n K -. Reuse when needed .-> R\n R --> E[Edit while preserving goal and scope]\n R --> F[Plan folder organization and compare with request]\n E --> V[Check format, edit scope, personal data and injection]\n V --> D[Show validated changes and diff]\n F --> D\n D --> A{User approval}\n A -->|Approve| W[Apply edits or organize folders]\n A -->|Cancel| N[Keep originals]",
@@ -157,6 +159,13 @@
           "judgment": "Keep the last six turns verbatim and compress everything older into a rolling summary. For edits, send only the target line range plus surrounding context, and refuse a range that straddles the boundary of a table or code block.",
           "implementation": "Once recent messages reach six, the rolling summary is regenerated from the previous summary plus those messages; if the summarization call fails the previous summary is kept so the conversation does not break. The router receives the summary and recent messages along with the routing decisions from earlier turns, so it can resolve what a referring expression points back to. Edit input is cut to the target line range with context lines above and below, and ranges crossing a structural boundary are rejected.",
           "verification": "A benchmark measures, across document lengths, how large the transmitted input is relative to the source and the average and p95 processing time."
+        },
+        {
+          "title": "Tracing LLM runs while bounding sensitive data",
+          "problem": "The evaluation loop ran as plain Python, so extraction, evaluation, correction and retry could not be inspected stage by stage. Turning tracing on, however, would send raw tool lookups and personal data to an external tracing tool.",
+          "judgment": "I separated what has to be observable from what must not leave the system. Graphs that decide answer quality get node-level tracing; the agent graph that edits a user’s own documents runs with tracing off and keeps raw content out of persisted state.",
+          "implementation": "Rebuilt the evaluation loop as a LangGraph graph so answer generation, evaluation and retry each surface as their own node. Even with tracing configured on, a missing key leaves graph execution intact and skips only tracing, which avoids warnings and pointless network retries. The agent graph disables tracing and excludes raw tool lookups from persisted state, and that state is deleted before the run record once retention ends. The prompt log I write myself masks numeric personal data before writing.",
+          "verification": "Ran real requests and confirmed that graph nodes and model call spans appear in the trace. Timing experiments run with tracing and prompt logging both disabled, so instrumentation overhead stays out of the measured times."
         }
       ]
     },
@@ -642,11 +651,11 @@
         "text29": "User-defined task instructions (Skills)\nProblem: Developers cannot build every recurring workflow users need.\nSolution: Built drafting, review and publishing of natural-language instructions, with checks against bypassing permissions or approval. Document changes require separate preview and approval.\nResult: Published Skills became available to the Agent. In a 6-document check, no changes occurred before approval; 3 folders were created and documents moved afterward.",
         "text30": "Jev-based request routing\nProblem: Misclassifying questions as edits led to the wrong action.\nSolution: Applied Jev, a model that picks only from a fixed set of options, to select task types and additional conditions for questions, edits, document creation and folder organization.\nResult: Fully correct decisions on the same 98 requests rose from 77 to 81 (63 for GPT-5-nano on the same options). Median decision time fell from 8.967s to 0.658s.",
         "text141": "Conversation context and edit input",
-        "text142": "Keeping context across a long conversation while shrinking what the model receives for a document edit. The last six turns stay verbatim; everything older is compressed into a rolling summary.",
-        "text143": "Conversation memory\nProblem: a long conversation cannot be passed to the model in full.\nApproach: keep the last six turns verbatim, compress older turns into a rolling summary, and keep the previous summary when a summarization call fails. The router also receives the routing decisions from earlier turns alongside the summary and recent messages.\nResult: referring expressions resolve against earlier turns and feed into routing.",
-        "text144": "Bounding the edit input\nProblem: sending a whole document to the model drives up cost and latency.\nApproach: send only the target line range plus surrounding context, and reject ranges that straddle a table or code-block boundary. A benchmark tracks input size relative to the source and average and p95 processing time.\nResult: edit input stays centred on the target range regardless of document length.",
-        "text120": "Service responsibilities and communication",
-        "text121": "Defined responsibilities, data ownership and communication for services including AI. Proposed the initial design and finalized it with teammates and mentors.",
+        "text142": "Holding context across a long conversation while shrinking what the model receives for an edit.",
+        "text143": "Conversation memory\nProblem: a long conversation cannot be passed to the model in full.\nApproach: keep the last six turns verbatim, compress older ones into a rolling summary, and keep the previous summary if summarization fails. The router also sees earlier routing decisions.\nResult: referring expressions resolve against earlier turns and feed into routing.",
+        "text144": "Bounding the edit input\nProblem: sending a whole document drives up cost and latency.\nApproach: send only the target line range plus context, and reject ranges straddling a table or code-block boundary. A benchmark tracks input size against the source, plus average and p95 time.\nResult: edit input stays centred on the target range at any document length.",
+        "text120": "Service responsibilities, communication and LLM tracing",
+        "text121": "Defined responsibilities, data ownership and communication for services including AI, and added tracing that exposes each stage of an AI run.",
         "text35": "Proposed the initial MSA design, then jointly finalized service boundaries, data ownership and communication with teammates and mentors.",
         "text36": "Internal evaluations. RAG timing compares Jev before/after tuning. Parallel document timing covers analysis only, excluding storage and post-processing.",
         "text37": "PDF conversion ↗",
@@ -675,7 +684,8 @@
         "text139": "Extending support to health functional foods\nFeedback: at the first exhibition, visitors asked to check health functional foods alongside prescription drugs.\nWhat shipped: within the health functional food data we held, I added them to search and autocomplete, surfaced caution and co-administration information, allowed them in medication reminders and logs, and included them in chatbot answers.\nScope: limited to the data we had obtained; not the exhaustive coverage we have for drugs.",
         "text140": "Feedback I could not act on\nSomeone pointed out that the service would be better off running in containers, but I could not adopt it inside the capstone timeline. On Fruition I designed the AI services around a container-based deployment from the start.",
         "text55": "Data pipeline case study ↗",
-        "text56": "Personalization case study ↗"
+        "text56": "Personalization case study ↗",
+        "text145": "LLM run tracing and the boundary around sensitive data\nProblem: the evaluation loop ran as plain Python, so extraction, evaluation and retry could not be inspected separately — yet tracing everything would send raw tool lookups and personal data outside.\nApproach: rebuilt the loop as a LangGraph graph so generation, evaluation and retry each became a traced node. A missing LangSmith key skips tracing but still runs the graph. The agent graph keeps tracing off, excludes raw tool lookups from persisted state, and deletes that state ahead of the run record at end of retention. My own prompt log masks numeric personal data before writing.\nResult: graph nodes and model call spans are visible on real requests. Timing runs disable tracing and prompt logging so instrumentation stays out of the numbers."
       }
     },
     {
@@ -684,13 +694,12 @@
         "text57": "Skills ",
         "text58": "03 / SKILLS",
         "text59": "Backend",
-        "text60": "Java · Spring Boot · Spring AI · Python",
-        "text113": "Authentication and authorization (Spring Security, OAuth 2.0)",
+        "text60": "Java · Spring Boot · Python",
         "text61": "AI ",
         "text62": "&",
         "text63": " Search",
-        "text64": "LangChain · LangGraph · RAG · LLM Evaluation · Prompt injection defense",
-        "text65": "Elasticsearch · Weaviate",
+        "text64": "LangChain · LangGraph · Spring AI · RAG · LLM Evaluation · Prompt injection defense",
+        "text65": "LangSmith · Elasticsearch · Weaviate",
         "text66": "Data ",
         "text67": "&",
         "text68": " Infra",

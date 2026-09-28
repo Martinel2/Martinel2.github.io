@@ -163,12 +163,13 @@ try {
         if (width === 1440) await page.$eval('#fruition-agent', el => el.scrollIntoView({ behavior: 'instant' }));
         if (width === 1440) await page.screenshot({ path: 'artifacts/case-desktop.png', fullPage: false });
       } else {
-        const skills = await page.$eval('.skill-rows > div:has(.scope-note)', el => {
-          const list = el.querySelector('p').getBoundingClientRect();
-          const note = el.querySelector('.scope-note').getBoundingClientRect();
-          return { aligned: Math.abs(list.left - note.left) < 1, below: note.top >= list.bottom, width: note.width, listWidth: list.width };
-        });
-        assert.ok(skills.aligned && skills.below && Math.abs(skills.width - skills.listWidth) < 1, 'Skill note must occupy the content column');
+        // The AI row leads the skills section on purpose; every row needs a label and a list.
+        const skills = await page.$$eval('.skill-rows > div', rows => rows.map(row => ({
+          label: row.querySelector('strong')?.textContent.trim() || '',
+          list: row.querySelector('p')?.textContent.trim() || '',
+        })));
+        assert.ok(skills.length >= 3 && skills.every(row => row.label && row.list), 'Every skill row needs a label and a list');
+        assert.match(skills[0].label, /^AI/, 'The AI skill row must come first');
         await page.evaluate(() => { window.print = () => { window.printInvoked = true; }; });
         const download=await page.$eval('.resume-download',a=>({href:a.href,name:a.download}));
         assert.equal(download.name,'김재형_이력서.pdf');

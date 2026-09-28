@@ -54,6 +54,8 @@ GitHub 저장소 `Martinel2/Martinel2.github.io`의 Settings → Pages → Sourc
 - 라우팅 비용: `jev-evaluation-retrospective.md`의 100문항 기준 Jev 약 $0.0408, 동일 선택지 GPT 약 $0.1027. 전수 검사의 입력 약 1억 2,448만·출력 약 647만 토큰은 API 보고 사용량이며 실제 청구액은 확인하지 않았습니다.
 - 기존 검색 탈락 단계: 같은 회고의 2,020근거·90문항 실험 기준. 초기 후보에는 90문항 모두 정답 페이지가 있었고 앞 8페이지 제한에서 76문항, 페이지 내부 최고 점수 85% 기준에서 8문항, 최종 8개 제한과 관련 페이지 탐색에서 2문항이 탈락했습니다. 9개 논문·80+20문항 실험과는 평가셋이 다르므로 수치를 이어 붙이지 않습니다.
 - 후보 생성 비교: `jev-generalization/candidate-generator-comparison/report.md`. 저장 점수를 재사용한 순위 재현이고 운영 검색·최종 선택기는 변경하지 않았습니다. 정답 인용 보존율이며 최종 답변 정확도가 아닙니다. 반복 사용한 평가셋이므로 독립 검증으로 쓰지 않습니다. 운영 혼합보다 BGE-M3 단독이 앞선 결과는 그대로 적고, 300후보 구성에서 차이가 작아 운영을 바꾸지 않은 판단도 함께 적습니다.
+- LLM 추적: `dev-msa/docs/backlog/changelog/ai.md`의 1298·1304행(graph node와 LLM span 확인, `POST /pipeline/runs`·`POST /query` 실행 기준), 657행(평가 루프를 LangGraph graph로 재구성), 675~676행(키 없으면 graph 실행 유지·tracing만 생략), 87행(Agent graph tracing 비활성화, tool 조회 원문 checkpoint 제외, 90일 만료 시 checkpoint 우선 삭제). 자체 프롬프트 로그의 숫자 개인정보 마스킹은 `chat_completions_llm.py`의 `redact_numeric_personal_data` 적용분입니다. 시간 측정 스크립트가 `LANGSMITH_TRACING`·`LANGCHAIN_TRACING_V2`·`LLM_PROMPT_LOG_DIR`을 모두 끄는 것은 `services/ai/pipeline`의 실행 스크립트에서 확인했습니다. 상시 운영 중인 대시보드나 알림 체계는 구축하지 않았으므로 그렇게 적지 않습니다.
+- LangChain: `services/ai/pipeline/requirements.txt`의 `langchain-openai`·`langchain-anthropic`·`langchain-google-genai`와 `chat_completions_llm.py`의 provider별 JSON 계약 구현으로 확인했습니다.
 - 대화 메모리·편집 입력: `Fruition-ai/pipeline`의 `app/modules/query/application/conversation_context_resolver.py`(`RECENT_MESSAGE_LIMIT = 6`, 누적 요약 갱신, 요약 실패 시 이전 요약 유지), `app/modules/agent/infrastructure/chat_completions_turn_router.py`(요약·최근 메시지·이전 턴 라우팅 결정 전달), `app/modules/markdown_edit/domain/markdown_target_scope.py`(대상 줄 범위와 문맥 줄, 구조 경계 침범 거절), `markdown_context_benchmark.py`(원문 대비 입력 비율, 평균·p95). 코드에서 확인한 동작만 적고 운영 트래픽 기준 효과는 주장하지 않습니다.
 - Rhwp: PR #1213은 병합, #1351은 제출로 구분했습니다. 확인 기준 2026-09-22.
 - 검색 0.8ms, 총 PR 병합 횟수 등 자료 간 해석이 다른 수치는 대표 성과에서 제외했습니다.
@@ -121,7 +123,7 @@ GitHub 저장소 `Martinel2/Martinel2.github.io`의 Settings → Pages → Sourc
 
 `npm run build`는 동일한 이력서 본문과 페이지 구성을 사용해 `site/resume.pdf`와 편집 가능한 `site/resume.docx`를 생성합니다. 홈의 이력서 버튼에서 PDF 보기 또는 Word 다운로드를 선택할 수 있습니다. 관리자 저장으로 배포가 실행되면 두 파일도 함께 갱신됩니다.
 
-DOCX는 본문·표·목록·하이퍼링크와 증빙 이미지로 구성됩니다. 홈 소개 팝업과 이력서는 `문제: 내용` 형식으로, 상세 포트폴리오는 항목명 다음 줄에서 본문을 시작합니다. 현재 PDF·Word는 3페이지입니다. 이력서 흐름에는 강제 페이지 나눔을 두지 않고, 수상 증빙 썸네일만 인쇄에서 줄여 분량을 맞춥니다. 설치된 글꼴과 수정한 내용에 따라 페이지 나눔은 달라질 수 있습니다. Word에서 내려받은 파일을 수정해도 사이트로 역반영되지는 않습니다.
+DOCX는 본문·표·목록·하이퍼링크와 증빙 이미지로 구성됩니다. 홈 소개 팝업과 이력서는 `문제: 내용` 형식으로, 상세 포트폴리오는 항목명 다음 줄에서 본문을 시작합니다. 현재 한국어 PDF·Word는 3페이지, 영어는 4페이지입니다. 같은 내용을 영어로 옮기면 분량이 늘어납니다. 이력서 흐름에는 강제 페이지 나눔을 두지 않고, 수상 증빙 썸네일만 인쇄에서 줄여 분량을 맞춥니다. 설치된 글꼴과 수정한 내용에 따라 페이지 나눔은 달라질 수 있습니다. Word에서 내려받은 파일을 수정해도 사이트로 역반영되지는 않습니다.
 
 `python3 scripts/test-resume-docx.py`는 빌드 후 PDF 원본과의 본문 일치, 이미지·링크·편집 제한 여부를 검사합니다. 배포에서도 이 검사를 통과해야 게시합니다.
 

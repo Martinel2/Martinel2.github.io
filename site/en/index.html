@@ -10,21 +10,18 @@
 <a class="skip" href="#main">Skip to content</a>
 <header class="header"><a class="identity" href="./"><span class="monogram">JH<span>.</span></span><span>Jaehyeong Kim <small>JAEHYEONG KIM</small></span></a>
 <nav aria-label="Main navigation"><a href="./" aria-current="page">Home</a><a href="./#about">About</a><a href="./#skills">Skills</a><a href="./#projects">Projects</a><a href="./#activities">Activities</a></nav><a class="language-switch" href="../" hreflang="ko" lang="ko" aria-label="한국어로 보기">한국어</a></header>
-<main id="main"><section class="home-hero"><div class="home-intro"><p class="eyebrow">AI APPLICATION DEVELOPER / BACKEND ENGINEER</p><h1>Hello,<br>I’m Jaehyeong Kim.</h1><h2>A developer who digs into root causes<br>and enjoys solving difficult problems</h2><div class="home-actions"><a class="button" href="resume.pdf?v=dd9cd482fc" target="_blank" rel="noopener"><img src="../assets/icons/file-text.svg" alt="" width="20" height="20">Resume</a><a class="button" href="portfolio.html"><img src="../assets/icons/briefcase.svg" alt="" width="20" height="20">Portfolio</a><a class="button" href="https://www.linkedin.com/in/%EC%9E%AC%ED%98%95-%EA%B9%80-b75920345/" target="_blank" rel="noopener"><img src="../assets/icons/linkedin.svg" alt="" width="20" height="20">LinkedIn</a><a class="button" href="https://github.com/Martinel2" target="_blank" rel="noopener"><img src="../assets/icons/github.svg" alt="" width="20" height="20">GitHub</a></div></div></section>
+<main id="main"><section class="home-hero"><div class="home-intro"><p class="eyebrow">AI APPLICATION DEVELOPER / BACKEND ENGINEER</p><h1>Hello,<br>I’m Jaehyeong Kim.</h1><h2>A developer who digs into root causes<br>and enjoys solving difficult problems</h2><div class="home-actions"><a class="button" href="resume.pdf?v=2c53fd7f82" target="_blank" rel="noopener"><img src="../assets/icons/file-text.svg" alt="" width="20" height="20">Resume</a><a class="button" href="portfolio.html"><img src="../assets/icons/briefcase.svg" alt="" width="20" height="20">Portfolio</a><a class="button" href="https://www.linkedin.com/in/%EC%9E%AC%ED%98%95-%EA%B9%80-b75920345/" target="_blank" rel="noopener"><img src="../assets/icons/linkedin.svg" alt="" width="20" height="20">LinkedIn</a><a class="button" href="https://github.com/Martinel2" target="_blank" rel="noopener"><img src="../assets/icons/github.svg" alt="" width="20" height="20">GitHub</a></div></div></section>
 <section class="home-about home-section" id="about"><p class="eyebrow">ABOUT ME</p><h2>About me</h2><p>I enjoy taking a deep dive into problems.</p><p>I weigh accuracy, cost and processing time to choose an implementation that fits the service.</p><p>I owned the entire AI side of Fruition, an AI workspace that turns documents into knowledge, and the backend and AI of Pilltip, a medication service that explains drug information in plain language. Both handle sensitive personal data, so I drew an explicit line between what the model sees and what application code decides.</p></section>
 <section class="home-section home-skills" id="skills">
 <p class="eyebrow">SKILLS</p><h2>Skills </h2>
 <div class="resume-content skill-rows">
 <div>
 <strong>AI &amp; Search</strong>
-<p>LangChain · LangGraph · RAG · LLM Evaluation · Prompt injection defense<br>Elasticsearch · Weaviate</p>
+<p>LangChain · LangGraph · Spring AI · RAG · LLM Evaluation · Prompt injection defense<br>LangSmith · Elasticsearch · Weaviate</p>
 </div>
 <div>
 <strong>Backend</strong>
-<div>
-<p>Java · Spring Boot · Spring AI · Python</p>
-<p class="scope-note">Authentication and authorization (Spring Security, OAuth 2.0)</p>
-</div>
+<p>Java · Spring Boot · Python</p>
 </div>
 <div>
 <strong>Data &amp; Infra</strong>
@@ -155,14 +152,14 @@ Team: me (all AI), 1 backend (Spring backend), 1 frontend &amp; DevOps (frontend
 </div>
 <div class="resume-topic">
 <h4>Conversation context and edit input</h4>
-<p class="topic-intro">Keeping context across a long conversation while shrinking what the model receives for a document edit. The last six turns stay verbatim; everything older is compressed into a rolling summary.</p>
+<p class="topic-intro">Holding context across a long conversation while shrinking what the model receives for an edit.</p>
 <ul><li>Conversation memory
 <strong class="field-label" data-label="Problem">Problem:</strong> a long conversation cannot be passed to the model in full.
-Approach: keep the last six turns verbatim, compress older turns into a rolling summary, and keep the previous summary when a summarization call fails. The router also receives the routing decisions from earlier turns alongside the summary and recent messages.
+Approach: keep the last six turns verbatim, compress older ones into a rolling summary, and keep the previous summary if summarization fails. The router also sees earlier routing decisions.
 <strong class="field-label" data-label="Result">Result:</strong> referring expressions resolve against earlier turns and feed into routing.</li><li>Bounding the edit input
-<strong class="field-label" data-label="Problem">Problem:</strong> sending a whole document to the model drives up cost and latency.
-Approach: send only the target line range plus surrounding context, and reject ranges that straddle a table or code-block boundary. A benchmark tracks input size relative to the source and average and p95 processing time.
-<strong class="field-label" data-label="Result">Result:</strong> edit input stays centred on the target range regardless of document length.</li></ul>
+<strong class="field-label" data-label="Problem">Problem:</strong> sending a whole document drives up cost and latency.
+Approach: send only the target line range plus context, and reject ranges straddling a table or code-block boundary. A benchmark tracks input size against the source, plus average and p95 time.
+<strong class="field-label" data-label="Result">Result:</strong> edit input stays centred on the target range at any document length.</li></ul>
 </div>
 <div class="resume-topic">
 <h4>Document conversion pipeline and faster Wiki generation</h4>
@@ -176,9 +173,12 @@ Approach: send only the target line range plus surrounding context, and reject r
 <strong class="field-label" data-label="Result">Result:</strong> Analysis of 4 documents fell from 282.11s to 73.89s (about 74% less).</li></ul>
 </div>
 <div class="resume-topic">
-<h4>Service responsibilities and communication</h4>
-<p class="topic-intro">Defined responsibilities, data ownership and communication for services including AI. Proposed the initial design and finalized it with teammates and mentors.</p>
-<ul><li>Proposed the initial MSA design, then jointly finalized service boundaries, data ownership and communication with teammates and mentors.</li></ul>
+<h4>Service responsibilities, communication and LLM tracing</h4>
+<p class="topic-intro">Defined responsibilities, data ownership and communication for services including AI, and added tracing that exposes each stage of an AI run.</p>
+<ul><li>Proposed the initial MSA design, then jointly finalized service boundaries, data ownership and communication with teammates and mentors.</li><li>LLM run tracing and the boundary around sensitive data
+<strong class="field-label" data-label="Problem">Problem:</strong> the evaluation loop ran as plain Python, so extraction, evaluation and retry could not be inspected separately — yet tracing everything would send raw tool lookups and personal data outside.
+Approach: rebuilt the loop as a LangGraph graph so generation, evaluation and retry each became a traced node. A missing LangSmith key skips tracing but still runs the graph. The agent graph keeps tracing off, excludes raw tool lookups from persisted state, and deletes that state ahead of the run record at end of retention. My own prompt log masks numeric personal data before writing.
+<strong class="field-label" data-label="Result">Result:</strong> graph nodes and model call spans are visible on real requests. Timing runs disable tracing and prompt logging so instrumentation stays out of the numbers.</li></ul>
 </div>
 <p class="scope-note">Internal evaluations. RAG timing compares Jev before/after tuning. Parallel document timing covers analysis only, excluding storage and post-processing.</p>
 <p class="scope-note">See the detailed portfolio for the problem-solving process and experimental results.</p>
@@ -227,6 +227,6 @@ Someone pointed out that the service would be better off running in containers, 
 <a class="text-link" href="portfolio.html#pilltip-data">Data pipeline case study ↗</a>
 <a class="text-link" href="portfolio.html#pilltip-personalization">Personalization case study ↗</a>
 </article></dialog>
-<dialog class="project-dialog resume-format-dialog" id="resume-format-dialog" aria-labelledby="resume-format-title"><form method="dialog"><button class="button" autofocus>Close ×</button></form><h2 id="resume-format-title">Resume</h2><div class="resume-formats"><a class="button" href="resume.pdf?v=dd9cd482fc" target="_blank" rel="noopener">View PDF</a><a class="button resume-download" href="resume.docx?v=dd9cd482fc" download="Jaehyeong_Kim_Resume.docx">Download Word</a></div></dialog></main>
+<dialog class="project-dialog resume-format-dialog" id="resume-format-dialog" aria-labelledby="resume-format-title"><form method="dialog"><button class="button" autofocus>Close ×</button></form><h2 id="resume-format-title">Resume</h2><div class="resume-formats"><a class="button" href="resume.pdf?v=2c53fd7f82" target="_blank" rel="noopener">View PDF</a><a class="button resume-download" href="resume.docx?v=2c53fd7f82" download="Jaehyeong_Kim_Resume.docx">Download Word</a></div></dialog></main>
 <footer class="site-footer"><span>© 2026 Jaehyeong Kim</span><div class="footer-links"><a href="mailto:kkuldangi2@gmail.com">Email ↗</a><a href="https://github.com/Martinel2">GitHub ↗</a><a href="https://velog.io/@kkuldangi3/posts">Blog ↗</a><a href="https://www.linkedin.com/in/%EC%9E%AC%ED%98%95-%EA%B9%80-b75920345/">LinkedIn ↗</a><a href="#top">Back to top ↑</a></div></footer>
 </body></html>
