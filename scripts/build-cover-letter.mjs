@@ -4,6 +4,31 @@ import {readFile, writeFile, mkdir, rm, symlink, rename, access} from 'node:fs/p
 import {watch} from 'node:fs';
 import {resolve, basename} from 'node:path';
 import {spawn} from 'node:child_process';
+import {pathToFileURL} from 'node:url';
+import puppeteer from 'puppeteer';
+
+// The PDF builder leaves the exact print HTML behind; measure the letter there.
+async function measure() {
+  const browser = await puppeteer.launch({headless: true});
+  try {
+    const page = await browser.newPage();
+    await page.goto(pathToFileURL(resolve('artifacts/resume-pdf.html')).href, {waitUntil: 'load'});
+    await page.evaluate(() => document.fonts.ready);
+    await page.emulateMediaType('print');
+    return await page.$eval('.resume-lead p:last-of-type', el => {
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const rects = [...range.getClientRects()].filter(r => r.width > 0);
+      const tops = [...new Set(rects.map(r => Math.round(r.top)))].sort((a, b) => a - b);
+      const width = el.getBoundingClientRect().width;
+      const last = rects.filter(r => Math.round(r.top) === tops.at(-1))
+        .reduce((sum, r) => sum + r.width, 0);
+      return {lines: tops.length, fill: Math.round(last / width * 100)};
+    });
+  } finally {
+    await browser.close();
+  }
+}
 
 const args = process.argv.slice(2);
 const watching = args.includes('--watch');
@@ -65,6 +90,9 @@ async function build() {
   }
   await rm(stage, {recursive: true, force: true});
   console.log(`Built local/이력서_${label}.pdf and .docx from ${basename(source)}`);
+  // Report how the letter actually wrapped, so a short trailing line is visible without opening the PDF.
+  const fit = await measure().catch(() => null);
+  if (fit) console.log(`  지원동기 ${fit.lines}줄 · 마지막 줄 채움 ${fit.fill}%`);
 }
 
 await access(source).catch(() => {
