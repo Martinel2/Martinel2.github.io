@@ -27,7 +27,7 @@ export async function buildResumeDocx(page, lang = 'ko') {
     root.querySelectorAll('a').forEach(a=>a.href=new URL(a.getAttribute('href'),base).href);
     const hero=root.querySelector('.resume-hero');
     hero.querySelector('.eyebrow').textContent=name+' · AI Application Developer / Backend Engineer';
-    hero.querySelectorAll('p:not(.eyebrow):not(.resume-role)').forEach(e=>e.remove());
+    hero.querySelectorAll('p:not(.eyebrow)').forEach(e=>e.remove()); // the eyebrow already carries the title
     hero.querySelectorAll('h1 br').forEach(e=>e.replaceWith(document.createTextNode(' ')));
     root.querySelector('.resume-section .resume-content').querySelectorAll('p').forEach(e=>e.remove());
     // Same section order as the PDF: summary, projects, skills, activities, education, awards.
@@ -55,13 +55,15 @@ export async function buildResumeDocx(page, lang = 'ko') {
         return [{style:'links',runs}];
       }
       if(node.matches('.resume-hero'))return [{box:'hero',children:[...node.children].flatMap(walk)}];
-      if(node.matches('.resume-project-title'))return [{columns:[[{style:'h3big',runs:inline(node.children[0])}],[{style:'period',align:'right',title:true,runs:inline(node.children[1])}]],widths:[70,30],title:true}];
-      if(node.matches('.evidence-row'))return [{columns:[...node.children].map(walk),widths:[11,64]}];
+      if(node.matches('.resume-project-title'))return [{columns:[[{style:'h3big',runs:inline(node.children[0])}],[{style:'period',align:'right',title:true,runs:inline(node.children[1])}]],widths:[78,22],title:true}];
+      if(node.matches('.evidence-row'))return [{columns:[...node.children].map(walk),widths:[9,91]}];
       if(node.matches('.experience-row,.skill-rows>div,.award-list>div')){
+        // Lead column widths follow the CSS grid: 105px, 95px and 70px of a 688px text column.
+        const lead=node.matches('.award-list>div')?10:node.matches('.skill-rows>div')?14:15;
         const columns=[...node.children].map(walk);
         // Flatten an evidence image into this row; nested tables render poorly outside Word.
         const evidence=columns[1].length===1&&columns[1][0].widths?.length===2?columns[1][0]:null;
-        return [{columns:evidence?[columns[0],...evidence.columns]:columns,widths:evidence?[25,...evidence.widths]:[25,75]}];
+        return [{columns:evidence?[columns[0],...evidence.columns]:columns,widths:evidence?[lead,9,100-lead-9]:[lead,100-lead]}];
       }
       if(node.matches('h1,h2,h3,h4,p,li,a,span,strong')&&!node.querySelector('p,div,ul')){
         const style=node.matches('.eyebrow')?'name':node.matches('.resume-role')?'role':node.tagName.toLowerCase();
@@ -70,7 +72,8 @@ export async function buildResumeDocx(page, lang = 'ko') {
       if(node.tagName==='LI'){
         // One bullet paragraph per item, so its problem/solution/result lines share the bullet's indent.
         const parts=[...node.children].flatMap(walk), main=parts.filter(b=>!b.note);
-        return [{style:'li',runs:main.flatMap((b,i)=>i?[{text:'\n'},...b.runs]:b.runs)},...parts.filter(b=>b.note).map(b=>({...b,indent:true}))];
+        const plain=!!node.closest('.profile-list'); // list-style:none in the CSS
+        return [{style:'li',plain,runs:main.flatMap((b,i)=>i?[{text:'\n'},...b.runs]:b.runs)},...parts.filter(b=>b.note).map(b=>({...b,indent:true}))];
       }
       return [...node.children].flatMap(walk);
     };
@@ -136,11 +139,11 @@ export async function buildResumeDocx(page, lang = 'ko') {
         h1:{before:75,after:75},name:{before:0,after:0},role:{before:0,after:90},
         h2:{before:240,after:135},h3:{before:0,after:0},h3big:{before:0,after:0},h4:{before:105,after:45},
         links:{before:75,after:0},li:{before:0,after:75},
-      }[style]||{before:0,after:75};
+      }[style]||(block.note?{before:0,after:60}:{before:0,after:0});
       result.push(new Paragraph({children,keepNext:heading||block.title,pageBreakBefore:!!block.pageBreak,...(block.align==='right'?{alignment:AlignmentType.RIGHT}:{}),
         spacing:{...spacing,line:lineFor(size,lang)},
-        ...(style==='li'?{bullet:{level:0}}:{}),
-        ...(block.indent?{indent:{left:720}}:{}),
+        ...(style==='li'&&!block.plain?{bullet:{level:0},indent:{left:195,hanging:195}}:{}),
+        ...(block.indent?{indent:{left:195}}:{}),
         ...(style==='h2'?{border:{bottom:{style:BorderStyle.SINGLE,size:12,color:'6A80BD',space:4}}}:{})}));
     }
     return result;
@@ -156,7 +159,7 @@ export async function buildResumeDocx(page, lang = 'ko') {
     run(name+' · AI Application Developer / Backend Engineer',{size:12,color:'7D8DA3'}),new TextRun({children:[new Tab()]}),
     new TextRun({children:[PageNumber.CURRENT,' / ',PageNumber.TOTAL_PAGES],size:12,color:'7D8DA3'})]})]});
   const doc=new Document({creator:name,title:name+(lang==='en'?' Resume':' 이력서'),
-    styles:{default:{document:{run:{font:{ascii:'Malgun Gothic',hAnsi:'Malgun Gothic',eastAsia:'Malgun Gothic',cs:'Malgun Gothic'},size:SIZE.body,color:COLOR.text,language:{value:lang==='en'?'en-US':'ko-KR',eastAsia:'ko-KR'}},paragraph:{spacing:{after:75,line:LINE}}}}},
+    styles:{default:{document:{run:{font:{ascii:'Malgun Gothic',hAnsi:'Malgun Gothic',eastAsia:'Malgun Gothic',cs:'Malgun Gothic'},size:SIZE.body,color:COLOR.text,language:{value:lang==='en'?'en-US':'ko-KR',eastAsia:'ko-KR'}},paragraph:{spacing:{after:0,line:LINE}}}}},
     sections:[{properties:{page:{size:{width:11906,height:16838},margin:{top:737,bottom:907,left:794,right:794,footer:454}}},
       footers:{default:footer},children:await paragraphs(blocks)}]});
   await writeFile(dir+'/resume.docx',await Packer.toBuffer(doc));

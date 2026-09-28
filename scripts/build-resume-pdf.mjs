@@ -20,7 +20,7 @@ try{
   const section=(title,body)=>`<section><h2>${title}</h2>${body}</section>`;
   const hero=copy(document.querySelector('.resume-hero'));
   hero.querySelector('.eyebrow').textContent=name+' · AI Application Developer / Backend Engineer';
-  hero.querySelectorAll('p:not(.eyebrow):not(.resume-role)').forEach(e=>e.remove());
+  hero.querySelectorAll('p:not(.eyebrow)').forEach(e=>e.remove()); // the eyebrow already carries the title
   hero.querySelectorAll('h1 br').forEach(e=>e.replaceWith(document.createTextNode(' ')));
   const summary=copy(sections[0].querySelector('.resume-content'));summary.querySelectorAll('p').forEach(e=>e.remove());
   const projects=[...document.querySelectorAll('.resume-project')].map(p=>{
