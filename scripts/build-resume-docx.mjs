@@ -15,7 +15,7 @@ const lineFor=(size,lang)=>Math.round(size*(lang==='en'?14:14.5));
 
 export async function buildResumeDocx(page, lang = 'ko') {
   const name=lang==='en'?'Jaehyeong Kim':'김재형';
-  const dir=lang==='en'?'site/en':'site';
+  const dir=process.env.RESUME_DIR||(lang==='en'?'site/en':'site');
   const suffix=lang==='en'?'-en':'';
   const source=await page.browser().newPage();
   await source.goto(pathToFileURL(resolve(dir,'resume.html')).href,{waitUntil:'load'});
@@ -34,7 +34,7 @@ export async function buildResumeDocx(page, lang = 'ko') {
     const sections=[...root.querySelectorAll(':scope>.resume-section')];
     // No forced break before activities: the PDF flow stopped forcing one, so neither does Word.
     sections[0].querySelector('h2').textContent='SUMMARY';sections[1].querySelector('h2').textContent='PROJECTS & EXPERIENCE';
-    const ordered=[hero,sections[0],sections[1],sections[2],sections[3],sections[5],sections[4]];
+    const ordered=[hero,sections[0],sections[1],sections[2],sections[3],sections[5],sections[4],...sections.slice(6)];
     document.body.append(...ordered.map(el=>{const box=document.createElement('div');box.append(el);box.hidden=false;return box;}));
 
     const inline=node=>{

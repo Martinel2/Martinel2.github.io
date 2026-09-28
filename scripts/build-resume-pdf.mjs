@@ -5,8 +5,9 @@ import {pathToFileURL} from 'node:url';
 import {resolve} from 'node:path';
 const browser=await puppeteer.launch({headless:true,args:process.env.CI?['--no-sandbox']:[]});
 try{
- for (const lang of ['ko','en']) {
- const dir=lang==='en'?'site/en':'site';
+ // RESUME_DIR/RESUME_LANGS let a local build reuse this layout for an extra section.
+ for (const lang of (process.env.RESUME_LANGS||'ko,en').split(',')) {
+ const dir=process.env.RESUME_DIR||(lang==='en'?'site/en':'site');
  const suffix=lang==='en'?'-en':'';
  const name=lang==='en'?'Jaehyeong Kim':'김재형';
  const page=await browser.newPage();
@@ -34,7 +35,7 @@ try{
    return html(el);
   }).join('');
   return html(hero)+section('SUMMARY',html(summary))+section('PROJECTS & EXPERIENCE',projects)
-   +[2,3,5,4].map(i=>html(copy(sections[i]))).join('');
+   +[2,3,5,4,...[...sections.keys()].filter(i=>i>5)].map(i=>html(copy(sections[i]))).join('');
  },{name,lang});
  const css=await readFile('templates/resume-pdf.css','utf8');
  const base=pathToFileURL(resolve(dir)+'/').href;
