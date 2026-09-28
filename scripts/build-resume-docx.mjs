@@ -6,13 +6,16 @@ import {Document, Packer, Paragraph, TextRun, Tab, ExternalHyperlink, ImageRun, 
 // Word flows freely, so read resume.html in reading order instead of the fixed PDF pages:
 // every project first, then skills, activities, education and awards.
 const LABEL_COLORS={'문제':'C0392B','Problem':'C0392B','해결':'1F6FEB','Solution':'1F6FEB','성과':'1E8449','Result':'1E8449','판단':'B9770E'};
-const SIZE={period:18,name:20,h1:34,role:22,h2:24,h3:24,h4:22,body:20,note:18,small:18};
+// CSS px × 1.5 = half-points, so the Word text matches templates/resume-pdf.css exactly.
+const SIZE={period:14,name:23,h1:26,role:15,h2:18,h3:18,h3big:26,h4:17,body:15,note:14,small:14};
 const COLOR={text:'203047',accent:'315CBB',muted:'607089'};
-const LINE=300;
+const LINE=218;
+// line-height 1.45 (1.4 for English) applied to each run's own size.
+const lineFor=(size,lang)=>Math.round(size*(lang==='en'?14:14.5));
 
 export async function buildResumeDocx(page, lang = 'ko') {
   const name=lang==='en'?'Jaehyeong Kim':'김재형';
-  const dir=lang==='en'?'site/en':'site';
+  const dir=process.env.RESUME_DIR||(lang==='en'?'site/en':'site');
   const suffix=lang==='en'?'-en':'';
   const source=await page.browser().newPage();
   await source.goto(pathToFileURL(resolve(dir,'resume.html')).href,{waitUntil:'load'});
@@ -23,15 +26,17 @@ export async function buildResumeDocx(page, lang = 'ko') {
     root.querySelectorAll('.resume-download,.resume-end,.resume-section>h2>span,.evidence-thumb>span').forEach(e=>e.remove());
     root.querySelectorAll('a').forEach(a=>a.href=new URL(a.getAttribute('href'),base).href);
     const hero=root.querySelector('.resume-hero');
-    hero.querySelector('.eyebrow').textContent=name+' · Backend / AI Application Developer';
-    hero.querySelectorAll('p:not(.eyebrow):not(.resume-role)').forEach(e=>e.remove());
+    hero.querySelector('.eyebrow').textContent=name+' · AI Application Developer / Backend Engineer';
+    hero.querySelectorAll('p:not(.eyebrow)').forEach(e=>e.remove()); // the eyebrow already carries the title
     hero.querySelectorAll('h1 br').forEach(e=>e.replaceWith(document.createTextNode(' ')));
     root.querySelector('.resume-section .resume-content').querySelectorAll('p').forEach(e=>e.remove());
     // Same section order as the PDF: summary, projects, skills, activities, education, awards.
-    const sections=[...root.querySelectorAll(':scope>.resume-section')];
-    sections[3].querySelector('h2').dataset.pageBreak='1'; // activities start on a new page, as in the PDF
+    const all=[...root.querySelectorAll(':scope>.resume-section')];
+    const lead=all.filter(el=>el.classList.contains('resume-lead'));
+    const sections=all.filter(el=>!el.classList.contains('resume-lead'));
+    // No forced break before activities: the PDF flow stopped forcing one, so neither does Word.
     sections[0].querySelector('h2').textContent='SUMMARY';sections[1].querySelector('h2').textContent='PROJECTS & EXPERIENCE';
-    const ordered=[hero,sections[0],sections[1],sections[2],sections[3],sections[5],sections[4]];
+    const ordered=[hero,...lead,sections[0],sections[1],sections[2],sections[3],sections[5],sections[4],...sections.slice(6)];
     document.body.append(...ordered.map(el=>{const box=document.createElement('div');box.append(el);box.hidden=false;return box;}));
 
     const inline=node=>{
@@ -52,13 +57,15 @@ export async function buildResumeDocx(page, lang = 'ko') {
         return [{style:'links',runs}];
       }
       if(node.matches('.resume-hero'))return [{box:'hero',children:[...node.children].flatMap(walk)}];
-      if(node.matches('.resume-project-title'))return [{columns:[[{style:'h3',runs:inline(node.children[0])}],[{style:'period',align:'right',title:true,runs:inline(node.children[1])}]],widths:[70,30],title:true}];
-      if(node.matches('.evidence-row'))return [{columns:[...node.children].map(walk),widths:[11,64]}];
+      if(node.matches('.resume-project-title'))return [{columns:[[{style:'h3big',runs:inline(node.children[0])}],[{style:'period',align:'right',title:true,runs:inline(node.children[1])}]],widths:[78,22],title:true}];
+      if(node.matches('.evidence-row'))return [{columns:[...node.children].map(walk),widths:[9,91]}];
       if(node.matches('.experience-row,.skill-rows>div,.award-list>div')){
+        // Lead column widths follow the CSS grid: 105px, 95px and 70px of a 688px text column.
+        const lead=node.matches('.award-list>div')?10:node.matches('.skill-rows>div')?14:15;
         const columns=[...node.children].map(walk);
         // Flatten an evidence image into this row; nested tables render poorly outside Word.
         const evidence=columns[1].length===1&&columns[1][0].widths?.length===2?columns[1][0]:null;
-        return [{columns:evidence?[columns[0],...evidence.columns]:columns,widths:evidence?[25,...evidence.widths]:[25,75]}];
+        return [{columns:evidence?[columns[0],...evidence.columns]:columns,widths:evidence?[lead,9,100-lead-9]:[lead,100-lead]}];
       }
       if(node.matches('h1,h2,h3,h4,p,li,a,span,strong')&&!node.querySelector('p,div,ul')){
         const style=node.matches('.eyebrow')?'name':node.matches('.resume-role')?'role':node.tagName.toLowerCase();
@@ -67,7 +74,8 @@ export async function buildResumeDocx(page, lang = 'ko') {
       if(node.tagName==='LI'){
         // One bullet paragraph per item, so its problem/solution/result lines share the bullet's indent.
         const parts=[...node.children].flatMap(walk), main=parts.filter(b=>!b.note);
-        return [{style:'li',runs:main.flatMap((b,i)=>i?[{text:'\n'},...b.runs]:b.runs)},...parts.filter(b=>b.note).map(b=>({...b,indent:true}))];
+        const plain=!!node.closest('.profile-list'); // list-style:none in the CSS
+        return [{style:'li',plain,runs:main.flatMap((b,i)=>i?[{text:'\n'},...b.runs]:b.runs)},...parts.filter(b=>b.note).map(b=>({...b,indent:true}))];
       }
       return [...node.children].flatMap(walk);
     };
@@ -80,14 +88,14 @@ export async function buildResumeDocx(page, lang = 'ko') {
 
   const noBorder={style:BorderStyle.NONE,size:0,color:'FFFFFF'};
   const rule={style:BorderStyle.SINGLE,size:4,color:'E3E8F0'};
-  const pageWidth=11906-2*907;
+  const pageWidth=11906-2*794; // 14mm side margins, as in the PDF
   const run=(text,opts)=>new TextRun({text,...opts});
 
   async function contents(block,size,color,heading) {
     const lines=[[]];
     for(const r of block.runs) {
       if(r.image) {
-        const ratio=Math.min(64/r.width,80/r.height);
+        const ratio=Math.min(60/r.width,60/r.height);
         lines.at(-1).push(new ImageRun({type:r.image.endsWith('.png')?'png':'jpg',data:await readFile(fileURLToPath(r.image)),transformation:{width:Math.round(r.width*ratio),height:Math.round(r.height*ratio)}}));
         continue;
       }
@@ -112,10 +120,10 @@ export async function buildResumeDocx(page, lang = 'ko') {
         const cells=[];
         for(let i=0;i<columns.length;i++) {
           const cellWidth=Math.round(width*widths[i]/100);
-          const children=await paragraphs(columns[i],cellWidth-(hero?520:120));
+          const children=await paragraphs(columns[i],cellWidth-(hero?480:87));
           if(!children.length||children.at(-1) instanceof Table)children.push(new Paragraph({children:[]}));
           cells.push(new TableCell({children,width:{size:cellWidth,type:WidthType.DXA},
-            margins:hero?{top:200,bottom:200,left:260,right:260}:block.title?{top:280,bottom:60,left:0,right:0}:{top:60,bottom:60,left:0,right:i?0:120},
+            margins:hero?{top:195,bottom:195,left:240,right:240}:block.title?{top:204,bottom:44,left:0,right:0}:{top:44,bottom:44,left:0,right:i?0:87},
             ...(hero?{shading:{fill:'EFF3FC'}}:{})}));
         }
         const inner=block.title;
@@ -124,20 +132,20 @@ export async function buildResumeDocx(page, lang = 'ko') {
           rows:[new TableRow({cantSplit:true,children:cells})]}));
         continue;
       }
-      const style=block.style, heading=['name','h1','h2','h3','h4'].includes(style);
+      const style=block.style, heading=['name','h1','h2','h3','h3big','h4'].includes(style);
       const size=block.note?SIZE.note:(SIZE[style]||SIZE.body);
       const color=style==='period'?COLOR.muted:style==='h4'||style==='h2'||style==='h1'||style==='name'?COLOR.accent:heading?COLOR.text:block.note||style==='role'?COLOR.muted:COLOR.text;
       const lines=await contents(block,size,color,heading);
       const children=lines.flatMap((line,i)=>i?[new TextRun({break:1}),...line]:line);
       const spacing={
-        h1:{before:60,after:80},name:{before:0,after:60},role:{before:0,after:140},
-        h2:{before:420,after:180},h3:{before:0,after:0},h4:{before:240,after:80},
-        links:{before:80,after:80},li:{before:100,after:100},
-      }[style]||{before:0,after:80};
+        h1:{before:75,after:75},name:{before:0,after:0},role:{before:0,after:90},
+        h2:{before:240,after:135},h3:{before:0,after:0},h3big:{before:0,after:0},h4:{before:105,after:45},
+        links:{before:75,after:0},li:{before:0,after:75},
+      }[style]||(block.note?{before:0,after:60}:{before:0,after:0});
       result.push(new Paragraph({children,keepNext:heading||block.title,pageBreakBefore:!!block.pageBreak,...(block.align==='right'?{alignment:AlignmentType.RIGHT}:{}),
-        spacing:{...spacing,line:heading?276:LINE},
-        ...(style==='li'?{bullet:{level:0}}:{}),
-        ...(block.indent?{indent:{left:720}}:{}),
+        spacing:{...spacing,line:lineFor(size,lang)},
+        ...(style==='li'&&!block.plain?{bullet:{level:0},indent:{left:195,hanging:195}}:{}),
+        ...(block.indent?{indent:{left:195}}:{}),
         ...(style==='h2'?{border:{bottom:{style:BorderStyle.SINGLE,size:12,color:'6A80BD',space:4}}}:{})}));
     }
     return result;
@@ -150,11 +158,11 @@ export async function buildResumeDocx(page, lang = 'ko') {
   }
 
   const footer=new Footer({children:[new Paragraph({tabStops:[{type:TabStopType.RIGHT,position:pageWidth}],children:[
-    run(name+' · Backend / AI Application Developer',{size:16,color:'7D8DA3'}),new TextRun({children:[new Tab()]}),
-    new TextRun({children:[PageNumber.CURRENT,' / ',PageNumber.TOTAL_PAGES],size:16,color:'7D8DA3'})]})]});
+    run(name+' · AI Application Developer / Backend Engineer',{size:12,color:'7D8DA3'}),new TextRun({children:[new Tab()]}),
+    new TextRun({children:[PageNumber.CURRENT,' / ',PageNumber.TOTAL_PAGES],size:12,color:'7D8DA3'})]})]});
   const doc=new Document({creator:name,title:name+(lang==='en'?' Resume':' 이력서'),
-    styles:{default:{document:{run:{font:{ascii:'Malgun Gothic',hAnsi:'Malgun Gothic',eastAsia:'Malgun Gothic',cs:'Malgun Gothic'},size:SIZE.body,color:COLOR.text,language:{value:lang==='en'?'en-US':'ko-KR',eastAsia:'ko-KR'}},paragraph:{spacing:{after:60,line:LINE}}}}},
-    sections:[{properties:{page:{size:{width:11906,height:16838},margin:{top:1000,bottom:1000,left:907,right:907,footer:500}}},
+    styles:{default:{document:{run:{font:{ascii:'Malgun Gothic',hAnsi:'Malgun Gothic',eastAsia:'Malgun Gothic',cs:'Malgun Gothic'},size:SIZE.body,color:COLOR.text,language:{value:lang==='en'?'en-US':'ko-KR',eastAsia:'ko-KR'}},paragraph:{spacing:{after:0,line:LINE}}}}},
+    sections:[{properties:{page:{size:{width:11906,height:16838},margin:{top:737,bottom:907,left:794,right:794,footer:454}}},
       footers:{default:footer},children:await paragraphs(blocks)}]});
   await writeFile(dir+'/resume.docx',await Packer.toBuffer(doc));
   console.log(`Built editable ${dir}/resume.docx in reading order (projects → skills).`);

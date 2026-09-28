@@ -4,6 +4,7 @@ import {readFile,stat} from 'node:fs/promises';
 import {resolve,extname} from 'node:path';
 import puppeteer from 'puppeteer';
 const root=resolve('site');
+const caseCount=JSON.parse(await readFile('content.en.json','utf8')).cases.length;
 const server=createServer(async(req,res)=>{try{
  const path=new URL(req.url,'http://localhost').pathname;
  const file=resolve(root,'.'+(path.endsWith('/')?path+'index.html':path));
@@ -29,7 +30,7 @@ try{
    assert.ok(documents.length);assert.ok(documents.every(path=>path.startsWith('/en/')));
    if(route==='portfolio.html'){
     await page.waitForFunction(()=>document.documentElement.dataset.diagrams==='ready');
-    assert.equal(await page.$$eval('.mermaid svg',els=>els.length),6);
+    assert.equal(await page.$$eval('.mermaid svg',els=>els.length),caseCount);
    }
    if(route===''){
     await page.click('.home-actions a[href^="resume.pdf"]');
@@ -43,10 +44,15 @@ try{
    }
    const hash=route==='portfolio.html'?'#fruition-jev-evidence':route==='resume.html'?'#pilltip':'#skills';
    await page.evaluate(hash=>location.hash=hash,hash);
-   await page.waitForFunction(hash=>document.querySelector('.language-switch').hash===hash,{},hash);
-   await page.click('.language-switch');
+   // Wait for site.js to carry the hash onto the switch link before each click, so the round trip
+   // does not race the in-flight navigation.
+   const switchLanguage=async()=>{
+    await page.waitForFunction(hash=>document.querySelector('.language-switch')?.hash===hash,{},hash);
+    await Promise.all([page.waitForNavigation({waitUntil:'networkidle2'}),page.click('.language-switch')]);
+   };
+   await switchLanguage();
    assert.equal(new URL(page.url()).pathname,'/'+route);assert.equal(new URL(page.url()).hash,hash);
-   await page.click('.language-switch');
+   await switchLanguage();
    assert.equal(new URL(page.url()).pathname,'/en/'+route);assert.equal(new URL(page.url()).hash,hash);
    await page.screenshot({path:`artifacts/en-${route||'home'}-${width}.png`});
   }

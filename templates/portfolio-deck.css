@@ -215,3 +215,5 @@ p,h1,h2,h3,h4,ul,ol,dl,dd,figure{margin:0}
 .project.dense .me-card li{padding:6px 0 6px 24px}
 .cover h1{font-size:44px;line-height:1.25;letter-spacing:-.8px;white-space:pre-line}
 html[lang="en"] .cover h1{font-size:36px}
+
+.toc-guide{color:var(--muted);font-size:14px;line-height:1.6;margin:-12px 0 20px}

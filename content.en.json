@@ -2,6 +2,237 @@
   "updated": "2026.09",
   "cases": [
     {
+      "id": "fruition-jev-evidence",
+      "project": "Fruition",
+      "category": "AI Agent · RAG · Jev",
+      "title": "RAG evidence coverage: 66.25% → 91.25%, with 75% less time after tuning",
+      "short": "RAG evidence coverage: 66.25% → 91.25%",
+      "period": "2026.09",
+      "summary": "Jev is a decision-only model that must pick from a fixed set of options. Applied first to request routing, it scored 81/98 against 77/98 for the existing JSON approach and 63/98 for GPT-5-nano on the same options, with a shorter decision time. I then applied it to RAG evidence selection, increasing coverage from 66.25% to 91.25%, and reduced its added latency by tuning candidates and parallel batches.",
+      "tags": [
+        "Jev 1.13.0",
+        "BGE-M3",
+        "BM25",
+        "RAG",
+        "Quality evaluation"
+      ],
+      "problem": "To choose appropriate tasks and answer evidence more reliably, I evaluated Jev first for routing and then expanded it to RAG. Retrieval stays a fixed pipeline that gathers source evidence through semantic and keyword search plus wiki graph traversal, and the answer is presented separately from its evidence, related pages and traversal path. A query agent that plans its own retrieval strategy was deferred: the fixed pipeline was enough, and the trigger for revisiting it is a need for compound retrieval plans and feedback loops.",
+      "diagram": "flowchart TD\n Q[User question] --> S[Collect semantic and keyword search candidates]\n S --> C[Top 300 candidates]\n C --> J[Jev selects evidence in up to 4 parallel batches]\n J --> E{Sufficient evidence?}\n E -->|Yes| A[Pass selected evidence to answer generation]\n E -->|No| N[No evidence]\n",
+      "diagramCaption": "The evaluated evidence-selection design. Reference answers were used only for evaluation, never as retrieval or model inputs.",
+      "resultTitle": "Questions with sufficient evidence: 53/80 → 73/80; total median time 2.251s",
+      "result": "On a self-authored golden set of 80 answerable questions, the share with evidence supporting every required fact rose from 66.25% to 91.25%. On a separate 20 unanswerable questions, false evidence returns fell from 20 to 0. The improved selector was still slower than the original, but I chose Jev because accuracy mattered more to the service.\n\nI also tried grouping equivalent expressions: correct answers stayed similar on 76 questions (71 previously, 72 with Jev), while median decision time fell from 8.162s to 0.254s.",
+      "metrics": [
+        [
+          "Evidence coverage (LLM evaluation on golden set)",
+          "66.25% → 91.25%",
+          "Original selector 53/80 → tuned Jev 73/80"
+        ],
+        [
+          "Jev evidence-selection time",
+          "Median 9.090s → 2.251s",
+          "500 candidates, sequential → 300 candidates, 4 parallel batches"
+        ],
+        [
+          "False evidence returns on 20 unanswerable questions",
+          "20 → 0",
+          "Original selector → tuned Jev"
+        ]
+      ],
+      "tradeoff": "The speedup compares Jev before and after its own settings changed. Retrieval gathers candidates and Jev makes the final evidence call, so the selection stage can be swapped on its own. Jev is an external decision model released in September 2026, so I have no long-run operational evidence for it yet, and even after tuning it stays slower than the previous selector. The candidate-generator comparison is a ranking replay over stored scores, and it measures candidate preservation rather than final answer accuracy.",
+      "links": [
+        {
+          "label": "Introducing Jev · TypeSafe AI",
+          "url": "https://typesafe.ai/blog/introducing-system-one-models-and-jev"
+        }
+      ],
+      "experiments": [
+        [
+          "Routing comparison and the decision to try RAG",
+          "Some questions were misclassified as document edits, leading to the wrong action. Task types and additional conditions needed to be selected more accurately and quickly.",
+          "Applied Jev, a choice-based decision model released on September 14, to routing questions, document edits, document creation and folder organization.\n\nAcross 98 requests, correct task types and additional conditions totaled 77 for the existing JSON approach, 63 for GPT-5-nano given the same options, and 81 for Jev. Median decision time improved from 8.967s to 0.658s.\n\nI measured API cost on the same 100 questions: about $0.0408 for Jev against about $0.1027 for the GPT approach given the same options.",
+          "Jev showed promise on accuracy, speed and cost alike. On that basis I decided to try it on evidence selection, which previous retrieval changes had not solved."
+        ],
+        [
+          "Full-corpus inspection: evidence coverage on all 90 answerable questions",
+          "Using the original question for retrieval and increasing semantic-score weight raised top-1 correct retrieval from 50 to 57 out of 110 questions. However, the experiment had some bias and did not establish reliable evidence selection on new questions.",
+          "Tested whether Jev could find evidence missed by retrieval. It inspected all 2,020 evidence units in a test Wiki without retrieval filtering and returned at most 8, matching the existing return limit.\n\nIn a semantic evaluation allowing paraphrases, coverage on 90 answerable questions rose from 24/90 (26.7%) to 90/90 (100%). It returned no evidence for all 10 unanswerable questions. Median processing time was 1.511s for the original approach and 5.338s for Jev. Jev processed 26 batches of 80, with up to 4 in parallel.\n\nFull-corpus inspection took 2,600 calls for 100 questions, and the API reported roughly 124.5M input and 6.47M output tokens. I did not confirm the billed amount.\n\nTo understand the size of the gap I traced where the existing retrieval dropped the answer. The page holding the reference sentence was in the initial candidate pool for all 90 questions, but 76 fell out at the step that limits inspection to the top 8 pages, 8 at the threshold of 85% of the best in-page score, and the remaining 2 at the final 8-evidence cap and the related-page lookup.",
+          "The existing retrieval was discarding the answer before selection even began, so the gap cannot be read as a difference in selection ability over the same candidates. Full-corpus access found the evidence, but inspecting everything per question would grow calls as documents grew. Rather than set the deployment scope from this 90-question wiki alone, I decided to narrow candidates through retrieval first and let Jev pick the final evidence."
+        ],
+        [
+          "Controlled comparison on 500 candidates: 87.50% coverage",
+          "The full-corpus test needed 26 batches per question. Questions were concentrated in certain technical documents and included document titles. The original search inspected only some pages while Jev saw all evidence, confounding judgment quality with access scope. Both candidate count and comparison conditions needed control.",
+          "Created 100 new questions from 9 papers without reusing earlier questions: 63 answerable from one paper, 17 requiring two papers, and 20 unanswerable. Questions, reference answers and required facts were fixed before runs.\n\nAfter deduplication, BGE-M3 and BM25 selected up to 500 candidates once; both methods received identical text and metadata. The original selector could inspect every candidate page, and both methods returned at most 8 untruncated evidence passages. Reference answers were excluded from retrieval and Jev inputs. GPT and Gemini graded independently without seeing method names or competing outputs, and run order alternated.\n\nGPT-graded coverage rose from 53/80 (66.25%) to 70/80 (87.50%); Gemini also showed improvement, from 52/80 to 74/80. False evidence returns on unanswerable questions fell from 20 to 1. Median time including candidate preparation was 0.431s for the original selector and 9.090s for Jev, which processed batches sequentially.",
+          "Jev selected better evidence even with matched candidates and return conditions, so I kept retrieval for candidate collection and Jev for final selection. Results on public papers and self-authored questions were not treated as general accuracy. Next I would tune candidate count and batch processing to reduce sequential waiting."
+        ],
+        [
+          "300 candidates and 4 parallel batches to reduce latency",
+          "Jev improved evidence selection, but sequential processing of up to 500 candidates raised median preparation-and-selection time to 9.090s versus 0.431s previously. I needed to reduce waiting without losing accuracy.",
+          "Reduced the candidate pool to the top 300 and ran up to 4 batches in parallel. Time fell to 2.251s, while questions with all required evidence increased from 70 to 73.",
+          "At 2.251s, the tuned approach was still slower than the original 0.431s. I considered fewer candidates and more parallel batches, but rejected further candidate reduction because some required evidence ranked below 250.\n\nI adopted Jev despite the added latency because accuracy was central to the service."
+        ],
+        [
+          "Comparing candidate generators to find the limits of the production setting",
+          "Jev can only choose from what reaches it, so evidence missing from the candidate pool is unreachable. I needed to know how far the production candidate generator preserved the answer-bearing evidence.",
+          "Reusing stored scores, I regenerated rankings for four candidate generators and compared how well each preserved the 97 pre-registered citation groups across the 80 answerable questions: BGE-M3 alone, the production hybrid (0.75 embedding + 0.25 normalized BM25), RRF, and an alternating union.\n\nAt 100 candidates, the questions that preserved every citation were 74/80 for BGE-M3 alone, 63/80 for the production hybrid, 63/80 for RRF and 65/80 for the alternating union. MRR@500 over each citation’s best rank was 0.1811 for BGE-M3 alone against 0.1245 for the production hybrid, with median ranks of 19 and 40. Beyond 300 candidates the four converged to 79/80 and 78/80.",
+          "The production hybrid weighting was ranking answer-bearing evidence lower than plain BGE-M3. That said, this is a ranking replay over stored scores on an evaluation set I had already reused, so I do not treat it as independent verification, and at the current 300-candidate setting the gap is small enough that I did not change production. I recorded it as a precondition: cutting the candidate count further requires fixing this ranking gap first."
+        ]
+      ]
+    },
+    {
+      "id": "fruition-agent",
+      "project": "Fruition",
+      "category": "AI Agent · User-defined Skills · HITL · Prompt injection",
+      "title": "User-defined Agent Skills with controlled execution",
+      "short": "Agent execution environment: authoring, validation and approval",
+      "period": "2026.08 - 2026.09",
+      "summary": "Built Agent Skills so users could define and reuse recurring document tasks, such as meeting notes. Connected instruction drafting and checks to user review and publication, followed by separate approval for actual changes.",
+      "tags": [
+        "LangGraph",
+        "Agent Skill",
+        "Prompt injection defenses",
+        "LLM Evaluation",
+        "Human-in-the-loop",
+        "Context engineering",
+        "Rolling conversation memory",
+        "LangSmith",
+        "LLM observability"
+      ],
+      "problem": "Built a workflow from Skill authoring and publishing to actual document changes, allowing users to define and reuse their own recurring tasks. AI drafts the instructions and the edits, code checks permissions and execution scope, and the user decides what is published and applied.",
+      "diagram": "flowchart TD\n U[User describes a recurring task] --> S[Draft Skill, mask personal data and check prompt injection]\n S --> P[User review and recheck on publication]\n P --> K[Store reusable instructions]\n Q[User requests document work] --> R[Router selects task and conditions]\n K -. Reuse when needed .-> R\n R --> E[Edit while preserving goal and scope]\n R --> F[Plan folder organization and compare with request]\n E --> V[Check format, edit scope, personal data and injection]\n V --> D[Show validated changes and diff]\n F --> D\n D --> A{User approval}\n A -->|Approve| W[Apply edits or organize folders]\n A -->|Cancel| N[Keep originals]",
+      "diagramCaption": "User-defined instructions and the document workflow that uses them. Executors do not reclassify the task; they validate proposed changes and apply them after user approval.",
+      "resultTitle": "Reusable tasks and approval workflow; editing passes 94/114 → 104/114",
+      "result": "Users can define recurring tasks, publish them as Skills and reuse them. The final instructions are rechecked on publication; actual document changes require a preview and user approval. In a plan–approve–execute check using 6 documents, folder changes occurred only after approval.\n\nEditing quality was evaluated separately on the same 114 drafts from 19 request types. The original implementation passed 94; improved edit-goal and retry inputs passed 98; adding semantic evaluation and rewriting passed 104. Evaluation checked request fulfillment and meaning preservation. Rewriting based on failure reasons was limited to one attempt, and a second failure returned no edit proposal.\n\nAI drafts instructions and edits, code checks permissions and execution scope, and users decide publication and final application.",
+      "metrics": [
+        [
+          "Original Agent",
+          "94 / 114",
+          "82.5%"
+        ],
+        [
+          "Code changes, without evaluator",
+          "98 / 114",
+          "86.0%"
+        ],
+        [
+          "Final implementation with evaluator",
+          "104 / 114",
+          "91.2%"
+        ]
+      ],
+      "tradeoff": "Normalized average editing-evaluation time increased from 11.11s to 18.92s. I accepted the latency while limiting rewrites.",
+      "links": [
+        {
+          "label": "Building user-defined Agent Skills (Korean)",
+          "url": "https://velog.io/@kkuldangi3/사용자가-직접-만드는-Agent-Skill-구현해보기"
+        },
+        {
+          "label": "The two sides of LLM evaluation for reliability (Korean)",
+          "url": "https://velog.io/@kkuldangi3/신뢰도를-위한-LLM-평가의-양면성"
+        }
+      ],
+      "processTitle": "Decisions and implementation",
+      "designSteps": [
+        {
+          "title": "Authoring and publishing user-defined instructions",
+          "problem": "Recurring tasks such as meeting notes vary by user; developers cannot prebuild every workflow.",
+          "judgment": "Let users define and reuse natural-language instructions instead of adding each workflow as a feature. Treat AI-generated instructions as proposals until users review them.",
+          "implementation": "Turned natural-language requests into reusable Markdown Skills. Users review and edit drafts; the Skill and version are stored on final publication. A published skill is appended as an immutable version rather than overwritten, with a separate pointer to the version that runs. Which run used which version of the instructions stays traceable, so an earlier definition survives a problematic new version.",
+          "verification": "Neither Skills nor temporary drafts persist in the DB before publication. Published instructions can be reused in later tasks."
+        },
+        {
+          "title": "Checking instructions for permission and approval bypasses",
+          "problem": "User instructions and reference documents could contain personal data or directions to bypass permissions and approval. Such intent can be phrased many ways, and users can edit drafts after review.",
+          "judgment": "Use code for explicit risk and permission checks, and an LLM to detect rephrased bypass intent. Do not allow publication based only on an earlier check after users edit the content.",
+          "implementation": "Applied rule checks to input and reference documents. The server verified that risky phrases reported by the LLM existed in the source. After checking access and original documents, it sent only necessary structure to the model. Publication reran checks on the final content. Risky phrases were not silently deleted; only user-requested regeneration removed them and rechecked the result.",
+          "verification": "Showed blocked input and the problematic location to users, letting them edit it themselves or request regeneration."
+        },
+        {
+          "title": "Previewing changes and applying them after approval",
+          "problem": "Publishing a reviewed Skill does not approve every later document change. Users still need to inspect the target documents and proposed modifications.",
+          "judgment": "Separate instruction publication from approval of actual changes. Keep task classification in the router and execution in the executor, while letting users inspect what will change.",
+          "implementation": "Displayed before/after diffs for edits and a folder-and-document move plan for organization. Code checked output format and edit scope; only approved changes were executed.",
+          "verification": "With 6 documents, the plan–approve–execute check made no changes before approval. After approval, it created 3 topic folders and moved the documents."
+        },
+        {
+          "title": "Deciding the scope of conversation context and edit input",
+          "problem": "A long conversation cannot be passed to the model in full, and sending a whole document for an edit drives up cost and latency. I had to decide what to keep and what to cut.",
+          "judgment": "Keep the last six turns verbatim and compress everything older into a rolling summary. For edits, send only the target line range plus surrounding context, and refuse a range that straddles the boundary of a table or code block.",
+          "implementation": "Once recent messages reach six, the rolling summary is regenerated from the previous summary plus those messages; if the summarization call fails the previous summary is kept so the conversation does not break. The router receives the summary and recent messages along with the routing decisions from earlier turns, so it can resolve what a referring expression points back to. Edit input is cut to the target line range with context lines above and below, and ranges crossing a structural boundary are rejected.",
+          "verification": "A benchmark measures, across document lengths, how large the transmitted input is relative to the source and the average and p95 processing time."
+        },
+        {
+          "title": "Tracing LLM runs while bounding sensitive data",
+          "problem": "The evaluation loop ran as plain Python, so extraction, evaluation, correction and retry could not be inspected stage by stage. Turning tracing on, however, would send raw tool lookups and personal data to an external tracing tool.",
+          "judgment": "I separated what has to be observable from what must not leave the system. Graphs that decide answer quality get node-level tracing; the agent graph that edits a user’s own documents runs with tracing off and keeps raw content out of persisted state.",
+          "implementation": "Rebuilt the evaluation loop as a LangGraph graph so answer generation, evaluation and retry each surface as their own node. Even with tracing configured on, a missing key leaves graph execution intact and skips only tracing, which avoids warnings and pointless network retries. The agent graph disables tracing and excludes raw tool lookups from persisted state, and that state is deleted before the run record once retention ends. The prompt log I write myself masks numeric personal data before writing.",
+          "verification": "Ran real requests and confirmed that graph nodes and model call spans appear in the trace. Timing experiments run with tracing and prompt logging both disabled, so instrumentation overhead stays out of the measured times."
+        }
+      ]
+    },
+    {
+      "id": "fruition-rollback",
+      "project": "Fruition",
+      "category": "AI Agent · Compensating recovery · Audit history",
+      "title": "Cancelling an AI task and undoing what it already saved",
+      "short": "Task cancellation - undoing saved changes in reverse",
+      "period": "2026.08 — 2026.09",
+      "summary": "An AI task saves documents, folders, wiki pages and skills several times between model calls. Stopping execution alone leaves part of a cancelled task behind, so I built a path that undoes already-committed changes in reverse order. Contributions left by other tasks survive, because recovery excludes only the target contribution from an append-only history.",
+      "tags": [
+        "Compensating recovery",
+        "Idempotency keys",
+        "Append-only history",
+        "PostgreSQL execution lock",
+        "Audit history"
+      ],
+      "problem": "An AI task runs across several stores and cannot be wrapped in one long transaction, so I had to decide what a cancellation should undo and how far it should reach.",
+      "diagram": "flowchart TD\n A[User cancels] --> B[Persist cancellation first · block later writes]\n B --> C[Wait for the running handler to finish]\n C --> D[Derive reverse actions from the run record · no model call]\n D --> E[Undo children first, in reverse]\n E --> F{Current values and references unchanged}\n F -->|Yes| G[Atomic recovery · body saved as a new revision]\n F -->|No| H[Leave as rollback_failed for retry]\n G --> I{Full recovery confirmed}\n I -->|Yes| J[cancelled]\n I -->|No| H",
+      "diagramCaption": "Cancellation is persisted first to block later writes, then reverse actions derived from the run record undo children first. Cancellation is only final once full recovery is confirmed; otherwise it stays retryable.",
+      "resultTitle": "A cancelled task’s changes are undone while other tasks’ contributions survive",
+      "result": "Content, names, parents and ordering that users see are restored, while version, audit and idempotency records are kept. Recovery runs from the run record alone, with no model settings or calls, and it checks current values and downstream references so it never overwrites another task’s work. Cancellation is final only once full recovery is confirmed; conflicts and unclear outcomes stay retryable. For a feature where AI edits a user’s documents, I settled what could be undone and what had to be recorded before building it.",
+      "metrics": [
+        [
+          "Stores covered by recovery",
+          "3",
+          "core DB · AI DB · object storage"
+        ],
+        [
+          "Recovery execution",
+          "No model calls",
+          "Reverse actions from the run record only"
+        ],
+        [
+          "Cancellation becomes final",
+          "On confirmed recovery",
+          "Otherwise kept retryable"
+        ]
+      ],
+      "tradeoff": "This case is about design and unit-level verification; I did not measure a recovery success rate under production traffic. Preserving per-source contributions from ingest onward costs storage. Without a snapshot of the remaining combination a page has to be reassembled, and older tasks carried no snapshot, so runs and queues had to be drained before deploying.",
+      "processTitle": "Decisions and implementation",
+      "designSteps": [
+        {
+          "title": "Deciding that stopping execution was not enough",
+          "problem": "An AI task saves documents, folders, wiki pages and skills several times between model calls, so stopping execution left part of a cancelled task in place. Execution spanning the core DB, the AI DB and object storage could not be wrapped in one long transaction.",
+          "judgment": "I chose to undo already-committed changes too. Asking the model to perform the inverse was rejected because it cannot guarantee original values, approval scope or idempotency, and locking the whole service in one transaction was rejected because it cannot absorb long-running model, HTTP and object-storage work or its failures.",
+          "implementation": "The AI side derives reverse actions from the run record while the backend performs atomic recovery of business data. Agent tools store a pre-change snapshot with reverse-action arguments and an idempotency key tied to the original approval, and ordinary tasks record before and after values through each database’s triggers inside the same transaction. Object storage persists the original and the intended result before writing.",
+          "verification": "Confirmed that recovery runs from the run record alone, with no model settings or calls."
+        },
+        {
+          "title": "Blocking later writes and undoing children first",
+          "problem": "A handler still running after a cancellation would overwrite recovered values, and undoing a parent first left the changes its children had made behind.",
+          "judgment": "Persist the cancellation first to block later writes, wait for the running handler to finish, then undo children first in reverse order.",
+          "implementation": "The agent turn and recovery share one PostgreSQL execution lock. The lock releases when a worker connection ends, so a leftover in-progress record cannot block recovery. Body recovery is saved as a new revision, so a late event cannot overwrite the source again.",
+          "verification": "Cancellation becomes final only once full recovery is confirmed; conflicts and unclear outcomes are left in a retryable state."
+        },
+        {
+          "title": "Recovering without erasing other tasks’ contributions",
+          "problem": "A wiki concept page merges contributions from several documents, so overwriting it with an older snapshot also removed valid contributions added later by other documents.",
+          "judgment": "Removing just the relevant part from the finished result was rejected because which sentence came from which document cannot be told apart reliably, and restoring an entire older snapshot was rejected too. Instead the history is append-only and recovery excludes only the target contribution before reassembling.",
+          "implementation": "Operations, page revisions and per-document contributions are recorded append-only, and recovery restores or reassembles the page with the target contribution excluded. Pages and history are soft-deleted rather than removed, which preserves the audit trail.",
+          "verification": "Verified through revision and contribution hashes that state had not shifted during asynchronous recovery, and recorded the recovery itself as a new operation and revision."
+        }
+      ]
+    },
+    {
       "id": "fruition-document",
       "project": "Fruition",
       "category": "PDF conversion · Data pipeline",
@@ -70,77 +301,6 @@
       ]
     },
     {
-      "id": "fruition-jev-evidence",
-      "project": "Fruition",
-      "category": "AI Agent · RAG · Jev",
-      "title": "RAG evidence coverage: 66.25% → 91.25%, with 75% less time after tuning",
-      "short": "RAG evidence coverage: 66.25% → 91.25%",
-      "period": "2026.09",
-      "summary": "Jev is a decision-only model that must pick from a fixed set of options. Applied first to request routing, it scored 81/98 against 77/98 for the existing JSON approach and 63/98 for GPT-5-nano on the same options, with a shorter decision time. I then applied it to RAG evidence selection, increasing coverage from 66.25% to 91.25%, and reduced its added latency by tuning candidates and parallel batches.",
-      "tags": [
-        "Jev 1.13.0",
-        "BGE-M3",
-        "BM25",
-        "RAG",
-        "Quality evaluation"
-      ],
-      "problem": "To choose appropriate tasks and answer evidence more reliably, I evaluated Jev first for routing and then expanded it to RAG.",
-      "diagram": "flowchart TD\n Q[User question] --> S[Collect semantic and keyword search candidates]\n S --> C[Top 300 candidates]\n C --> J[Jev selects evidence in up to 4 parallel batches]\n J --> E{Sufficient evidence?}\n E -->|Yes| A[Pass selected evidence to answer generation]\n E -->|No| N[No evidence]\n",
-      "diagramCaption": "The evaluated evidence-selection design. Reference answers were used only for evaluation, never as retrieval or model inputs.",
-      "resultTitle": "Questions with sufficient evidence: 53/80 → 73/80; total median time 2.251s",
-      "result": "On a self-authored golden set of 80 answerable questions, the share with evidence supporting every required fact rose from 66.25% to 91.25%. On a separate 20 unanswerable questions, false evidence returns fell from 20 to 0. The improved selector was still slower than the original, but I chose Jev because accuracy mattered more to the service.\n\nI also tried grouping equivalent expressions: correct answers stayed similar on 76 questions (71 previously, 72 with Jev), while median decision time fell from 8.162s to 0.254s.",
-      "metrics": [
-        [
-          "Evidence coverage (LLM evaluation on golden set)",
-          "66.25% → 91.25%",
-          "Original selector 53/80 → tuned Jev 73/80"
-        ],
-        [
-          "Jev evidence-selection time",
-          "Median 9.090s → 2.251s",
-          "500 candidates, sequential → 300 candidates, 4 parallel batches"
-        ],
-        [
-          "False evidence returns on 20 unanswerable questions",
-          "20 → 0",
-          "Original selector → tuned Jev"
-        ]
-      ],
-      "tradeoff": "The time reduction compares Jev settings before and after tuning.",
-      "links": [
-        {
-          "label": "Introducing Jev · TypeSafe AI",
-          "url": "https://typesafe.ai/blog/introducing-system-one-models-and-jev"
-        }
-      ],
-      "experiments": [
-        [
-          "Routing comparison and the decision to try RAG",
-          "Some questions were misclassified as document edits, leading to the wrong action. Task types and additional conditions needed to be selected more accurately and quickly.",
-          "Applied Jev, a choice-based decision model released on September 14, to routing questions, document edits, document creation and folder organization.\n\nAcross 98 requests, correct task types and additional conditions totaled 77 for the existing JSON approach, 63 for GPT-5-nano given the same options, and 81 for Jev. Median decision time improved from 8.967s to 0.658s.",
-          "Jev showed promise in both accuracy and speed. I decided to test it on evidence selection, which previous retrieval changes had not solved."
-        ],
-        [
-          "Full-corpus inspection: evidence coverage on all 90 answerable questions",
-          "Using the original question for retrieval and increasing semantic-score weight raised top-1 correct retrieval from 50 to 57 out of 110 questions. However, the experiment had some bias and did not establish reliable evidence selection on new questions.",
-          "Tested whether Jev could find evidence missed by retrieval. It inspected all 2,020 evidence units in a test Wiki without retrieval filtering and returned at most 8, matching the existing return limit.\n\nIn a semantic evaluation allowing paraphrases, coverage on 90 answerable questions rose from 24/90 (26.7%) to 90/90 (100%). It returned no evidence for all 10 unanswerable questions. Median processing time was 1.511s for the original approach and 5.338s for Jev. Jev processed 26 batches of 80, with up to 4 in parallel.",
-          "Full-corpus access found the evidence, but inspecting everything per question would increase calls as documents grew. The test also needed better controls for bias. I decided to reduce candidates through retrieval first, rather than use the 90-question result alone to set the deployment scope."
-        ],
-        [
-          "Controlled comparison on 500 candidates: 87.50% coverage",
-          "The full-corpus test needed 26 batches per question. Questions were concentrated in certain technical documents and included document titles. The original search inspected only some pages while Jev saw all evidence, confounding judgment quality with access scope. Both candidate count and comparison conditions needed control.",
-          "Created 100 new questions from 9 papers without reusing earlier questions: 63 answerable from one paper, 17 requiring two papers, and 20 unanswerable. Questions, reference answers and required facts were fixed before runs.\n\nAfter deduplication, BGE-M3 and BM25 selected up to 500 candidates once; both methods received identical text and metadata. The original selector could inspect every candidate page, and both methods returned at most 8 untruncated evidence passages. Reference answers were excluded from retrieval and Jev inputs. GPT and Gemini graded independently without seeing method names or competing outputs, and run order alternated.\n\nGPT-graded coverage rose from 53/80 (66.25%) to 70/80 (87.50%); Gemini also showed improvement, from 52/80 to 74/80. False evidence returns on unanswerable questions fell from 20 to 1. Median time including candidate preparation was 0.431s for the original selector and 9.090s for Jev, which processed batches sequentially.",
-          "Jev selected better evidence even with matched candidates and return conditions, so I kept retrieval for candidate collection and Jev for final selection. Results on public papers and self-authored questions were not treated as general accuracy. Next I would tune candidate count and batch processing to reduce sequential waiting."
-        ],
-        [
-          "300 candidates and 4 parallel batches to reduce latency",
-          "Jev improved evidence selection, but sequential processing of up to 500 candidates raised median preparation-and-selection time to 9.090s versus 0.431s previously. I needed to reduce waiting without losing accuracy.",
-          "Reduced the candidate pool to the top 300 and ran up to 4 batches in parallel. Time fell to 2.251s, while questions with all required evidence increased from 70 to 73.",
-          "At 2.251s, the tuned approach was still slower than the original 0.431s. I considered fewer candidates and more parallel batches, but rejected further candidate reduction because some required evidence ranked below 250.\n\nI adopted Jev despite the added latency because accuracy was central to the service."
-        ]
-      ]
-    },
-    {
       "id": "fruition-ingest",
       "project": "Fruition",
       "category": "Kafka asynchronous processing · AI pipeline",
@@ -190,79 +350,6 @@
           "With 4 workers, raising concurrent AI requests per worker from 2 to 4 increased time from 73.89s to 95.92s. Running 2 embedding processes on the same GPU also raised each process’s time from about 9.5s to 19–21s.",
           "Analysis waiting on external responses and embeddings sharing a device behaved differently. Higher concurrency did not always improve speed, so I rejected these changes."
         ]
-      ]
-    },
-    {
-      "id": "fruition-agent",
-      "project": "Fruition",
-      "category": "AI Agent · User-defined Skills · HITL · Prompt injection",
-      "title": "User-defined Agent Skills with controlled execution",
-      "short": "Agent execution environment: authoring, validation and approval",
-      "period": "2026.08 - 2026.09",
-      "summary": "Built Agent Skills so users could define and reuse recurring document tasks, such as meeting notes. Connected instruction drafting and checks to user review and publication, followed by separate approval for actual changes.",
-      "tags": [
-        "LangGraph",
-        "Agent Skill",
-        "Prompt injection defenses",
-        "LLM Evaluation",
-        "Human-in-the-loop"
-      ],
-      "problem": "Built a workflow from Skill authoring and publishing to actual document changes, allowing users to define and reuse their own recurring tasks. AI drafts the instructions and the edits, code checks permissions and execution scope, and the user decides what is published and applied.",
-      "diagram": "flowchart TD\n U[User describes a recurring task] --> S[Draft Skill, mask personal data and check prompt injection]\n S --> P[User review and recheck on publication]\n P --> K[Store reusable instructions]\n Q[User requests document work] --> R[Router selects task and conditions]\n K -. Reuse when needed .-> R\n R --> E[Edit while preserving goal and scope]\n R --> F[Plan folder organization and compare with request]\n E --> V[Check format, edit scope, personal data and injection]\n V --> D[Show validated changes and diff]\n F --> D\n D --> A{User approval}\n A -->|Approve| W[Apply edits or organize folders]\n A -->|Cancel| N[Keep originals]",
-      "diagramCaption": "User-defined instructions and the document workflow that uses them. Executors do not reclassify the task; they validate proposed changes and apply them after user approval.",
-      "resultTitle": "Reusable tasks and approval workflow; editing passes 94/114 → 104/114",
-      "result": "Users can define recurring tasks, publish them as Skills and reuse them. The final instructions are rechecked on publication; actual document changes require a preview and user approval. In a plan–approve–execute check using 6 documents, folder changes occurred only after approval.\n\nEditing quality was evaluated separately on the same 114 drafts from 19 request types. The original implementation passed 94; improved edit-goal and retry inputs passed 98; adding semantic evaluation and rewriting passed 104. Evaluation checked request fulfillment and meaning preservation. Rewriting based on failure reasons was limited to one attempt, and a second failure returned no edit proposal.\n\nAI drafts instructions and edits, code checks permissions and execution scope, and users decide publication and final application.",
-      "metrics": [
-        [
-          "Original Agent",
-          "94 / 114",
-          "82.5%"
-        ],
-        [
-          "Code changes, without evaluator",
-          "98 / 114",
-          "86.0%"
-        ],
-        [
-          "Final implementation with evaluator",
-          "104 / 114",
-          "91.2%"
-        ]
-      ],
-      "tradeoff": "Normalized average editing-evaluation time increased from 11.11s to 18.92s. I accepted the latency while limiting rewrites.",
-      "links": [
-        {
-          "label": "Building user-defined Agent Skills (Korean)",
-          "url": "https://velog.io/@kkuldangi3/사용자가-직접-만드는-Agent-Skill-구현해보기"
-        },
-        {
-          "label": "The two sides of LLM evaluation for reliability (Korean)",
-          "url": "https://velog.io/@kkuldangi3/신뢰도를-위한-LLM-평가의-양면성"
-        }
-      ],
-      "processTitle": "Decisions and implementation",
-      "designSteps": [
-        {
-          "title": "Authoring and publishing user-defined instructions",
-          "problem": "Recurring tasks such as meeting notes vary by user; developers cannot prebuild every workflow.",
-          "judgment": "Let users define and reuse natural-language instructions instead of adding each workflow as a feature. Treat AI-generated instructions as proposals until users review them.",
-          "implementation": "Turned natural-language requests into reusable Markdown Skills. Users review and edit drafts; the Skill and version are stored on final publication.",
-          "verification": "Neither Skills nor temporary drafts persist in the DB before publication. Published instructions can be reused in later tasks."
-        },
-        {
-          "title": "Checking instructions for permission and approval bypasses",
-          "problem": "User instructions and reference documents could contain personal data or directions to bypass permissions and approval. Such intent can be phrased many ways, and users can edit drafts after review.",
-          "judgment": "Use code for explicit risk and permission checks, and an LLM to detect rephrased bypass intent. Do not allow publication based only on an earlier check after users edit the content.",
-          "implementation": "Applied rule checks to input and reference documents. The server verified that risky phrases reported by the LLM existed in the source. After checking access and original documents, it sent only necessary structure to the model. Publication reran checks on the final content. Risky phrases were not silently deleted; only user-requested regeneration removed them and rechecked the result.",
-          "verification": "Showed blocked input and the problematic location to users, letting them edit it themselves or request regeneration."
-        },
-        {
-          "title": "Previewing changes and applying them after approval",
-          "problem": "Publishing a reviewed Skill does not approve every later document change. Users still need to inspect the target documents and proposed modifications.",
-          "judgment": "Separate instruction publication from approval of actual changes. Keep task classification in the router and execution in the executor, while letting users inspect what will change.",
-          "implementation": "Displayed before/after diffs for edits and a folder-and-document move plan for organization. Code checked output format and edit scope; only approved changes were executed.",
-          "verification": "With 6 documents, the plan–approve–execute check made no changes before approval. After approval, it created 3 topic folders and moved the documents."
-        }
       ]
     },
     {
@@ -343,7 +430,7 @@
       "category": "AI Agent · Sensitive data boundaries",
       "title": "Medication chatbot: keeping health profiles out of external AI inputs",
       "short": "Medication chatbot: health profiles kept internal",
-      "period": "2025.09 — 2025.9",
+      "period": "2025.09",
       "summary": "Built a medication chatbot using RAG and AI orchestration for app integration. Separated symptom-based drug discovery from health-profile decisions, using the model for language understanding and code to control sensitive profile use.",
       "tags": [
         "Spring AI",
@@ -355,7 +442,7 @@
       "diagram": "flowchart TD\n S[Natural-language symptoms] --> V[Weaviate: semantic search of indications]\n P[Pregnancy, medications and underlying conditions] --> T[Internal tool: profile decisions]\n V --> R[Personalized information]\n T --> R\n B[External LLM input boundary] -.-> X[Exclude these profile fields]\n classDef accent fill:#e5edff,stroke:#4164c8,color:#142b60;\n class T,B,X accent;",
       "diagramCaption": "A conceptual view of responsibilities and data boundaries, not the exact call sequence or a guarantee against every form of data leakage.",
       "resultTitle": "Separating symptom search from internal health-profile decisions",
-      "result": "Enabled natural-language drug discovery while excluding pregnancy status, current medications and underlying conditions from external LLM inputs. Explicitly separated information sent to AI from information evaluated by internal code.",
+      "result": "Enabled natural-language drug discovery while excluding pregnancy status, current medications and underlying conditions from external LLM inputs. Explicitly separated information sent to AI from information evaluated by internal code. In a domain that handles sensitive data, I settled the boundary between what the model may judge and what code stays responsible for before writing the implementation.",
       "metrics": [],
       "tradeoff": "Profile-rule changes require code updates. I prioritized keeping those personal data fields out of external AI inputs and retained profile decisions in internal code.",
       "processTitle": "Design and implementation",
@@ -407,7 +494,7 @@
           "Gen AI quality and evaluation / backend / milestones, MSA design and documentation"
         ]
       ],
-      "href": "#fruition-agent",
+      "href": "#fruition-jev-evidence",
       "contributions": [
         [
           "Lead for all AI features",
@@ -511,6 +598,10 @@
         [
           "RAG-based AI chatbot",
           "Built an AI-orchestrated chatbot that retrieves relevant information and connects search and DUR checks according to each question."
+        ],
+        [
+          "Extended support to health functional foods after exhibition feedback",
+          "Took the request from our first exhibition and, within the data we held, extended search and autocomplete, caution and co-administration information, medication reminders and logs, and chatbot answers to cover health functional foods."
         ]
       ],
       "gallery": [
@@ -578,7 +669,7 @@
         "text1": "RESUME / JAEHYEONG KIM",
         "text2": "A developer who digs into root causes",
         "text3": "and enjoys solving difficult problems",
-        "text4": "Backend Engineer · AI Application Developer",
+        "text4": "AI Application Developer · Backend Engineer",
         "text5": "I enjoy taking a deep dive into problems.",
         "text6": "I weigh accuracy, cost and processing time to choose an implementation that fits the service.",
         "text7": "kkuldangi2@gmail.com",
@@ -593,12 +684,12 @@
       "fields": {
         "text11": "Highlights ",
         "text12": "01 / PROFILE",
-        "text13": "PDF conversion pass rate: 45.17% → 89.89%",
-        "text14": "Compared selective repair with full AI conversion, then separated processing for body text, tables and equations. Improved content preservation in internal evaluations.",
-        "text15": "RAG evidence coverage: 66.25% → 91.25%",
-        "text16": "Questions with sufficient evidence increased from 53 to 73 out of 80 answerable questions versus hybrid retrieval. Tuning candidates and concurrency for Jev, a decision-only model, reduced median time from 9.090s to 2.251s.",
-        "text17": "Drug description conversion: $200 estimated → $11.18 spent",
-        "text18": "Built a pipeline to deduplicate semantic text blocks, fill the missing 5% by ingredient, convert with GPT Batch API and map results back to drug IDs."
+        "text13": "RAG evidence selection: coverage 66.25% → 91.25%, false evidence 20 → 0",
+        "text14": "Built a golden set and ran a blinded offline comparison with a matched candidate pool and two independent judge models, then replaced the evidence-selection stage. Tuning candidate count and parallel batches cut median selection time from 9.090s to 2.251s.",
+        "text15": "Agent execution environment: user-defined skills behind approval, edit quality 94/114 → 104/114",
+        "text16": "Split responsibility so code enforces permissions and prompt-injection checks, the model drafts instructions and edits, and the user publishes and approves. Nothing changes in a document before the user approves it.",
+        "text17": "Data pipelines: PDF conversion pass rate 45.17% → 89.89%, drug conversion $200 estimated → $11.18 spent",
+        "text18": "Separated processing paths for body text, tables and equations so documents become usable for retrieval and answers, and processed about 44,000 drug records within budget through deduplication, ingredient-level backfill and batch conversion."
       }
     },
     {
@@ -618,12 +709,12 @@
         "text116": "Improving retrieval for grounded AI answers",
         "text117": "Retrieved document evidence for AI answers. Coverage on 80 answerable questions rose from 66.25% to 91.25%, while false evidence returns on 20 unanswerable questions fell from 20 to 0.",
         "text27": "Evidence selection for RAG\nProblem: Retrieval missed required facts and returned evidence for unanswerable questions.\nSolution: Applied Jev after routing tests, then controlled candidates and return limits after a full-corpus trial. Tuned to 300 candidates and up to 4 parallel batches.\nResult: Across 9 papers, coverage on 80 answerable questions rose from 66.25% to 91.25%. False evidence returns on 20 unanswerable questions fell from 20 to 0. Median time before/after Jev tuning: 9.090s → 2.251s.",
-        "text118": "Reusable Skills and improved AI Agent routing",
-        "text119": "Built reusable Skills with user approval before changes. Applied Jev to route requests to questions, edits and other tasks: correct decisions rose from 77/98 to 81/98, and median decision time fell from 8.967s to 0.658s.",
+        "text118": "Agent execution environment - skills, approval, routing and conversation context",
+        "text119": "Built reusable Skills with user approval before changes. Applied Jev to route requests to questions, edits and other tasks: correct decisions rose from 77/98 to 81/98, and median decision time fell from 8.967s to 0.658s. I also set the scope of the conversation context and edit input the model receives.",
         "text29": "User-defined task instructions (Skills)\nProblem: Developers cannot build every recurring workflow users need.\nSolution: Built drafting, review and publishing of natural-language instructions, with checks against bypassing permissions or approval. Document changes require separate preview and approval.\nResult: Published Skills became available to the Agent. In a 6-document check, no changes occurred before approval; 3 folders were created and documents moved afterward.",
         "text30": "Jev-based request routing\nProblem: Misclassifying questions as edits led to the wrong action.\nSolution: Applied Jev, a model that picks only from a fixed set of options, to select task types and additional conditions for questions, edits, document creation and folder organization.\nResult: Fully correct decisions on the same 98 requests rose from 77 to 81 (63 for GPT-5-nano on the same options). Median decision time fell from 8.967s to 0.658s.",
-        "text120": "Service responsibilities and communication",
-        "text121": "Defined responsibilities, data ownership and communication for services including AI. Proposed the initial design and finalized it with teammates and mentors.",
+        "text143": "Conversation memory\nProblem: a long conversation cannot be passed to the model in full.\nSolution: keep the last six turns verbatim, compress older ones into a rolling summary, and keep the previous summary when summarization fails. The router also receives earlier routing decisions, so referring expressions resolve against earlier turns.",
+        "text144": "Bounding the edit input\nProblem: sending a whole document to the model drives up cost and latency.\nSolution: send only the target line range plus surrounding context, and reject ranges that straddle a table or code-block boundary. A benchmark tracks input size against the source and average and p95 time.",
         "text35": "Proposed the initial MSA design, then jointly finalized service boundaries, data ownership and communication with teammates and mentors.",
         "text36": "Internal evaluations. RAG timing compares Jev before/after tuning. Parallel document timing covers analysis only, excluding storage and post-processing.",
         "text37": "PDF conversion ↗",
@@ -645,11 +736,19 @@
         "text52": "Problem: Everyday symptom language differed from drug indications, while sensitive health data needed to stay out of external AI inputs.\nSolution: Used Weaviate semantic search and AI orchestration for drug discovery, medication risks and dosage. Evaluated pregnancy, current medications and underlying conditions in internal code.\nResult: Implemented personalized symptom-based search while excluding those profile fields from external LLM inputs.",
         "text126": "Backend feature implementation",
         "text127": "Built server features for drug search, risk information, medication reminders and logs, and family profiles. Integrated with teammates responsible for the mobile app, users and security.",
-        "text48": "Designed the drug DB and implemented drug search, autocomplete and Drug Utilization Review (DUR) risk information with Java and Spring Boot.",
-        "text49": "Implemented FCM medication reminders and logs, deep-link friend invitations, and family profile switching.",
-        "text53": "Shared API documentation, meeting notes and architecture decision records in Notion.",
+        "text48": "Designed the drug database on Java and Spring Boot with search, autocomplete and DUR risk display.",
+        "text49": "Built FCM medication reminders and logs, deep-link friend invites and family profile switching, and kept API docs, meeting notes and ADRs in Notion to share decisions.",
+        "text137": "Feature work driven by feedback from live exhibitions",
+        "text138": "We ran the booth as Pusan National University’s representative exhibition team, and I fed the feedback we collected into the next slice of work. A request from the first exhibition became a feature within the data we already had.",
+        "text139": "Extending support to health functional foods\nProblem: at the first exhibition visitors could only check prescription drugs and asked to see health functional foods too.\nSolution: within the data we held, added them to search and autocomplete, surfaced caution and co-administration information, allowed them in reminders and logs, and included them in chatbot answers.\nResult: a request from the floor became the next slice of work. Limited to the data we had obtained, not the exhaustive coverage we have for drugs.",
+        "text140": "Feedback I could not act on\nSomeone pointed out that the service would be better off running in containers, but I could not adopt it inside the capstone timeline. On Fruition I designed the AI services around a container-based deployment from the start.",
         "text55": "Data pipeline case study ↗",
-        "text56": "Personalization case study ↗"
+        "text56": "Personalization case study ↗",
+        "text145": "LLM run tracing and the boundary around sensitive data\nProblem: the evaluation loop ran as plain Python, so stages could not be inspected separately, and whatever reached the tracing tool could carry sensitive data.\nSolution: rebuilt the loop as a LangGraph graph so generation, evaluation and retry each trace as a node. The agent graph keeps tracing off and excludes raw tool lookups from persisted state, and my own prompt log masks numeric personal data before writing. Timing runs disable tracing and logging entirely.",
+        "text146": "Execution reliability and LLM tracing",
+        "text147": "Undoing changes an AI task already saved, and making each stage of a run inspectable. Execution spans several stores and cannot be one transaction, so recovery runs as reverse actions.",
+        "text148": "Undoing a cancelled task in reverse\nProblem: an AI task saves documents, folders, wiki pages and skills between model calls, so stopping execution leaves some changes behind.\nSolution: persist the cancellation first to block later writes, then undo children first using a pre-change snapshot and an idempotency key tied to the approval. Recovery uses the run record alone, never a model call, and cancellation is final only once full recovery is confirmed.",
+        "text149": "Recovering without erasing other tasks’ contributions\nProblem: a concept page merges contributions from several documents, so an older snapshot would erase valid contributions from other documents.\nSolution: record operations, revisions and per-document contributions append-only, then reassemble with only the target contribution excluded. Soft delete instead of removal keeps the audit trail."
       }
     },
     {
@@ -658,15 +757,12 @@
         "text57": "Skills ",
         "text58": "03 / SKILLS",
         "text59": "Backend",
-        "text60": "Java · Spring Boot · Spring AI · Python",
-        "text113": "Authentication and authorization (Spring Security, OAuth 2.0)",
-        "text128": "Personal shopping project · Login ↗",
-        "text129": "Todo web app · OAuth ↗",
+        "text60": "Java · Spring Boot · Python",
         "text61": "AI ",
         "text62": "&",
         "text63": " Search",
-        "text64": "LangChain · LangGraph · RAG · LLM Evaluation",
-        "text65": "Elasticsearch · Weaviate",
+        "text64": "LangChain · LangGraph · Spring AI · RAG · LLM Evaluation · Prompt injection defense",
+        "text65": "LangSmith · Elasticsearch · Weaviate",
         "text66": "Data ",
         "text67": "&",
         "text68": " Infra",
@@ -739,15 +835,16 @@
     "eyebrow": "AI Agents · Execution environment design · Data pipelines",
     "title": "A developer who digs into root causes and enjoys solving difficult problems",
     "description": "The problems I encountered, the experiments and results, and the decisions that shaped each implementation.",
-    "experience1Title": "PDF tables and equations: pass rate 45.17% → 89.89%",
-    "experience1Description": "Designed and evaluated a pipeline that extracts, repairs and reassembles document regions.",
-    "experience2Title": "AI answer evidence: coverage 66.25% → 91.25% · about 75% faster after tuning",
-    "experience2Description": "Improved evidence coverage on 80 answerable questions versus the existing approach. Tuning candidates and parallel batches reduced median Jev time from 9.090s to 2.251s.",
-    "experience3Title": "Drug description API cost: about $200 estimated → $11.18 spent",
-    "experience3Description": "Removed exact and semantic duplicates, filled missing data by ingredient, then used Batch API and reused results across drugs.",
-    "profileRole": "Backend · AI Application Developer",
-    "profileLine1": "I keep going through repeated failures, always moving toward the best answer.",
-    "profileLine2": "I test hypotheses, check the results and use feedback to get one step closer to a better answer."
+    "experience1Title": "RAG evidence selection: coverage 66.25% → 91.25%, false evidence 20 → 0",
+    "experience1Description": "Built a golden set and ran a blinded offline comparison with a matched candidate pool and two independent judge models, then replaced the evidence-selection stage. Tuning candidate count and parallel batches cut median selection time from 9.090s to 2.251s.",
+    "experience2Title": "Agent execution environment: user-defined skills behind approval, edit quality 94/114 → 104/114",
+    "experience2Description": "Split responsibility so code enforces permissions and prompt-injection checks, the model drafts instructions and edits, and the user publishes and approves. Nothing changes in a document before the user approves it.",
+    "experience3Title": "Data pipelines: PDF conversion pass rate 45.17% → 89.89%, drug conversion $200 estimated → $11.18 spent",
+    "experience3Description": "Separated processing paths for body text, tables and equations so documents become usable for retrieval and answers, and processed about 44,000 drug records within budget through deduplication, ingredient-level backfill and batch conversion.",
+    "profileRole": "AI Application Developer · Backend Engineer",
+    "profileLine1": "I owned the whole AI side of an LLM workspace, designing and building its RAG, agent and evaluation layers.",
+    "profileLine2": "I weigh accuracy, cost and response time against each other, confirm the trade-off with an evaluation, and then choose the implementation that fits the service.",
+    "readingOrder": "Short on time? Start with 01, 02 and 04 — the three experiences on the cover: quality evaluation, the agent execution environment, and data pipelines."
   },
   "activities": {
     "title": "Awards and exhibitions",
@@ -758,7 +855,7 @@
         "width": 4000,
         "height": 3000,
         "alt": "Pilltip chatbot demonstration at the exhibition booth",
-        "caption": "Demonstrated Pilltip and answered technical questions as part of Pusan National University’s representative exhibition team.",
+        "caption": "The Pilltip booth. As Pusan National University’s representative exhibition team I demoed the service and answered technical questions. The health functional food request we heard at the first exhibition later shipped as a feature.",
         "title": "Pilltip exhibition"
       },
       {
@@ -773,14 +870,14 @@
   },
   "home": {
     "hero": {
-      "eyebrow": "BACKEND / AI APPLICATION DEVELOPER",
+      "eyebrow": "AI APPLICATION DEVELOPER / BACKEND ENGINEER",
       "greeting": "Hello,",
       "nameLine": "I’m Jaehyeong Kim."
     },
     "about": {
       "eyebrow": "ABOUT ME",
       "title": "About me",
-      "description": "I contributed to Fruition, an AI workspace that turns documents into knowledge, and Pilltip, a medication service that explains drug information in plain language."
+      "description": "I owned the entire AI side of Fruition, an AI workspace that turns documents into knowledge, and the backend and AI of Pilltip, a medication service that explains drug information in plain language. Both handle sensitive personal data, so I drew an explicit line between what the model sees and what application code decides."
     },
     "sections": {
       "skillsEyebrow": "SKILLS",

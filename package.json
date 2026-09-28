@@ -5,7 +5,9 @@
   "scripts": {
     "build": "python3 build.py && node scripts/build-resume-pdf.mjs && node scripts/build-portfolio-pdf.mjs",
     "dev": "python3 -m http.server 4173 --directory site",
-    "test": "npm run build && node test.mjs && node scripts/test-languages.mjs"
+    "test": "npm run build && node test.mjs && node scripts/test-languages.mjs",
+    "cover": "node scripts/build-cover-letter.mjs local/지원동기_토스증권.md",
+    "cover:watch": "node scripts/build-cover-letter.mjs local/지원동기_토스증권.md --watch"
   },
   "devDependencies": {
     "docx": "^9.7.2",

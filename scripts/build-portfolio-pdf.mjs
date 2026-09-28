@@ -66,7 +66,8 @@ export async function buildPortfolioPdf(browser, lang='ko') {
       writingsEyebrow:text(writings,'.eyebrow'),writingsTitle:text(writings,'h2'),
       writings:[...writings.querySelectorAll('.more-grid>a')].map(a=>({kicker:text(a,'span').replace(' ↗',''),title:text(a,'h3'),text:text(a,'p'),url:a.href})),
       more:link(writings.querySelector('.writings-heading a'))};
-    return {overview,contents,items,closing};
+    const guide=document.querySelector('.toc-guide')?.textContent.trim()||'';
+    return {overview,contents,guide,items,closing};
   },'https://martinel2.github.io/'+(en?'en/':''));
 
   const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -81,7 +82,7 @@ export async function buildPortfolioPdf(browser, lang='ko') {
     <div class="highlights">${o.highlights.map(h=>`<div><strong>${esc(h.title)}</strong><span>${esc(h.text)}</span></div>`).join('')}</div>`));
   const entry=(n,title,id)=>`<li><a href="#${id}"><b>${String(n).padStart(2,'0')}</b><span>${esc(title)}</span><i data-page="${id}"></i></a></li>`;
   const more=[[data.closing.title,'beyond'],[data.closing.writingsTitle,'writings']];
-  slides.push(slide('contents',L.contents,`<p class="eyebrow">${L.cases}</p><h2 class="slide-title">${L.contents}</h2>
+  slides.push(slide('contents',L.contents,`<p class="eyebrow">${L.cases}</p><h2 class="slide-title">${L.contents}</h2>${data.guide?`<p class="toc-guide">${esc(data.guide)}</p>`:''}
     <div class="groups">${[...new Set(data.contents.map(c=>c.project))].map(project=>`<div><p class="group">${esc(project)}</p><ol>${data.contents.map((c,i)=>c.project===project?entry(i+1,c.title,`case-${i+1}`):'').join('')}</ol></div>`).join('')}
     <div><p class="group">MORE</p><ol>${more.map(([t,id],k)=>entry(data.contents.length+k+1,t,id)).join('')}</ol></div></div>`));
   let caseNo=0;
