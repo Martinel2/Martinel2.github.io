@@ -22,10 +22,15 @@ async function sectionHtml() {
   const lines = raw.split('\n');
   const heading = lines.find(l => l.startsWith('# '))?.slice(2).trim() || '지원동기';
   const body = lines.filter(l => !l.startsWith('# ')).join('\n');
-  const paragraphs = body.split(/\n\s*\n/).map(p => p.trim().replace(/\s*\n\s*/g, ' ')).filter(Boolean);
-  if (!paragraphs.length) throw new Error(`${source}에 본문이 없습니다`);
+  const blocks = body.split(/\n\s*\n/).map(b => b.trim()).filter(Boolean);
+  if (!blocks.length) throw new Error(`${source}에 본문이 없습니다`);
+  // A block of "- " lines becomes a tight list; anything else is a paragraph.
+  const render = block => block.startsWith('- ')
+    ? `<div class="resume-topic"><ul>${block.split('\n').map(l => l.replace(/^-\s*/, '').trim())
+        .filter(Boolean).map(l => `<li>${inline(l)}</li>`).join('')}</ul></div>`
+    : `<p>${inline(block.replace(/\s*\n\s*/g, ' '))}</p>`;
   return `<section class="resume-section resume-lead"><h2>${escape(heading)}<span>MOTIVATION</span></h2>`
-    + `<div class="resume-content">${paragraphs.map(p => `<p>${inline(p)}</p>`).join('')}</div></section>`;
+    + `<div class="resume-content">${blocks.map(render).join('')}</div></section>`;
 }
 
 const run = (cmd, argv, env) => new Promise((done, fail) => {
