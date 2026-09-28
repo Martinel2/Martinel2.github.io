@@ -43,10 +43,15 @@ try{
    }
    const hash=route==='portfolio.html'?'#fruition-jev-evidence':route==='resume.html'?'#pilltip':'#skills';
    await page.evaluate(hash=>location.hash=hash,hash);
-   await page.waitForFunction(hash=>document.querySelector('.language-switch').hash===hash,{},hash);
-   await page.click('.language-switch');
+   // Wait for site.js to carry the hash onto the switch link before each click, so the round trip
+   // does not race the in-flight navigation.
+   const switchLanguage=async()=>{
+    await page.waitForFunction(hash=>document.querySelector('.language-switch')?.hash===hash,{},hash);
+    await Promise.all([page.waitForNavigation({waitUntil:'networkidle2'}),page.click('.language-switch')]);
+   };
+   await switchLanguage();
    assert.equal(new URL(page.url()).pathname,'/'+route);assert.equal(new URL(page.url()).hash,hash);
-   await page.click('.language-switch');
+   await switchLanguage();
    assert.equal(new URL(page.url()).pathname,'/en/'+route);assert.equal(new URL(page.url()).hash,hash);
    await page.screenshot({path:`artifacts/en-${route||'home'}-${width}.png`});
   }

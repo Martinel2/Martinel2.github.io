@@ -163,7 +163,7 @@ try {
         if (width === 1440) await page.$eval('#fruition-agent', el => el.scrollIntoView({ behavior: 'instant' }));
         if (width === 1440) await page.screenshot({ path: 'artifacts/case-desktop.png', fullPage: false });
       } else {
-        const skills = await page.$eval('.skill-rows > div', el => {
+        const skills = await page.$eval('.skill-rows > div:has(.scope-note)', el => {
           const list = el.querySelector('p').getBoundingClientRect();
           const note = el.querySelector('.scope-note').getBoundingClientRect();
           return { aligned: Math.abs(list.left - note.left) < 1, below: note.top >= list.bottom, width: note.width, listWidth: list.width };
