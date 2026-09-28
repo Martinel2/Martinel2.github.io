@@ -843,7 +843,8 @@
     "experience3Description": "본문·표·수식의 처리 경로를 나눠 문서를 검색과 답변에 쓸 수 있게 변환하고, 중복 제거와 성분별 누락 보완, Batch 변환으로 약 4만 4천 건을 예산 안에서 처리했습니다.",
     "profileRole": "AI Application Developer · Backend Engineer",
     "profileLine1": "LLM 워크스페이스의 AI 기능 전체를 맡아 RAG와 에이전트, 품질 평가 체계를 설계하고 구현했습니다.",
-    "profileLine2": "정확도와 비용, 응답 시간의 트레이드오프를 평가로 확인한 뒤 서비스에 맞는 구현을 선택합니다."
+    "profileLine2": "정확도와 비용, 응답 시간의 트레이드오프를 평가로 확인한 뒤 서비스에 맞는 구현을 선택합니다.",
+    "readingOrder": "시간이 없으시면 01·02·03을 먼저 보시면 됩니다. 품질 평가, 에이전트 실행 환경, 변경의 복구가 핵심입니다."
   },
   "activities": {
     "title": "수상과 전시 현장",

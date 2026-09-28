@@ -843,7 +843,8 @@
     "experience3Description": "Separated processing paths for body text, tables and equations so documents become usable for retrieval and answers, and processed about 44,000 drug records within budget through deduplication, ingredient-level backfill and batch conversion.",
     "profileRole": "AI Application Developer · Backend Engineer",
     "profileLine1": "I owned the whole AI side of an LLM workspace, designing and building its RAG, agent and evaluation layers.",
-    "profileLine2": "I weigh accuracy, cost and response time against each other, confirm the trade-off with an evaluation, and then choose the implementation that fits the service."
+    "profileLine2": "I weigh accuracy, cost and response time against each other, confirm the trade-off with an evaluation, and then choose the implementation that fits the service.",
+    "readingOrder": "Short on time? Start with 01–03: quality evaluation, the agent execution environment, and undoing changes."
   },
   "activities": {
     "title": "Awards and exhibitions",

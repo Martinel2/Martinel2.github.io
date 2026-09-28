@@ -447,3 +447,5 @@ html[lang="en"] .home-intro h1{font-size:clamp(36px,6vw,64px)}
 .me-work li{counter-increment:work;background:none;border:0;border-bottom:1px solid #e6ebf3;border-radius:0;padding:12px 0 12px 30px;position:relative}
 .me-work li::before{content:counter(work,decimal-leading-zero);position:absolute;left:0;top:13px;font-size:11px;font-weight:700;color:var(--blue);letter-spacing:.5px}
 .me-work b{font-size:14px}
+
+.toc-guide{color:var(--muted);font-size:13px;line-height:1.6;padding:14px 0 0}
