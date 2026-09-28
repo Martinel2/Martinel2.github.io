@@ -43,7 +43,8 @@ try{
  const css=await readFile('templates/resume-pdf.css','utf8');
  const base=pathToFileURL(resolve(dir)+'/').href;
  const flow='@page{size:A4;margin:13mm 14mm 16mm}.resume-project{box-decoration-break:clone;-webkit-box-decoration-break:clone}.resume-topic li,.experience-row,.skill-rows>div,.award-list>div,.profile-list{break-inside:avoid}h2,h3,h4,.resume-project-title,.topic-intro{break-after:avoid}.resume-tail{break-inside:avoid}.resume-section:has(.skill-rows){break-inside:avoid}.resume-section{margin-top:11px}.award-list>div{padding:3px 0}.award-list .evidence-thumb img{height:52px}';
- const html=`<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><base href="${base}"><style>${lang==='en'?css.replaceAll("url('assets/","url('../assets/"):css}${flow}</style></head><body>${body}</body></html>`;
+ const extra=process.env.RESUME_EXTRA_CSS||''; // a local build can tighten print spacing only
+ const html=`<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><base href="${base}"><style>${lang==='en'?css.replaceAll("url('assets/","url('../assets/"):css}${flow}${extra}</style></head><body>${body}</body></html>`;
  await mkdir('artifacts',{recursive:true});await writeFile(`artifacts/resume-pdf${suffix}.html`,html);
  await page.setContent(html,{waitUntil:'load'});await page.evaluate(()=>document.fonts.ready);
  await page.$$eval('img',async imgs=>{for(const img of imgs)img.loading='eager';await Promise.all(imgs.map(img=>img.decode()));});

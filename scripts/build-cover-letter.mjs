@@ -50,7 +50,14 @@ async function build() {
   await writeFile(resolve(stage, 'resume.html'), withLetter);
   await symlink(resolve('site/assets'), resolve(stage, 'assets'), 'dir');
 
-  await run('node', ['scripts/build-resume-pdf.mjs'], {RESUME_DIR: stage, RESUME_LANGS: 'ko'});
+  // Tighter print spacing keeps the letter and the résumé inside three pages; no content is cut.
+  const tighten = '.resume-section{margin-top:8px}.experience-row{margin-top:6px}'
+    + '.evidence-thumb img{height:56px}.award-list>div{padding:2px 0}'
+    + '.award-list .evidence-thumb img{height:34px}'
+    + '.resume-topic li{margin-bottom:3px}.skill-rows>div{padding:5px 0}'
+    + '.resume-project{padding:10px 13px}.resume-project+.resume-project{margin-top:10px}';
+  await run('node', ['scripts/build-resume-pdf.mjs'],
+    {RESUME_DIR: stage, RESUME_LANGS: 'ko', RESUME_EXTRA_CSS: tighten});
 
   await mkdir(outDir, {recursive: true});
   for (const ext of ['pdf', 'docx']) {
