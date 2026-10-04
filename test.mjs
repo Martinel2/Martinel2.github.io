@@ -109,7 +109,7 @@ try {
           await Promise.all(imgs.map(img => img.decode()));
           return imgs.map(img => ({ loaded: img.naturalWidth > 0, alt: img.alt }));
         });
-        assert.equal(images.length, 9);
+        assert.equal(images.length, 10);
         assert.ok(images.every(img => img.loaded && img.alt.length > 10));
         assert.ok(await page.$('#fruition-jev-evidence'));
         assert.equal(await page.$$eval('.case[id^="fruition-jev-"]', els => els.length), 1);

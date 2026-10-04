@@ -46,7 +46,7 @@
   "실험과 개선 · 해결 방안 비교": "Experiments and decisions",
   "코드 밖에서도 이어지는 경험": "Beyond project development",
   "Rhwp · HWPX 저장 오류 수정": "Rhwp · Fixing HWPX save errors",
-  "textFlow 속성 보존 오류를 수정한 PR #1213 병합. 이슈 분석부터 구현, 테스트와 CI 대응까지 기여했습니다.": "PR #1213 merged to fix textFlow attribute preservation. Contributed issue analysis, implementation, tests and CI fixes.",
+  "Claude Code에 작업 계획과 기여 규칙을 주고 이슈 분석부터 PR까지 자동화해, textFlow 보존 오류 수정(PR #1213) 등 PR 7건이 병합되고 Contributor로 등재됐습니다.": "Gave Claude Code a work plan and contribution rules to automate the flow from issue analysis to PR; 7 PRs merged, including the textFlow preservation fix (#1213), and listed as a contributor.",
   "GitHub 저장소": "GitHub repository",
   "GitHub · AI 분리 저장소": "GitHub · AI repository",
   "APPTIVE · 백엔드 멘토링": "APPTIVE · Backend mentoring",
