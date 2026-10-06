@@ -243,6 +243,7 @@
       "tags": [
         "Open-source PDF conversion: AnyDoc, Docling",
         "LLM API",
+        "sLLM (Qwen2.5 7B)",
         "Python",
         "LLM-as-a-Judge"
       ],
@@ -273,20 +274,20 @@
         [
           "Selective repair and missed errors",
           "Open-source PDF-to-Markdown conversion damaged table row/column relationships and equations. I needed a way to repair errors without processing everything again.",
-          "Selected damaged regions for AI repair, then evaluated repaired and untouched regions separately. Of 96 repaired regions, 85 passed, but 107 errors or omissions remained in untouched content. A separate experiment adding OCR comparison raised the pass rate from 80.00% to 97.53%, but also selected 50 correct regions for repair; the sum of processing-stage times was about 12 minutes 35 seconds.",
-          "Selecting repair targets missed errors, and extra checks to catch them added cost. I decided to test whether having AI read every original page could avoid this dependence on damage detection."
+          "Docling extracted the structure, and only damaged tables and equations were repaired with local Qwen sLLMs. Tables, where row/column positions matter, were handled mainly by the vision model (qwen2.5vl:7b); equations were drafted by the text model (qwen2.5:7b) and checked by the vision model only when needed. This restored more than applying both models to everything and cut sLLM processing time by about 42%. Keeping OCR and prompts unchanged and only re-cropping images with Docling's strict bboxes fixed two previously failing equations.\n\nEvaluating repaired and untouched regions separately, 85 of the 96 sLLM-repaired regions passed, but 107 errors or omissions remained in untouched content. A separate experiment adding OCR comparison raised the pass rate from 80.00% to 97.53%, but also selected 50 correct regions for repair; the sum of processing-stage times was about 12 minutes 35 seconds.",
+          "Selecting repair targets missed errors, and extra checks to catch them added cost. I decided to test whether having the vision sLLM read every original page could avoid this dependence on damage detection."
         ],
         [
-          "Table/equation errors and cost in full-page AI conversion",
+          "Table/equation errors and cost in full-page sLLM conversion",
           "Selective repair missed errors. Adding OCR checks also flagged correct content, increasing evaluation time and cost.",
-          "Full AI conversion of 25 research PDFs (415 pages) achieved a 91.92% content-preservation pass rate. However, only 58.84% of tables and equations fully matched in values and structure, and processing every page incurred substantial API usage.",
-          "Rather than send all content through the same AI path, I decided to use AI only where needed for body text and give tables and equations inputs that preserved their structure. I looked for fast text extraction with selective AI repair."
+          "Full conversion of 25 research PDFs with the vision sLLM (qwen2.5vl:7b), which can check the original page directly, (415 pages) achieved a 91.92% content-preservation pass rate. However, only 58.84% of tables and equations fully matched in values and structure, and processing every page imposed a heavy processing load.",
+          "Rather than send all content through the same model path, I decided to use AI only where needed for body text and give tables and equations inputs that preserved their structure. I looked for fast text extraction with selective AI repair."
         ],
         [
-          "Comparing text extraction and adopting AnyDoc",
-          "Full-page AI processing still left table/equation errors and required sending all body text to the model. I needed fast text extraction alongside separate table/equation repair.",
-          "I found AnyDoc on Threads and, after seeing its GitHub comparison with Docling, tested it on the same 4 PDFs (30 pages).\n\nThe recorded Docling run took 134.19s, while AnyDoc text extraction took 1.68s, about 80 times shorter. Docling’s time also included OCR and table analysis. One AnyDoc document had garbled characters because the PDF lacked mappings from character codes to actual characters.",
-          "The processing scopes differed, so this was not an 80-fold improvement in complete conversion. Still, AnyDoc was useful for fast text extraction. I kept separate table/equation repair, switched body extraction to AnyDoc, used AI on garbled or misordered pages, and preserved original figures."
+          "Comparing text extraction, adopting AnyDoc, and moving to commercial APIs",
+          "Full-page sLLM processing still left table/equation errors and required sending all body text to the model. I needed fast text extraction alongside separate table/equation repair.",
+          "I found AnyDoc on Threads and, after seeing its GitHub comparison with Docling, tested it on the same 4 PDFs (30 pages).\n\nThe recorded Docling run took 134.19s, while AnyDoc text extraction took 1.68s, about 80 times shorter. Docling’s time also included OCR and table analysis. One AnyDoc document had garbled characters because the PDF lacked mappings from character codes to actual characters.\n\nAround the same time I compared repair models. In the same blind evaluation of 445 units, the sLLM passed 382 (85.84%) and GPT-5.4 passed 436 (97.98%).",
+          "The processing scopes differed, so this was not an 80-fold improvement in complete conversion. Still, AnyDoc was useful for fast text extraction. I kept separate table/equation repair, switched body extraction to AnyDoc, used AI on garbled or misordered pages, and preserved original figures. With no early users yet, running GPU servers for an sLLM would cost more than it saved, so from this point I switched the repair model to faster and more accurate commercial LLM APIs."
         ]
       ],
       "links": [
