@@ -493,7 +493,7 @@
         {
           "title": "Semantic search connecting symptoms to drug indications",
           "problem": "Everyday symptom descriptions and drug indications use different words for the same meaning. Related information needed to be found without exact keyword matches.",
-          "judgment": "Use semantic search to connect symptoms and indications, with separate processing paths for the information each question needs.",
+          "judgment": "I first started building a symptom synonym dictionary and wrote code for it. But there were too many symptoms, and when users described several at once the dictionary entries overlapped. I still had to pick the drugs that fit that person, yet vague drug descriptions matched almost every symptom. So I used semantic search to link natural-language symptoms to drug indications, and split processing paths by what each question needed.",
           "implementation": "Stored drug indications in Weaviate for semantic symptom search. Built paths for drug discovery, medication risks and dosage information according to the question.",
           "verification": "Implemented natural-language symptom search and routing to the appropriate information-processing path."
         },
