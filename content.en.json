@@ -16,7 +16,7 @@
         "RAG",
         "Quality evaluation"
       ],
-      "problem": "To choose appropriate tasks and answer evidence more reliably, I evaluated Jev first for routing and then expanded it to RAG. Retrieval stays a fixed pipeline that gathers source evidence through semantic and keyword search plus wiki graph traversal, and the answer is presented separately from its evidence, related pages and traversal path. A query agent that plans its own retrieval strategy was deferred. The threshold for adding agents is a single question that demands several retrieval plans and replanning on intermediate results; below it, the fixed pipeline gathers the same evidence in fewer calls and keeps failure points easier to trace.",
+      "problem": "Existing retrieval missed needed evidence and attached evidence even to unanswerable questions. The correct sources were all in the initial candidates, but for 76 of 90 questions they were cut when checking was limited to the first 8 pages. I needed a step that picks the right evidence and says when there is none.\n\nRetrieval stays a fixed pipeline of semantic, keyword and wiki-graph search, with the answer shown apart from its evidence and path. A query agent that plans its own retrieval was deferred until one question needs several plans and replanning; until then the fixed pipeline gathers the same evidence in fewer calls and is easier to trace.",
       "diagram": "flowchart TD\n Q[User question] --> S[Collect semantic and keyword search candidates]\n S --> C[Top 300 candidates]\n C --> J[Jev selects evidence in up to 4 parallel batches]\n J --> E{Sufficient evidence?}\n E -->|Yes| A[Pass selected evidence to answer generation]\n E -->|No| N[No evidence]\n",
       "diagramCaption": "The evaluated evidence-selection design. Reference answers were used only for evaluation, never as retrieval or model inputs.",
       "resultTitle": "Questions with sufficient evidence: 53/80 → 73/80; total median time 2.251s",
@@ -415,7 +415,7 @@
         "PySpark",
         "MinHashLSH"
       ],
-      "problem": "Built a feature to rewrite about 44,000 drug records into explanations users could understand.",
+      "problem": "Rewriting about 44,000 drug records (about 1GB) as-is was estimated to cost about $200 in API calls. I needed a way to explain every drug within budget without cutting the number of drugs covered.",
       "diagram": "flowchart TD\n A[Original drug text: about 1GB] --> B[Split into sentence blocks]\n B --> M[Keep drug ID to block ID mappings]\n B --> C[Merge exact duplicate sentences]\n C --> G[Convert unique sentences with GPT Batch API]\n G --> R[Map converted text back to each drug]\n M --> R\n C -.-> S[2026 PySpark reproduction · measured ending normalization and MinHashLSH]",
       "diagramCaption": "Converted each repeated sentence once and kept per-drug mappings to attach results. In 2026 the same process was reproduced in PySpark and measured.",
       "resultTitle": "Actual API spend $11.18 · PySpark reproduction cut text by 94.1%",
@@ -481,7 +481,7 @@
         "RAG",
         "AI Orchestration"
       ],
-      "problem": "Built a chatbot that finds drug information from natural-language symptoms and personalizes it using health profiles.",
+      "problem": "Users describe symptoms in different words from drug indications, so keyword search could not match symptoms to drugs. Personalization also needed pregnancy status, current medications and underlying conditions, but sending that health profile to an external LLM as-is would make it hard to control where sensitive data goes.",
       "diagram": "flowchart TD\n S[Natural-language symptoms] --> V[Weaviate: semantic search of indications]\n P[Pregnancy, medications and underlying conditions] --> T[Internal tool: profile decisions]\n V --> R[Personalized information]\n T --> R\n B[External LLM input boundary] -.-> X[Exclude these profile fields]\n classDef accent fill:#e5edff,stroke:#4164c8,color:#142b60;\n class T,B,X accent;",
       "diagramCaption": "A conceptual view of responsibilities and data boundaries, not the exact call sequence or a guarantee against every form of data leakage.",
       "resultTitle": "Separating symptom search from internal health-profile decisions",
