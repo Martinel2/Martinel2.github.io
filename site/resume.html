@@ -24,8 +24,8 @@
 <a href="https://www.linkedin.com/in/%EC%9E%AC%ED%98%95-%EA%B9%80-b75920345/">LinkedIn ↗</a>
 </div>
 </div>
-<a class="button resume-download" href="resume.pdf?v=893f35a1be" download="김재형_이력서.pdf">이력서 PDF 저장 ↓</a>
-<a class="button resume-download" href="resume.docx?v=893f35a1be" download="김재형_이력서.docx">이력서 Word 저장 ↓</a>
+<a class="button resume-download" href="resume.pdf?v=9d6ce36d1b" download="김재형_이력서.pdf">이력서 PDF 저장 ↓</a>
+<a class="button resume-download" href="resume.docx?v=9d6ce36d1b" download="김재형_이력서.docx">이력서 Word 저장 ↓</a>
 </section>
 <section class="resume-section">
 <h2>핵심 경험 <span>01 / PROFILE</span>
@@ -81,7 +81,7 @@
 <strong class="field-label" data-label="판단">판단:</strong> 출시 직후 모델이라 위험이 작은 요청 분류에서 먼저 검증.
 <strong class="field-label" data-label="성과">성과:</strong> 동일 요청 98개에서 작업 종류와 부가 조건을 모두 맞힌 수 77 → 81건(같은 선택지를 준 GPT-5-nano 63건). 판단시간 중앙값 8.967초 → 0.658초.</li><li>대화 메모리
 <strong class="field-label" data-label="문제">문제:</strong> 대화가 길어지면 이전 턴을 전부 모델에 넣을 수 없음.
-<strong class="field-label" data-label="해결">해결:</strong> 최근 여섯 턴은 원문, 그 이전은 누적 요약으로 압축하고 요약 호출 실패 시 이전 요약을 유지. 라우터에 이전 턴의 라우팅 결정까지 전달해 지시어가 가리키는 대상을 해소.</li><li>편집 입력 범위 제한
+<strong class="field-label" data-label="해결">해결:</strong> 최근 메시지 6개는 원문, 그 이전은 누적 요약으로 압축하고 요약 실패 시 요약을 바꾸지 않음. 라우터에 이전 턴의 라우팅 결정까지 전달해 지시어가 가리키는 대상을 해소.</li><li>편집 입력 범위 제한
 <strong class="field-label" data-label="문제">문제:</strong> 문서 전체를 모델에 보내면 비용과 지연이 커짐.
 <strong class="field-label" data-label="해결">해결:</strong> 대상 줄 범위와 주변 문맥만 전달하고 표·코드 블록 경계를 걸치는 범위는 거절. 원문 대비 입력 비율과 처리 시간 평균·p95를 벤치마크로 확인.</li></ul>
 </div>

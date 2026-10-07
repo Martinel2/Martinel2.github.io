@@ -24,8 +24,8 @@
 <a href="https://www.linkedin.com/in/%EC%9E%AC%ED%98%95-%EA%B9%80-b75920345/">LinkedIn ↗</a>
 </div>
 </div>
-<a class="button resume-download" href="resume.pdf?v=de48db8990" download="Jaehyeong_Kim_Resume.pdf">Download resume PDF ↓</a>
-<a class="button resume-download" href="resume.docx?v=de48db8990" download="Jaehyeong_Kim_Resume.docx">Download resume Word ↓</a>
+<a class="button resume-download" href="resume.pdf?v=2f6f66a160" download="Jaehyeong_Kim_Resume.pdf">Download resume PDF ↓</a>
+<a class="button resume-download" href="resume.docx?v=2f6f66a160" download="Jaehyeong_Kim_Resume.docx">Download resume Word ↓</a>
 </section>
 <section class="resume-section">
 <h2>Highlights <span>01 / PROFILE</span>
@@ -81,7 +81,7 @@ Team: me (all AI), 1 backend (Spring backend), 1 frontend &amp; DevOps (frontend
 <strong class="field-label" data-label="Decision">Decision:</strong> As a newly released model, validated it first on low-risk request routing.
 <strong class="field-label" data-label="Result">Result:</strong> Fully correct decisions on the same 98 requests rose from 77 to 81 (63 for GPT-5-nano on the same options). Median decision time fell from 8.967s to 0.658s.</li><li>Conversation memory
 <strong class="field-label" data-label="Problem">Problem:</strong> a long conversation cannot be passed to the model in full.
-<strong class="field-label" data-label="Solution">Solution:</strong> keep the last six turns verbatim, compress older ones into a rolling summary, and keep the previous summary when summarization fails. The router also receives earlier routing decisions, so referring expressions resolve against earlier turns.</li><li>Bounding the edit input
+<strong class="field-label" data-label="Solution">Solution:</strong> keep the last six messages verbatim, compress older ones into a rolling summary, and leave the summary unchanged when summarization fails. The router also receives earlier routing decisions, so referring expressions resolve against earlier turns.</li><li>Bounding the edit input
 <strong class="field-label" data-label="Problem">Problem:</strong> sending a whole document to the model drives up cost and latency.
 <strong class="field-label" data-label="Solution">Solution:</strong> send only the target line range plus surrounding context, and reject ranges that straddle a table or code-block boundary. A benchmark tracks input size against the source and average and p95 time.</li></ul>
 </div>
