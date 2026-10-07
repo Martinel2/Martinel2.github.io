@@ -495,14 +495,14 @@
           "problem": "Everyday symptom descriptions and drug indications use different words for the same meaning. Related information needed to be found without exact keyword matches.",
           "judgment": "I first started building a symptom synonym dictionary and wrote code for it. But there were too many symptoms, and when users described several at once the dictionary entries overlapped. I still had to pick the drugs that fit that person, yet vague drug descriptions matched almost every symptom. So I used semantic search to link natural-language symptoms to drug indications, and split processing paths by what each question needed.",
           "implementation": "Stored drug indications in Weaviate for semantic symptom search. Built paths for drug discovery, medication risks and dosage information according to the question.",
-          "verification": "Implemented natural-language symptom search and routing to the appropriate information-processing path."
+          "verification": "In user-scenario E2E tests in August 2025, natural-language symptoms were routed to the right path (drug search, medication risk, dosage). I did not keep a numeric accuracy evaluation per symptom."
         },
         {
           "title": "Internal health-profile processing, separate from external AI inputs",
           "problem": "Personalization required pregnancy status, medications and underlying conditions, but sending those profiles to an external LLM risked exposing sensitive information.",
           "judgment": "At first I considered sending the health profile to the external AI with sensitive content filtered out. But there were too many expressions and cases to filter, and I judged that code could not cover them all. So I separated understanding symptom language from deciding profile conditions, and kept profile decisions in internal code where inputs and rules can be controlled directly.",
           "implementation": "Excluded pregnancy, medication and underlying-condition fields from external LLM inputs. Connected internal profile decisions to symptom search results to provide personalized information.",
-          "verification": "Separated processing paths so those health-profile fields stayed out of external LLM inputs while remaining available for internal personalization."
+          "verification": "Pregnancy status, current medications and underlying conditions are never put into external LLM inputs; an internal tool uses them to judge contraindications, duplicates and interactions and filter out unsuitable drugs. The AI guidance on the drug detail screen did not send these three fields either."
         }
       ]
     }
