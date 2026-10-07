@@ -5,7 +5,7 @@ import {Document, Packer, Paragraph, TextRun, Tab, ExternalHyperlink, ImageRun, 
 
 // Word flows freely, so read resume.html in reading order instead of the fixed PDF pages:
 // every project first, then skills, activities, education and awards.
-const LABEL_COLORS={'문제':'C0392B','Problem':'C0392B','해결':'1F6FEB','Solution':'1F6FEB','성과':'1E8449','Result':'1E8449','판단':'B9770E'};
+const LABEL_COLORS={'문제':'C0392B','Problem':'C0392B','해결':'1F6FEB','Solution':'1F6FEB','성과':'1E8449','Result':'1E8449','판단':'B9770E','Decision':'B9770E'};
 // CSS px × 1.5 = half-points, so the Word text matches templates/resume-pdf.css exactly.
 const SIZE={period:14,name:23,h1:26,role:15,h2:18,h3:18,h3big:26,h4:17,body:15,note:14,small:14};
 const COLOR={text:'203047',accent:'315CBB',muted:'607089'};

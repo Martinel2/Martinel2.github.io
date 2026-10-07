@@ -8,7 +8,7 @@
       "title": "RAG evidence coverage: 66.25% → 91.25%, with 75% less time after tuning",
       "short": "RAG evidence coverage: 66.25% → 91.25%",
       "period": "2026.09",
-      "summary": "Jev is a decision-only model that must pick from a fixed set of options. Applied first to request routing, it scored 81/98 against 77/98 for the existing JSON approach and 63/98 for GPT-5-nano on the same options, with a shorter decision time. I then applied it to RAG evidence selection, increasing coverage from 66.25% to 91.25%, and reduced its added latency by tuning candidates and parallel batches.",
+      "summary": "Jev is a decision-only model that must pick from a fixed set of options. Applied first to request routing, it scored 81/98 against 77/98 for the existing JSON approach and 63/98 for GPT-5-nano on the same options, with a shorter decision time. I then applied it to RAG evidence selection, raising evidence coverage from 66.25% to 91.25%, and reduced its added latency by tuning candidates and parallel batches.",
       "tags": [
         "Jev 1.13.0",
         "BGE-M3",
@@ -50,7 +50,7 @@
           "Routing comparison and the decision to try RAG",
           "Some questions were misclassified as document edits, leading to the wrong action. Task types and additional conditions needed to be selected more accurately and quickly.",
           "Applied Jev, a choice-based decision model released on September 14, to routing questions, document edits, document creation and folder organization.\n\nAcross 98 requests, correct task types and additional conditions totaled 77 for the existing JSON approach, 63 for GPT-5-nano given the same options, and 81 for Jev. Median decision time improved from 8.967s to 0.658s.\n\nI measured API cost on the same 100 questions: about $0.0408 for Jev against about $0.1027 for the GPT approach given the same options.",
-          "Jev showed promise on accuracy, speed and cost alike. On that basis I decided to try it on evidence selection, which previous retrieval changes had not solved."
+          "Jev showed promise on accuracy, speed and cost alike. On that basis I decided to try it on evidence selection, which previous retrieval changes had not solved.\n\nI chose Jev over the alternatives for two reasons. Having GPT pick the evidence cost about 2.5 times as much even with the same options, and took longer, which was too heavy for a step that checks hundreds of candidates per question. Re-ranking by tuning retrieval scores did not help much either: across many hybrid weights and RRF settings, scores stayed at a similar level. Embeddings sometimes failed to separate differences in Korean phrasing, so I judged that fitting one weight to questions from different fields would bring only small gains. Rather than polishing the ranking further, I chose to have a model judge the needed evidence directly from the collected candidates."
         ],
         [
           "Full-corpus inspection: evidence coverage on all 90 answerable questions",
@@ -97,11 +97,11 @@
         "LangSmith",
         "LLM observability"
       ],
-      "problem": "Designed a workflow from Skill authoring and publishing to actual document changes, allowing users to define and reuse their own recurring tasks. AI drafts the instructions and the edits, code checks permissions and execution scope, and the user decides what is published and applied.",
+      "problem": "Recurring document tasks differ by user, so developers could not build every one in advance. AI-generated edits also reached user review with parts of the request missing or awkward rewording, and code checks on format and scope alone could not catch this.",
       "diagram": "flowchart TD\n U[User describes a recurring task] --> S[Draft Skill, mask personal data and check prompt injection]\n S --> P[User review and recheck on publication]\n P --> K[Store reusable instructions]\n Q[User requests document work] --> R[Router selects task and conditions]\n K -. Reuse when needed .-> R\n R --> E[Edit while preserving goal and scope]\n R --> F[Plan folder organization and compare with request]\n E --> V[Check format, edit scope, personal data and injection]\n V --> D[Show validated changes and diff]\n F --> D\n D --> A{User approval}\n A -->|Approve| W[Apply edits or organize folders]\n A -->|Cancel| N[Keep originals]",
       "diagramCaption": "User-defined instructions and the document workflow that uses them. Executors do not reclassify the task; they validate proposed changes and apply them after user approval.",
       "resultTitle": "Reusable tasks and approval workflow; editing passes 82.5% → 91.2% (114 drafts)",
-      "result": "Users can define recurring tasks, publish them as Skills and reuse them. The final instructions are rechecked on publication; actual document changes require a preview and user approval. In a plan–approve–execute check using 6 documents, folder changes occurred only after approval.\n\nEditing quality was evaluated separately on the same 114 drafts from 19 request types. The original implementation passed 94; improved edit-goal and retry inputs passed 98; adding semantic evaluation and rewriting passed 104. Evaluation checked request fulfillment and meaning preservation. Rewriting based on failure reasons was limited to one attempt, and a second failure returned no edit proposal.\n\nAI drafts instructions and edits, code checks permissions and execution scope, and users decide publication and final application.",
+      "result": "Users can define recurring tasks, publish them as Skills and reuse them. The final instructions are rechecked on publication; actual document changes require a preview and user approval. In a plan–approve–execute check using 6 documents, folder changes occurred only after approval.\n\nEditing quality was compared separately on the same 114 drafts from 19 request types. The original implementation passed 94. To reduce errors from re-interpreting the request, I passed the edit goal down to the editing step and split rules by role. A problem where fixed phrases were duplicated in range edits was fixed by passing the assembled previous result and the failure reason to the retry; this stage passed 98.\n\nI then checked request fulfillment and meaning preservation with a separate LLM evaluation and allowed at most one rewrite using the failure reason, which passed 104. Because the evaluator rejected valid drafts by also judging the generation JSON format, I separated the generation and evaluation prompts, and I fixed a preservation check that was too strict when a heading and formatting change were requested together. If a draft fails again, no edit is returned.\n\nAI drafts instructions and edits, code checks permissions and execution scope, and users decide publication and final application.",
       "metrics": [
         [
           "Original Agent",
@@ -251,7 +251,7 @@
       "diagram": "flowchart TD\n A[Original PDF] --> B[Separate text, tables, equations and figures]\n B --> C[Preserve text context and position]\n B --> D[AI reads original table and equation regions]\n B --> E[Preserve original figures]\n C --> F[Reassemble in original order]\n D --> F\n E --> F\n F --> G{Check markers and missing content}\n G -->|Pass| H[Converted document]\n G -->|Mismatch| I[Keep original content for that region]",
       "diagramCaption": "A conceptual view of processing by content type and reassembling at the original positions. This is the current design; experiments did not all use the same path.",
       "resultTitle": "Pass rate against 30 original pages: 45.17% → 89.89%",
-      "result": "Split the same papers into 445 evaluation units covering body text, tables, equations and other content, then compared them with the originals. The existing Docling output and improved pipeline output were evaluated with method names hidden.",
+      "result": "Split the same papers into 445 evaluation units covering body text, tables, equations and other content, then compared them with the originals. The existing Docling output and improved pipeline output were evaluated with method names hidden.\n\nThe practical pass rate rose from 201 (45.17%) to 400 (89.89%), and the strict rate, which requires values and symbols to match exactly, rose from 193 (43.37%) to 393 (88.31%).",
       "metrics": [
         [
           "Existing Docling",
@@ -261,11 +261,6 @@
         [
           "Improved pipeline",
           "89.89%",
-          "30 pages total"
-        ],
-        [
-          "Missing regions",
-          "4 → 1",
           "30 pages total"
         ]
       ],
@@ -286,8 +281,8 @@
         [
           "Comparing text extraction, adopting AnyDoc, and moving to commercial APIs",
           "Full-page sLLM processing still left table/equation errors and required sending all body text to the model. I needed fast text extraction alongside separate table/equation repair.",
-          "I found AnyDoc on Threads and, after seeing its GitHub comparison with Docling, tested it on the same 4 PDFs (30 pages).\n\nThe recorded Docling run took 134.19s, while AnyDoc text extraction took 1.68s, about 80 times shorter. Docling’s time also included OCR and table analysis. One AnyDoc document had garbled characters because the PDF lacked mappings from character codes to actual characters.\n\nAround the same time I compared repair models. In the same blind evaluation of 445 units, the sLLM passed 382 (85.84%) and GPT-5.4 passed 436 (97.98%).",
-          "The processing scopes differed, so this was not an 80-fold improvement in complete conversion. Still, AnyDoc was useful for fast text extraction. I kept separate table/equation repair, switched body extraction to AnyDoc, used AI on garbled or misordered pages, and preserved original figures. With no early users yet, running GPU servers for an sLLM would cost more than it saved, so from this point I switched the repair model to faster and more accurate commercial LLM APIs."
+          "I found AnyDoc on Threads and, after seeing its GitHub comparison with Docling, tested it on the same 4 PDFs (30 pages).\n\nThe recorded Docling run took 134.19s, while AnyDoc text extraction took 1.68s, about 80 times shorter. Docling’s time also included OCR and table analysis. One AnyDoc document had garbled characters because the PDF lacked mappings from character codes to actual characters.",
+          "The processing scopes differed, so this was not an 80-fold improvement in complete conversion. Still, AnyDoc was useful for fast text extraction. I kept separate table/equation repair, switched body extraction to AnyDoc, used AI on garbled or misordered pages, and preserved original figures. With no early users yet, running GPU servers for an sLLM would cost more than it saved, so from this point I switched the repair model to commercial LLM APIs."
         ]
       ],
       "links": [
@@ -319,7 +314,7 @@
       "diagram": "flowchart TD\n A[Document processing request] --> K[Kafka distributes document jobs]\n K --> W[Multiple workers with per-worker request limits]\n W --> L[Lock writes within the same workspace]\n V[Embedding generation] --> G[Check contention on a shared GPU]\n L --> D[Check time, memory and content preservation]\n G --> D\n D --> R[Choose scaling policy per stage]",
       "diagramCaption": "Evaluated scaling separately for Wiki generation and embedding generation.",
       "resultTitle": "73.8% less analysis time for 4 documents · 300 queued jobs with zero loss",
-      "result": "With 4 workers and 2 concurrent requests each, analysis time for 4 documents fell by about 73.8%. Combined process memory rose from 351.7MiB to 1,401.0MiB — about fourfold — and output quality varied with configuration.\n\nI rejected both raising concurrent requests further and parallelising embedding generation on the same GPU, since each made things slower. My initial assumption that more concurrency is always faster did not hold, and I began treating external-response waits and device contention as separate problems.\n\nReplaying saved AI responses for 100 documents under 3 queue configurations processed all 300 jobs without omissions or failures.\n\nI adopted a maximum of 4 workers: although memory increased about fourfold, I judged that the AI service’s MSA deployment on EKS could distribute the load.",
+      "result": "With 4 workers and 2 concurrent requests each, analysis time for 4 documents fell by about 73.8%. Combined process memory rose from 351.7MiB to 1,401.0MiB — about fourfold. Of 16 facts fixed in advance, 10, 14 and 11 were fully preserved with 1, 2 and 4 workers, so although each condition ran once on a small sample, I did not treat quality as identical.\n\nI rejected both raising concurrent requests further and parallelising embedding generation on the same GPU, since each made things slower. My initial assumption that more concurrency is always faster did not hold, and I began treating external-response waits and device contention as separate problems.\n\nReplaying saved AI responses for 100 documents under 3 queue configurations processed all 300 jobs without omissions or failures.\n\nI adopted a maximum of 4 workers: although memory increased about fourfold, I judged that the AI service’s MSA deployment on EKS could distribute the load.",
       "metrics": [
         [
           "1 worker",
@@ -492,7 +487,7 @@
       "resultTitle": "Separating symptom search from internal health-profile decisions",
       "result": "Enabled natural-language drug discovery while excluding pregnancy status, current medications and underlying conditions from external LLM inputs. Explicitly separated information sent to AI from information evaluated by internal code. In a domain that handles sensitive data, I settled the boundary between what the model may judge and what code stays responsible for before writing the implementation.",
       "metrics": [],
-      "tradeoff": "Profile-rule changes require code updates. I prioritized keeping those personal data fields out of external AI inputs and retained profile decisions in internal code.",
+      "tradeoff": "Profile-rule changes require code updates. Even so, limiting how much sensitive health data reaches external models came first, so this decision stays in code rather than with the AI. It removes specific profile fields from external inputs; it does not measure blocking across every possible path.",
       "processTitle": "Design and implementation",
       "designSteps": [
         {
@@ -505,7 +500,7 @@
         {
           "title": "Internal health-profile processing, separate from external AI inputs",
           "problem": "Personalization required pregnancy status, medications and underlying conditions, but sending those profiles to an external LLM risked exposing sensitive information.",
-          "judgment": "Separate language understanding from profile-condition decisions. Keep profile decisions in internal code where inputs and rules can be controlled directly.",
+          "judgment": "At first I considered sending the health profile to the external AI with sensitive content filtered out. But there were too many expressions and cases to filter, and I judged that code could not cover them all. So I separated understanding symptom language from deciding profile conditions, and kept profile decisions in internal code where inputs and rules can be controlled directly.",
           "implementation": "Excluded pregnancy, medication and underlying-condition fields from external LLM inputs. Connected internal profile decisions to symptom search results to provide personalized information.",
           "verification": "Separated processing paths so those health-profile fields stayed out of external LLM inputs while remaining available for internal personalization."
         }
@@ -629,7 +624,7 @@
         ],
         [
           "Drug and supplement modeling, search, autocomplete and risk information",
-          "Designed the drug and health-supplement DB and implemented search autocomplete with Elasticsearch and Redis, plus Drug Utilization Review (DUR) risk and caution information."
+          "Designed the drug and health-supplement DB and implemented search autocomplete with Elasticsearch and Redis, plus Drug Utilization Review (DUR) risk and caution information. Cut search responses that took 5–7s because of LIKE queries and multiple JOINs to 0.8s on average."
         ],
         [
           "Medication reminders and logs",
@@ -640,7 +635,7 @@
           "Implemented deep-link friend invitations and family profile switching."
         ],
         [
-          "Data pipeline: $200 estimated → $11.18 spent, about 94% lower",
+          "Data pipeline: about $200 estimated, $11.18 actually spent",
           "Built a data preparation pipeline to rewrite all drug information covered by the service into friendly, everyday language."
         ],
         [
@@ -751,16 +746,16 @@
         "text24": "Team project (3 + designer) / AI lead",
         "text25": "How it started: a teammate’s pain point with managing documents, refined through design thinking — saved documents could not be found when needed.\nTeam: me (all AI), 1 backend (Spring backend), 1 frontend & DevOps (frontend, MSA deployment on AWS), external designer · 3 mentors",
         "text114": "Document conversion pipeline and faster Wiki generation",
-        "text115": "Converted uploaded PDFs for retrieval and grounded answers, and reduced Wiki generation time. Internal pass rate on 30 pages improved from 45.17% to 89.89%; analysis of 4 documents fell from 282.11s to 73.89s.",
-        "text26": "PDF → Markdown conversion\nProblem: Open-source conversion damaged tables and equations; full AI conversion still had errors and high API usage.\nSolution: Compared PDF tools and adopted AnyDoc. Repaired damaged text with AI, processed tables and equations separately, and preserved original figures.\nResult: Internal pass rate on 30 PDF pages improved from 45.17% to 89.89%.",
+        "text115": "Converted uploaded PDFs for retrieval and grounded answers, and reduced Wiki generation time.",
+        "text26": "PDF → Markdown conversion\nProblem: Open-source conversion damaged tables and equations; full AI conversion still had errors and high API usage.\nSolution: Compared PDF tools and adopted AnyDoc. Repaired damaged text with AI, processed tables and equations separately, and preserved original figures.\nDecision: Used fast AnyDoc for body text, and moved repair from an sLLM to commercial APIs to avoid GPU server costs.\nResult: Internal pass rate on 30 PDF pages improved from 45.17% to 89.89%.",
         "text28": "Parallel Wiki generation\nProblem: Later documents waited for earlier external AI responses.\nSolution: Compared worker counts and requests per worker. Capped workers at 4 to manage memory; rejected extra concurrency and GPU parallelism that slowed processing.\nResult: Analysis of 4 documents fell from 282.11s to 73.89s (about 74% less).",
         "text116": "Improving retrieval for grounded AI answers",
-        "text117": "Retrieved document evidence for AI answers. Coverage on 80 answerable questions rose from 66.25% to 91.25%, while false evidence returns on 20 unanswerable questions fell from 20 to 0.",
-        "text27": "Evidence selection for RAG\nProblem: Retrieval missed required facts and returned evidence for unanswerable questions.\nSolution: Applied Jev, a model that picks only from a fixed set of options, after routing tests, then controlled candidates and return limits after a full-corpus trial. Tuned to 300 candidates and up to 4 parallel batches.\nResult: Across 9 papers, coverage on 80 answerable questions rose from 66.25% to 91.25%. False evidence returns on 20 unanswerable questions fell from 20 to 0. Median time before/after Jev tuning: 9.090s → 2.251s.",
+        "text117": "Finds the document evidence AI answers need, and attaches none to questions the documents cannot answer.",
+        "text27": "Evidence selection for RAG\nProblem: Retrieval missed required facts and returned evidence for unanswerable questions.\nSolution: Applied Jev, a model that picks only from a fixed set of options, after routing tests, then controlled candidates and return limits after a full-corpus trial. Tuned to 300 candidates and up to 4 parallel batches.\nDecision: GPT selection was too costly and slow; tuning weights and RRF gave similar scores across settings, so I adopted Jev.\nResult: Across 9 papers, coverage on 80 answerable questions rose from 66.25% to 91.25%. False evidence returns on 20 unanswerable questions fell from 20 to 0. Median time before/after Jev tuning: 9.090s → 2.251s (still slower than the original 0.431s).",
         "text118": "Agent execution environment - skills, approval, routing and conversation context",
-        "text119": "Designed reusable Skills with user approval before changes. Applied Jev to route requests to questions, edits and other tasks: correct decisions rose from 77/98 to 81/98, and median decision time fell from 8.967s to 0.658s. I also set the scope of the conversation context and edit input the model receives.",
+        "text119": "Designed reusable Skills with user approval before changes. Applied Jev to request routing, and set the scope of the conversation context and edit input the model receives.",
         "text29": "User-defined task instructions (Skills)\nProblem: Developers cannot build every recurring workflow users need.\nSolution: Designed drafting, review and publishing of natural-language instructions, with checks against bypassing permissions or approval, implemented with AI coding tools. Document changes require separate preview and approval.\nResult: Published Skills became available to the Agent. In a 6-document check, no changes occurred before approval; 3 folders were created and documents moved afterward.",
-        "text30": "Jev-based request routing\nProblem: Misclassifying questions as edits led to the wrong action.\nSolution: Applied Jev to select task types and additional conditions for questions, edits, document creation and folder organization.\nResult: Fully correct decisions on the same 98 requests rose from 77 to 81 (63 for GPT-5-nano on the same options). Median decision time fell from 8.967s to 0.658s.",
+        "text30": "Jev-based request routing\nProblem: Misclassifying questions as edits led to the wrong action.\nSolution: Applied Jev to select task types and additional conditions for questions, edits, document creation and folder organization.\nDecision: As a newly released model, validated it first on low-risk request routing.\nResult: Fully correct decisions on the same 98 requests rose from 77 to 81 (63 for GPT-5-nano on the same options). Median decision time fell from 8.967s to 0.658s.",
         "text143": "Conversation memory\nProblem: a long conversation cannot be passed to the model in full.\nSolution: keep the last six turns verbatim, compress older ones into a rolling summary, and keep the previous summary when summarization fails. The router also receives earlier routing decisions, so referring expressions resolve against earlier turns.",
         "text144": "Bounding the edit input\nProblem: sending a whole document to the model drives up cost and latency.\nSolution: send only the target line range plus surrounding context, and reject ranges that straddle a table or code-block boundary. A benchmark tracks input size against the source and average and p95 time.",
         "text35": "Proposed the initial MSA design, then jointly finalized service boundaries, data ownership and communication with teammates and mentors.",
@@ -775,16 +770,16 @@
         "text47": "Team project (3 + designer) / Core backend · data preparation",
         "text112": "How it started: drug information is scattered, making it hard to check whether a medicine is safe for your current health condition.\nTeam: me (backend & AI), 1 Android (Kotlin app), 1 backend & security (user DB, login, questionnaires, AES-GCM), designer. The features below are my work.",
         "text122": "Drug data preparation pipeline",
-        "text123": "Rewrote about 44,000 drug records in plain language. Converting each repeated sentence once brought actual API spending to $11.18 versus about $200 estimated for the original text. A 2026 PySpark reproduction measured a 94.1% text reduction.",
+        "text123": "Rewrote about 44,000 drug records in plain language, converting each repeated sentence once and reusing it per drug.",
         "text50": "Problem: Converting all 44,000 drug records was estimated to cost about $200 in API calls.\nSolution: Split text into sentence blocks, merged exact duplicates, converted via GPT Batch API and mapped results back to each drug. Reproduced in PySpark in 2026 to measure ending normalization and MinHashLSH.",
         "text51": "Result: Actual API spending was $11.18 versus about $200 estimated for all original text. In the reproduction, exact deduplication cut text from 744MB to 44.1MB (−94.1%).",
         "text54": "Estimated cost versus actual spending; preprocessing labor is excluded.",
         "text124": "AI medication chatbot using health profiles",
         "text125": "Found drug and medication information from natural-language symptoms. Evaluated health profiles internally, separately from information sent to external AI.",
-        "text52": "Problem: Everyday symptom language differed from drug indications, while sensitive health data needed to stay out of external AI inputs.\nSolution: Used Weaviate semantic search and AI orchestration for drug discovery, medication risks and dosage. Evaluated pregnancy, current medications and underlying conditions in internal code.\nResult: Implemented personalized symptom-based search while excluding those profile fields from external LLM inputs.",
+        "text52": "Problem: Everyday symptom language differed from drug indications, while sensitive health data needed to stay out of external AI inputs.\nSolution: Used Weaviate semantic search and AI orchestration for drug discovery, medication risks and dosage. Evaluated pregnancy, current medications and underlying conditions in internal code.\nDecision: Filtering the profile before sending had too many cases to cover, so the fields were excluded and judged internally.\nResult: Implemented personalized symptom-based search while excluding those profile fields from external LLM inputs.",
         "text126": "Backend feature implementation",
         "text127": "Built server features for drug search, risk information, medication reminders and logs, and family profiles. Integrated with teammates responsible for the mobile app, users and security.",
-        "text48": "Designed the drug database on Java and Spring Boot with search, autocomplete and DUR risk display.",
+        "text48": "Designed the drug database on Java and Spring Boot with search, autocomplete and DUR risk display. Cut search responses from 5–7s to 0.8s on average with Elasticsearch and Redis.",
         "text49": "Built FCM medication reminders and logs, deep-link friend invites and family profile switching, and kept API docs, meeting notes and ADRs in Notion to share decisions.",
         "text137": "Feature work driven by feedback from live exhibitions",
         "text138": "We ran the booth twice as Pusan National University’s representative exhibition team, demonstrating to more than 100 visitors and collecting 10 pieces of feedback. Most asked for health supplements, so I built that within the data we already had.",
