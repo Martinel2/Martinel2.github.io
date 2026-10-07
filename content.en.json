@@ -714,7 +714,7 @@
         "text3": "and enjoys solving difficult problems",
         "text4": "AI Application Developer · Backend Engineer",
         "text5": "I enjoy taking a deep dive into problems.",
-        "text6": "I weigh accuracy, cost and processing time to choose an implementation that fits the service.",
+        "text6": "An AI application developer who raised RAG evidence coverage from 66.25% to 91.25% and AI document-editing quality from 82.5% to 91.2%, designing evaluation, approval and rollback so AI does not answer from wrong evidence or change users' documents on its own.",
         "text7": "kkuldangi2@gmail.com",
         "text8": "GitHub ↗",
         "text9": "Blog ↗",
@@ -890,7 +890,7 @@
     "experience3Title": "Data pipelines: PDF conversion pass rate 45.17% → 89.89%, drug conversion $200 estimated → $11.18 spent",
     "experience3Description": "Separated processing paths for body text, tables and equations so documents become usable for retrieval and answers, and processed about 44,000 drug records within budget through deduplication and batch conversion.",
     "profileRole": "AI Application Developer · Backend Engineer",
-    "profileLine1": "I owned the whole AI side of an LLM workspace, designing its RAG, agent and evaluation layers and building and verifying them with AI coding tools.",
+    "profileLine1": "An AI application developer who raised RAG evidence coverage from 66.25% to 91.25% and AI document-editing quality from 82.5% to 91.2%, designing evaluation, approval and rollback so AI does not answer from wrong evidence or change users' documents on its own.",
     "profileLine2": "I weigh accuracy, cost and response time against each other, confirm the trade-off with an evaluation, and then choose the implementation that fits the service.",
     "readingOrder": "Short on time? Start with 01, 02 and 04 — the three experiences on the cover: quality evaluation, the agent execution environment, and data pipelines."
   },
@@ -925,7 +925,7 @@
     "about": {
       "eyebrow": "ABOUT ME",
       "title": "About me",
-      "description": "I owned the entire AI side of Fruition, an AI workspace that turns documents into knowledge, and the backend and AI of Pilltip, a medication service that explains drug information in plain language. Both handle sensitive personal data, so I drew an explicit line between what the model sees and what application code decides. Outside of code, I have been weight training for two years."
+      "description": "An AI application developer who raised RAG evidence coverage from 66.25% to 91.25% and AI document-editing quality from 82.5% to 91.2%, designing evaluation, approval and rollback so AI does not answer from wrong evidence or change users' documents on its own. I owned the entire AI side of Fruition, an AI workspace that turns documents into knowledge, and the backend and AI of Pilltip, a medication service that explains drug information in plain language. Both handle sensitive personal data, so I drew an explicit line between what the model sees and what application code decides. Outside of code, I have been weight training for two years."
     },
     "sections": {
       "skillsEyebrow": "SKILLS",
