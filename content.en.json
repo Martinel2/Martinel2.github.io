@@ -332,7 +332,7 @@
           "351.7 → 1,401.0MiB"
         ]
       ],
-      "tradeoff": "One analysis run per configuration on the same documents. These are not end-to-end timings including storage and post-processing.",
+      "tradeoff": "One analysis run per configuration on the same documents. These are not end-to-end timings including storage and post-processing. Five or more workers were not measured, so I do not claim 4 is optimal.",
       "experiments": []
     },
     {
@@ -349,7 +349,7 @@
         "MSA",
         "Code review"
       ],
-      "problem": "With about a week left before the MSA migration deadline, moving the AI features into the new service structure had split into several streams. Long single sessions lost track of the plan as context was summarized.",
+      "problem": "The MSA migration had to be done within a week so we could deploy on schedule and get feedback on the new structure. The features were already built, so moving them meant too many changes to make by hand in time, and the work was split across several streams. I built a coding-agent loop so the work could keep going while I rested or slept. With about a week left before the MSA migration deadline, moving the AI features into the new service structure had split into several streams. Long single sessions lost track of the plan as context was summarized.",
       "diagram": "flowchart TD\n P[Work plan and criteria docs · me] --> C[Coordinator agent · dependencies and priority]\n C --> W1[Branch workspace · implementer + reviewer agents]\n C --> W2[Other branch workspaces · in parallel]\n W1 --> R[PR creation · integration review]\n W2 --> R\n R --> F[Required fixes applied · regression check]\n F --> J[Merge decision · me]",
       "diagramCaption": "I set the plan and criteria; agents with separate implementer and reviewer roles worked in parallel per branch.",
       "resultTitle": "16 PRs merged in 5 days · 13 required fixes applied before merge",
@@ -545,7 +545,7 @@
         ],
         [
           "MSA design contribution",
-          "Proposed the initial architecture, then finalized service boundaries, data ownership and communication with teammates and mentors."
+          "My first draft split services by feature, but that would leave the database load unchanged while adding hops between services, so distribution would gain nothing. I proposed splitting by data ownership instead, then worked with teammates and mentors on service boundaries and communication to finish the structure together."
         ]
       ],
       "links": [
@@ -758,7 +758,7 @@
         "text30": "Jev-based request routing\nProblem: Misclassifying questions as edits led to the wrong action.\nSolution: Applied Jev to select task types and additional conditions for questions, edits, document creation and folder organization.\nDecision: As a newly released model, validated it first on low-risk request routing.\nResult: Fully correct decisions on the same 98 requests rose from 77 to 81 (63 for GPT-5-nano on the same options). Median decision time fell from 8.967s to 0.658s.",
         "text143": "Conversation memory\nProblem: a long conversation cannot be passed to the model in full.\nSolution: keep the last six turns verbatim, compress older ones into a rolling summary, and keep the previous summary when summarization fails. The router also receives earlier routing decisions, so referring expressions resolve against earlier turns.",
         "text144": "Bounding the edit input\nProblem: sending a whole document to the model drives up cost and latency.\nSolution: send only the target line range plus surrounding context, and reject ranges that straddle a table or code-block boundary. A benchmark tracks input size against the source and average and p95 time.",
-        "text35": "Proposed the initial MSA design, then jointly finalized service boundaries, data ownership and communication with teammates and mentors.",
+        "text35": "MSA: Splitting only by feature would keep DB load the same while adding hops, so I proposed splitting by data ownership and co-designed boundaries and communication with teammates and mentors.",
         "text36": "Internal evaluations. RAG timing compares Jev before/after tuning. Parallel document timing covers analysis only, excluding storage and post-processing.",
         "text37": "PDF conversion ↗",
         "text39": "Parallel document processing ↗",
@@ -771,7 +771,7 @@
         "text112": "How it started: drug information is scattered, making it hard to check whether a medicine is safe for your current health condition.\nTeam: me (backend & AI), 1 Android (Kotlin app), 1 backend & security (user DB, login, questionnaires, AES-GCM), designer. The features below are my work.",
         "text122": "Drug data preparation pipeline",
         "text123": "Rewrote about 44,000 drug records in plain language, converting each repeated sentence once and reusing it per drug.",
-        "text50": "Problem: Converting all 44,000 drug records was estimated to cost about $200 in API calls.\nSolution: Split text into sentence blocks, merged exact duplicates, converted via GPT Batch API and mapped results back to each drug. Reproduced in PySpark in 2026 to measure ending normalization and MinHashLSH.",
+        "text50": "Problem: Converting all 44,000 drug records was estimated to cost about $200 in API calls.\nSolution: Split text into sentence blocks, merged exact duplicates, converted via GPT Batch API and mapped results back to each drug. Reproduced in PySpark in 2026 to measure ending normalization and MinHashLSH.\nDecision: The job needed no real-time response, so Batch API traded waiting time for lower cost.",
         "text51": "Result: Actual API spending was $11.18 versus about $200 estimated for all original text. In the reproduction, exact deduplication cut text from 744MB to 44.1MB (−94.1%).",
         "text54": "Estimated cost versus actual spending; preprocessing labor is excluded.",
         "text124": "AI medication chatbot using health profiles",
