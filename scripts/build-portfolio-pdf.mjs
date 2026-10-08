@@ -49,7 +49,7 @@ export async function buildPortfolioPdf(browser, lang='ko') {
         const result=parts[3];
         items.push({type:'case',kicker:[...el.querySelectorAll('.case-kicker span')].map(s=>s.textContent.trim()),title:text(el,'h2'),
           summary:text(el,'.case-summary'),meta:text(el,'.case-meta'),tags:[...el.querySelectorAll('.tags span')].map(s=>s.textContent.trim()),
-          backgroundTitle:heading(parts[0]),background:text(parts[0],'p'),
+          backgroundTitle:heading(parts[0]),background:text(parts[0],':scope>p'),expectedTitle:text(parts[0],'.case-expected strong'),expected:text(parts[0],'.case-expected p'),
           processTitle:heading(parts[1]),steps:[...parts[1].querySelectorAll('.experiment-timeline>li')].map(li=>({title:text(li,'h4'),
             fields:[...li.querySelectorAll('p')].map(p=>[p.querySelector('strong')?.textContent.trim()??'',p.textContent.replace(p.querySelector('strong')?.textContent??'','').trim()])})),
           processTable:parts[1].querySelector('table')?.outerHTML??'',
@@ -121,7 +121,7 @@ export async function buildPortfolioPdf(browser, lang='ko') {
     const head=extra=>`<p class="case-head"><b>${tag}</b><span>${esc(data.contents[caseNo-1]?.title??it.title)}</span>${extra?`<em>${esc(extra)}</em>`:''}</p>`;
     slides.push(slide('dark case-open',section,`<div class="left"><div class="kicker"><b>${tag}</b><span>${esc(it.kicker[1]??'')}</span></div><h2>${esc(it.title)}</h2>
       <p class="summary">${esc(it.summary)}</p><p class="meta">${esc(it.meta)}</p><div class="tags">${it.tags.map(t=>`<span>${esc(t)}</span>`).join('')}</div></div>
-      <div class="right"><div class="background"><span>${esc(it.backgroundTitle)}</span><p>${esc(it.background)}</p></div>
+      <div class="right"><div class="background"><span>${esc(it.backgroundTitle)}</span><p>${esc(it.background)}</p></div>${it.expected?`<div class="background expected"><span>${esc(it.expectedTitle)}</span><p>${esc(it.expected)}</p></div>`:''}
       ${stats.length?`<div class="stat">${stats.map(([l,v])=>`<div><small>${esc(l)}</small><strong>${esc(v)}</strong></div>`).join('')}</div>`:''}</div>`,`case-${caseNo}`));
     if(it.steps.length)slides.push(slide('process',section,`${head()}<h2 class="slide-title">${esc(it.processTitle)}</h2>
       <div class="steps">${it.steps.map((s,i)=>`<article class="step"><h4><b>${i+1}</b><span>${esc(s.title)}</span></h4>${s.fields.map(([l,t])=>`<p><strong>${esc(l)}</strong>${esc(t)}</p>`).join('')}</article>`).join('')}</div>`));

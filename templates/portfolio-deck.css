@@ -61,6 +61,10 @@ p,h1,h2,h3,h4,ul,ol,dl,dd,figure{margin:0}
 .case-open .background{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:20px 24px}
 .case-open .background span{font-size:12px;font-weight:700;letter-spacing:2px;color:#9fb8ec}
 .case-open .background p{font-size:16px;line-height:1.75;margin-top:8px}
+.case-open .background.expected{margin-top:12px;background:rgba(159,184,236,.12)}
+.case-open .background.expected p{font-size:13.5px;line-height:1.65}
+.case-open .right:has(.expected) .background:not(.expected) p{font-size:15px;line-height:1.7}
+.case-open .right:has(.expected) .background{padding:16px 20px}
 .case-open .stat{display:flex;gap:12px}
 .case-open .stat div{flex:1;border-radius:12px;background:rgba(255,255,255,.95);color:var(--ink);padding:14px 16px}
 .case-open .stat small{display:block;font-size:11px;color:var(--muted)}
