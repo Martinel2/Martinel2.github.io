@@ -24,8 +24,8 @@
 <a href="https://www.linkedin.com/in/%EC%9E%AC%ED%98%95-%EA%B9%80-b75920345/">LinkedIn ↗</a>
 </div>
 </div>
-<a class="button resume-download" href="resume.pdf?v=7ffff917ad" download="Jaehyeong_Kim_Resume.pdf">Download resume PDF ↓</a>
-<a class="button resume-download" href="resume.docx?v=7ffff917ad" download="Jaehyeong_Kim_Resume.docx">Download resume Word ↓</a>
+<a class="button resume-download" href="resume.pdf?v=ddff737333" download="Jaehyeong_Kim_Resume.pdf">Download resume PDF ↓</a>
+<a class="button resume-download" href="resume.docx?v=ddff737333" download="Jaehyeong_Kim_Resume.docx">Download resume Word ↓</a>
 </section>
 <section class="resume-section">
 <h2>Highlights <span>01 / PROFILE</span>
@@ -34,15 +34,15 @@
 <ul class="profile-list">
 <li>
 <strong>RAG evidence selection: coverage 66.25% → 91.25%, evidence attached to unanswerable questions 20 → 0</strong>
-<p>Built a golden set and ran a blinded offline comparison with a matched candidate pool and two independent judge models, then replaced the evidence-selection stage. Tuning candidate count and parallel batches cut median selection time from 9.090s to 1.137s.</p>
+<p>Wrong evidence makes the whole answer untrustworthy, so I replaced evidence selection with Jev; GPT was costly and slow, and weight tuning gained little. Blind comparison on identical candidates, then tuning candidates and parallelism cut median time from 9.090s to 1.137s.</p>
 </li>
 <li>
 <strong>Agent execution environment: user-defined skills behind approval, edit quality 82.5% → 91.2% (114 drafts)</strong>
-<p>Split responsibility so code enforces permissions and prompt-injection checks, the model drafts instructions and edits, and the user publishes and approves. Nothing changes in a document before the user approves it.</p>
+<p>AI changing documents freely would break trust, so code checks permissions and prompt injection, AI drafts, and users approve. Code checks missed omitted requests, so drafts get a semantic evaluation and one rewrite at most.</p>
 </li>
 <li>
 <strong>Data pipelines: PDF conversion pass rate 45.17% → 89.89%, drug conversion $200 estimated → $11.18 spent</strong>
-<p>Separated processing paths for body text, tables and equations so documents become usable for retrieval and answers, and processed about 44,000 drug records within budget through deduplication and batch conversion.</p>
+<p>Broken tables and equations lose the figures answers rely on, so body text uses fast AnyDoc and table and equation regions are read separately. Converting each repeated sentence once with Batch API kept about 44,000 drug records within budget.</p>
 </li>
 </ul>
 </div>
@@ -66,7 +66,7 @@ Team: me (all AI), 1 backend (Spring backend), 1 frontend &amp; DevOps (frontend
 <ul><li>Evidence selection for RAG
 <strong class="field-label" data-label="Problem">Problem:</strong> In a service that answers from documents, retrieval missed evidence and attached evidence to unanswerable questions, undermining trust.
 <strong class="field-label" data-label="Decision">Decision:</strong> GPT selection cost about 2.5x and took longer; tuning weights and RRF gave similar scores across settings, so I adopted Jev, which picks only from fixed options and had first been validated on request routing (77 → 81 of 98 correct).
-<strong class="field-label" data-label="Solution">Solution:</strong> Two stages: BGE-M3 and BM25 gather candidates and Jev picks the final evidence. Compared on identical candidates with blind cross-grading, then cut candidates to 300 and compared 4, 6, 8 and 10 parallel batches, choosing 8 with no accuracy difference.
+<strong class="field-label" data-label="Solution">Solution:</strong> Two stages: BGE-M3, the best Korean semantic model in benchmarks, and BM25 for exact terms gather candidates and Jev picks the final evidence. Compared on identical candidates with blind cross-grading, then cut candidates to 300 and compared 4, 6, 8 and 10 parallel batches, choosing 8 with no accuracy difference.
 <strong class="field-label" data-label="Result">Result:</strong> Coverage on 80 answerable questions rose from 66.25% to 91.25%. Median selection time 9.090s → 1.137s (still slower than the original 0.431s).</li></ul>
 </div>
 <div class="resume-topic">
@@ -74,8 +74,8 @@ Team: me (all AI), 1 backend (Spring backend), 1 frontend &amp; DevOps (frontend
 <p class="topic-intro">Recurring tasks are saved and reused as Skills, and AI-made changes apply only after the user approves them.</p>
 <ul><li>User-defined task instructions (Skills)
 <strong class="field-label" data-label="Problem">Problem:</strong> Recurring tasks differ by user, so they cannot all be built as features, and AI edits arrived with parts of the request missing, leaving repeatable work to chance.
-<strong class="field-label" data-label="Decision">Decision:</strong> AI drafts instructions, code checks permissions and scope, and the user decides publishing and applying.
-<strong class="field-label" data-label="Solution">Solution:</strong> Authoring, review and publishing of natural-language instructions with checks against bypassing permission or approval; preview and separate approval before changes; semantic evaluation with at most one rewrite.
+<strong class="field-label" data-label="Decision">Decision:</strong> AI drafts instructions, code checks permissions and scope, and the user decides publishing and applying. Code format checks missed omitted requests, so I added LLM semantic evaluation.
+<strong class="field-label" data-label="Solution">Solution:</strong> Authoring, review and publishing of natural-language instructions with checks against bypassing permission or approval; preview and separate approval before changes; semantic evaluation with at most one rewrite. Generation, evaluation and rewrite run as LangGraph nodes for step-level tracing, and published Skills are stored as immutable versions in PostgreSQL.
 <strong class="field-label" data-label="Result">Result:</strong> Edit quality 94 → 104 of 114 drafts (82.5% → 91.2%); documents stayed unchanged before approval.</li></ul>
 </div>
 <div class="resume-topic">
@@ -108,14 +108,14 @@ Team: me (backend &amp; AI), 1 Android (Kotlin app), 1 backend &amp; security (u
 <p class="topic-intro">Rewrote about 44,000 drug records in plain language, converting each repeated sentence once and reusing it per drug.</p>
 <ul><li><p><strong class="field-label" data-label="Problem">Problem:</strong> Rewriting about 44,000 drug records as-is was estimated at about $200 in API costs, more than the budget allowed for covering every drug.
 <strong class="field-label" data-label="Decision">Decision:</strong> Instead of covering fewer drugs, convert each repeated sentence once. The job needed no real-time response, so Batch API traded waiting time for lower cost.
-<strong class="field-label" data-label="Solution">Solution:</strong> Split text into sentence blocks, merged exact duplicates, converted via GPT Batch API and mapped results back to each drug. Reproduced in PySpark in 2026 to measure each step.</p><p><strong class="field-label" data-label="Result">Result:</strong> Actual API spending was $11.18 versus about $200 estimated for all original text. In the reproduction, exact deduplication cut text from 744MB to 44.1MB (−94.1%).</p>
+<strong class="field-label" data-label="Solution">Solution:</strong> Split text into sentence blocks, merged exact duplicates, converted via GPT Batch API and mapped results back to each drug. Reproduced in 2026 with PySpark, which parallelizes across cores and scales out, to measure each step.</p><p><strong class="field-label" data-label="Result">Result:</strong> Actual API spending was $11.18 versus about $200 estimated for all original text. In the reproduction, exact deduplication cut text from 744MB to 44.1MB (−94.1%).</p>
 <p class="scope-note">Estimated cost versus actual spending; preprocessing labor is excluded.</p></li></ul>
 </div>
 <div class="resume-topic">
 <h4>AI medication chatbot using health profiles</h4>
 <p class="topic-intro">Found drug and medication information from natural-language symptoms. Evaluated health profiles internally, separately from information sent to external AI.</p>
 <ul><li><strong class="field-label" data-label="Problem">Problem:</strong> Users checking whether a drug is safe describe symptoms in different words from drug indications, and the health data needed for personalization could not go to external AI.
-<strong class="field-label" data-label="Decision">Decision:</strong> A synonym dictionary had too many overlapping symptoms, so I used semantic search; filtering the profile had too many cases, so profile decisions stay internal.
+<strong class="field-label" data-label="Decision">Decision:</strong> A synonym dictionary had too many overlapping symptoms, so I used semantic search; filtering the profile had too many cases, so profile decisions stay internal. Weaviate was chosen as lighter than Milvus, and Spring AI ran orchestration on the Spring backend to avoid a separate Python container.
 <strong class="field-label" data-label="Solution">Solution:</strong> Weaviate semantic search and AI orchestration route to drug search, medication risk and dosage paths; pregnancy, current medications and underlying conditions are judged in internal code.
 <strong class="field-label" data-label="Result">Result:</strong> Personalized symptom-based search with those profile fields excluded from external LLM inputs.</li></ul>
 </div>
