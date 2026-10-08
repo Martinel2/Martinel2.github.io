@@ -24,8 +24,8 @@
 <a href="https://www.linkedin.com/in/%EC%9E%AC%ED%98%95-%EA%B9%80-b75920345/">LinkedIn ↗</a>
 </div>
 </div>
-<a class="button resume-download" href="resume.pdf?v=913a31c1f5" download="Jaehyeong_Kim_Resume.pdf">Download resume PDF ↓</a>
-<a class="button resume-download" href="resume.docx?v=913a31c1f5" download="Jaehyeong_Kim_Resume.docx">Download resume Word ↓</a>
+<a class="button resume-download" href="resume.pdf?v=9c77f7d460" download="Jaehyeong_Kim_Resume.pdf">Download resume PDF ↓</a>
+<a class="button resume-download" href="resume.docx?v=9c77f7d460" download="Jaehyeong_Kim_Resume.docx">Download resume Word ↓</a>
 </section>
 <section class="resume-section">
 <h2>Highlights <span>01 / PROFILE</span>
@@ -67,7 +67,7 @@ Team: me (all AI), 1 backend (Spring backend), 1 frontend &amp; DevOps (frontend
 <strong class="field-label" data-label="Problem">Problem:</strong> In a service that answers from documents, retrieval missed evidence and attached evidence to unanswerable questions, undermining trust.
 <strong class="field-label" data-label="Decision">Decision:</strong> GPT selection cost about 2.5x and took longer; tuning weights and RRF gave similar scores across settings, so I adopted Jev, which picks only from fixed options and had first been validated on request routing (77 → 81 of 98 correct).
 <strong class="field-label" data-label="Solution">Solution:</strong> Two stages: BGE-M3, the best Korean semantic model in benchmarks, and BM25 for exact terms gather candidates and Jev picks the final evidence. Compared on identical candidates with blind cross-grading, then cut candidates to 300 and compared 4, 6, 8 and 10 parallel batches, choosing 8 with no accuracy difference.
-<strong class="field-label" data-label="Result">Result:</strong> Coverage on 80 answerable questions rose from 66.25% to 91.25%. Median selection time 9.090s → 1.137s (still slower than the original 0.431s). Users can trust document-based answers along with their evidence.</li></ul>
+<strong class="field-label" data-label="Result">Result:</strong> Coverage on 80 answerable questions rose from 66.25% to 91.25%. Median selection time 9.090s → 1.137s (still slower than the original 0.431s). Higher evidence reliability gives users a reason to trust answers and keep using the service.</li></ul>
 </div>
 <div class="resume-topic">
 <h4>User-defined agent Skills with approval-based execution</h4>
@@ -76,7 +76,7 @@ Team: me (all AI), 1 backend (Spring backend), 1 frontend &amp; DevOps (frontend
 <strong class="field-label" data-label="Problem">Problem:</strong> Recurring tasks differ by user, so they cannot all be built as features, and AI edits arrived with parts of the request missing, leaving repeatable work to chance.
 <strong class="field-label" data-label="Decision">Decision:</strong> AI drafts instructions, code checks permissions and scope, and the user decides publishing and applying. Code format checks missed omitted requests, so I added LLM semantic evaluation.
 <strong class="field-label" data-label="Solution">Solution:</strong> Authoring, review and publishing of natural-language instructions with checks against bypassing permission or approval; preview and separate approval before changes; semantic evaluation with at most one rewrite. Generation, evaluation and rewrite run as LangGraph nodes for step-level tracing, and published Skills are stored as immutable versions in PostgreSQL.
-<strong class="field-label" data-label="Result">Result:</strong> Edit quality 94 → 104 of 114 drafts (82.5% → 91.2%); documents stayed unchanged before approval. Users can hand off recurring tasks with confidence.</li></ul>
+<strong class="field-label" data-label="Result">Result:</strong> Edit quality 94 → 104 of 114 drafts (82.5% → 91.2%); documents stayed unchanged before approval. Stable results keep prepaid credits from going to rework.</li></ul>
 </div>
 <div class="resume-topic">
 <h4>PDF document conversion</h4>
@@ -85,7 +85,7 @@ Team: me (all AI), 1 backend (Spring backend), 1 frontend &amp; DevOps (frontend
 <strong class="field-label" data-label="Problem">Problem:</strong> Broken tables and equations in paper PDFs made the figures behind Wiki pages and answers unusable.
 <strong class="field-label" data-label="Decision">Decision:</strong> Repairing only detected damage missed errors, and full AI conversion lacked table/equation accuracy and was costly, so I split processing by content type. Body text uses fast AnyDoc extraction; repair moved from an sLLM to commercial LLM APIs to avoid GPU server costs.
 <strong class="field-label" data-label="Solution">Solution:</strong> Extracted body text with AnyDoc and repaired only garbled parts with AI, read table/equation regions separately, and kept original figures.
-<strong class="field-label" data-label="Result">Result:</strong> Pass rate on the same 30 pages (445 units, blind) rose from 45.17% to 89.89%. Table and equation figures can now serve as evidence in the Wiki and answers.</li></ul>
+<strong class="field-label" data-label="Result">Result:</strong> Pass rate on the same 30 pages (445 units, blind) rose from 45.17% to 89.89%. Key figures now enter the Wiki intact, reducing quality-driven churn.</li></ul>
 </div>
 <p class="scope-note">MSA: Splitting only by feature would keep DB load the same while adding hops, so I proposed splitting by data ownership and co-designed boundaries and communication with teammates and mentors.</p>
 <p class="scope-note">All figures are from internal evaluations.</p>
