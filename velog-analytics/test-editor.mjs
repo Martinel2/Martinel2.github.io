@@ -81,7 +81,8 @@ try{
  const projectIndex=content.resume.findIndex(s=>'text21' in s.fields);
  await page.click(`[data-path="resume.${projectIndex}"]`);
  assert.match(await page.$eval('label[for$="-text54"]',e=>e.textContent),/비용 산정 기준/);
- assert.equal(await page.$$eval('#fields .group > .group',groups=>groups.length),11);
+ // Fruition 시작·RAG·Skill·PDF·평가 기준, Pilltip 시작·데이터 정제·챗봇·상세 링크
+ assert.equal(await page.$$eval('#fields .group > .group',groups=>groups.length),9);
  await page.click('[data-path="overview"]');
 
  await page.$eval('#field-overview-title',input=>{input.value='테스트 소개 <안전>';input.dispatchEvent(new Event('input',{bubbles:true}));});
