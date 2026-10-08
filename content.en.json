@@ -38,7 +38,7 @@
           "Original selector → tuned Jev"
         ]
       ],
-      "tradeoff": "The speedup compares Jev before and after its own settings changed. Retrieval gathers candidates and Jev makes the final evidence call, so the selection stage can be swapped on its own. Jev is an external decision model released in September 2026, so I have no long-run operational evidence for it yet, and even after tuning it stays slower than the previous selector. Answers stream to the user, but evidence selection has to finish before generation starts, so the 1.137s remains user-visible waiting and shortening it is still open work. The candidate-generator comparison is a ranking replay over stored scores, and it measures candidate preservation rather than final answer accuracy. The parallelism comparison ran once per condition, and only the 4-batch run was on a different day.",
+      "tradeoff": "The speedup compares Jev before and after its own settings changed, and even after tuning it stays slower than the previous selector. Evidence selection has to finish before the answer, so the 1.137s remains user-visible waiting and shortening it is still open work. Retrieval gathers candidates and Jev makes the final evidence call, so the selection stage can be swapped on its own. The parallelism comparison ran once per condition, and only the 4-batch run was on a different day.",
       "links": [
         {
           "label": "Introducing Jev · TypeSafe AI",
@@ -50,31 +50,31 @@
           "Routing comparison and the decision to try RAG",
           "Some questions were misclassified as document edits, leading to the wrong action. Task types and additional conditions needed to be selected more accurately and quickly.",
           "Applied Jev, a choice-based decision model released on September 14, to routing questions, document edits, document creation and folder organization.\n\nAcross 98 requests, correct task types and additional conditions totaled 77 for the existing JSON approach, 63 for GPT-5-nano given the same options, and 81 for Jev. Median decision time improved from 8.967s to 0.658s.\n\nI measured API cost on the same 100 questions: about $0.0408 for Jev against about $0.1027 for the GPT approach given the same options.",
-          "Jev showed promise on accuracy, speed and cost alike. On that basis I decided to try it on evidence selection, which previous retrieval changes had not solved.\n\nI chose Jev over the alternatives for two reasons. Having GPT pick the evidence cost about 2.5 times as much even with the same options, and took longer, which was too heavy for a step that checks hundreds of candidates per question. Re-ranking by tuning retrieval scores did not help much either: across many hybrid weights and RRF settings, scores stayed at a similar level. Embeddings sometimes failed to separate differences in Korean phrasing, so I judged that fitting one weight to questions from different fields would bring only small gains. Rather than polishing the ranking further, I chose to have a model judge the needed evidence directly from the collected candidates."
+          "Jev showed promise on accuracy, speed and cost alike, so I decided to apply it to evidence selection, which the existing retrieval had not solved.\n\nI chose Jev for two reasons. First, having GPT pick the evidence cost about 2.5 times as much even with the same options and took longer, too heavy for a step that checks hundreds of candidates per question; re-ranking by tuning retrieval scores did not help either, as scores stayed similar across many hybrid weights and RRF settings. Second, embeddings sometimes failed to separate differences in Korean phrasing, so fitting one weight to questions from different fields would bring only small gains. Rather than polishing the ranking further, I had a model judge the needed evidence directly from the collected candidates."
         ],
         [
           "Full-corpus inspection: evidence coverage on all 90 answerable questions",
-          "Using the original question for retrieval and increasing semantic-score weight raised top-1 correct retrieval from 50 to 57 out of 110 questions. However, the experiment had some bias and did not establish reliable evidence selection on new questions.",
+          "Using the original question for retrieval and increasing semantic-score weight raised top-1 correct retrieval from 50 to 57 out of 110 questions. However, the experiment had some bias, and reliable evidence selection on new questions remained unsolved. Delivering reliable answers to general questions is the core of the project, so this quality had to improve.",
           "Tested whether Jev could find evidence missed by retrieval. It inspected all 2,020 evidence units in a test Wiki without retrieval filtering and returned at most 8, matching the existing return limit.\n\nIn a semantic evaluation allowing paraphrases, coverage on 90 answerable questions rose from 24/90 (26.7%) to 90/90 (100%). It returned no evidence for all 10 unanswerable questions. Median processing time was 1.511s for the original approach and 5.338s for Jev. Jev processed 26 batches of 80, with up to 4 in parallel.\n\nFull-corpus inspection took 2,600 calls for 100 questions, and the API reported roughly 124.5M input and 6.47M output tokens. I did not confirm the billed amount.\n\nTo understand the size of the gap I traced where the existing retrieval dropped the answer. The page holding the reference sentence was in the initial candidate pool for all 90 questions, but 76 fell out at the step that limits inspection to the top 8 pages, 8 at the threshold of 85% of the best in-page score, and the remaining 2 at the final 8-evidence cap and the related-page lookup.",
           "The existing retrieval was discarding the answer before selection even began, so the gap cannot be read as a difference in selection ability over the same candidates. Full-corpus access found the evidence, but inspecting everything per question would grow calls as documents grew. Rather than set the deployment scope from this 90-question wiki alone, I decided to narrow candidates through retrieval first and let Jev pick the final evidence."
         ],
         [
           "Controlled comparison on 500 candidates: 87.50% coverage",
-          "The full-corpus test needed 26 batches per question. Questions were concentrated in certain technical documents and included document titles. The original search inspected only some pages while Jev saw all evidence, confounding judgment quality with access scope. Both candidate count and comparison conditions needed control.",
-          "Created 100 new questions from 9 papers without reusing earlier questions: 63 answerable from one paper, 17 requiring two papers, and 20 unanswerable. Questions, reference answers and required facts were fixed before runs.\n\nAfter deduplication, BGE-M3 and BM25 selected up to 500 candidates once; both methods received identical text and metadata. The original selector could inspect every candidate page, and both methods returned at most 8 untruncated evidence passages. Reference answers were excluded from retrieval and Jev inputs. GPT and Gemini graded independently without seeing method names or competing outputs, and run order alternated.\n\nGPT-graded coverage rose from 53/80 (66.25%) to 70/80 (87.50%); Gemini also showed improvement, from 52/80 to 74/80. False evidence returns on unanswerable questions fell from 20 to 1. Median time including candidate preparation was 0.431s for the original selector and 9.090s for Jev, which processed batches sequentially.",
-          "Jev selected better evidence even with matched candidates and return conditions, so I kept retrieval for candidate collection and Jev for final selection. Results on public papers and self-authored questions were not treated as general accuracy. Next I would tune candidate count and batch processing to reduce sequential waiting."
+          "Checking every piece of evidence was too costly to use in the service as-is. The evaluation questions were also concentrated in certain documents and included document titles. The original search judged from only some pages while Jev saw all evidence, so it was hard to tell whether the accuracy gap came from judgment or from access scope. I had to cut candidates and match the comparison conditions.",
+          "Created 100 new questions from 9 papers (80 answerable, 20 unanswerable) and fixed them before the runs. Both methods received the same 500 candidates with returns capped at 8, reference answers were excluded from inputs, and GPT and Gemini graded without seeing method names.\n\nCoverage rose from 66.25% to 87.50%, but sequential candidate processing raised median time from the original 0.431s to 9.090s.",
+          "Jev selected better evidence under the same conditions, so I kept retrieval for candidate collection and Jev for final selection. Results on public papers and self-authored questions were not treated as general accuracy, and reducing the waiting added by sequential processing became the next task."
         ],
         [
           "300 candidates and a parallelism comparison to reduce latency",
-          "Jev improved evidence selection, but sequential processing of up to 500 candidates raised median preparation-and-selection time to 9.090s versus 0.431s previously. I needed to reduce waiting without losing accuracy.",
-          "Reduced the candidate pool to the top 300 and ran up to 4 batches in parallel. Time fell to 2.251s, while questions with all required evidence increased from 70 to 73.\n\nThe parallel count had been set without evidence, so I re-ran the same 100 questions with only parallelism changed to 4, 6, 8 and 10. Median selection time was 2.066, 1.165, 0.945 and 0.886s, and blind grading of the 42 questions whose selections differed gave 37, 38, 36 and 37 fully supported, with no real difference.",
+          "Answers start only after evidence selection finishes, so processing time is the user's waiting time. A 9.090s median for 500 candidates processed sequentially was far too long against the previous 0.431s to be usable. Still, the higher accuracy was worth keeping, so I set out to cut the time.",
+          "Since candidate count drives cost and speed, I cut candidates from the top 500 to 300 and ran up to 4 batches in parallel. Time fell to 2.251s, while questions with all required evidence increased from 70 to 73.\n\nThe parallel count had been set without evidence, so I re-ran the same 100 questions with only parallelism changed to 4, 6, 8 and 10. Median selection time was 2.066, 1.165, 0.945 and 0.886s, and blind grading of the 42 questions whose selections differed gave 37, 38, 36 and 37 fully supported, with no real difference.",
           "Beyond 8 the gain was only 0.06s, and in production concurrent requests grow as workers × parallelism, so I chose 8. At 1.137s including candidate filtering it is still slower than the original 0.431s; I rejected cutting candidates further because some required evidence ranked below 250.\n\nI adopted Jev despite the added latency because accurate evidence is central to the service."
         ],
         [
           "Comparing candidate generators to find the limits of the production setting",
           "Jev can only choose from what reaches it, so evidence missing from the candidate pool is unreachable. I needed to know how far the production candidate generator preserved the answer-bearing evidence.",
           "Reusing stored scores, I regenerated rankings for four candidate generators and compared how well each preserved the 97 pre-registered citation groups across the 80 answerable questions: BGE-M3 alone, the production hybrid (0.75 embedding + 0.25 normalized BM25), RRF, and an alternating union.\n\nAt 100 candidates, the questions that preserved every citation were 74/80 for BGE-M3 alone, 63/80 for the production hybrid, 63/80 for RRF and 65/80 for the alternating union. MRR@500 over each citation’s best rank was 0.1811 for BGE-M3 alone against 0.1245 for the production hybrid, with median ranks of 19 and 40. Beyond 300 candidates the four converged to 79/80 and 78/80.",
-          "The production hybrid weighting was ranking answer-bearing evidence lower than plain BGE-M3. That said, this is a ranking replay over stored scores on an evaluation set I had already reused, so I do not treat it as independent verification, and at the current 300-candidate setting the gap is small enough that I did not change production. I recorded it as a precondition: cutting the candidate count further requires fixing this ranking gap first."
+          "The production hybrid weighting ranks answer-bearing evidence lower than plain BGE-M3. At the current 300 candidates the gap is small, so I left production unchanged and recorded it as the first condition to fix before cutting candidates further."
         ]
       ]
     },
@@ -101,7 +101,7 @@
       "diagram": "flowchart TD\n U[User describes a recurring task] --> S[Draft Skill, mask personal data and check prompt injection]\n S --> P[User review and recheck on publication]\n P --> K[Store reusable instructions]\n Q[User requests document work] --> R[Router selects task and conditions]\n K -. Reuse when needed .-> R\n R --> E[Edit while preserving goal and scope]\n R --> F[Plan folder organization and compare with request]\n E --> V[Check format, edit scope, personal data and injection]\n V --> D[Show validated changes and diff]\n F --> D\n D --> A{User approval}\n A -->|Approve| W[Apply edits or organize folders]\n A -->|Cancel| N[Keep originals]",
       "diagramCaption": "User-defined instructions and the document workflow that uses them. Executors do not reclassify the task; they validate proposed changes and apply them after user approval.",
       "resultTitle": "Reusable tasks and approval workflow; editing passes 82.5% → 91.2% (114 drafts)",
-      "result": "Users can define recurring tasks, publish them as Skills and reuse them. The final instructions are rechecked on publication; actual document changes require a preview and user approval. In a plan–approve–execute check using 6 documents, folder changes occurred only after approval.\n\nEditing quality was compared separately on the same 114 drafts from 19 request types. The original implementation passed 94. To reduce errors from re-interpreting the request, I passed the edit goal down to the editing step and split rules by role. A problem where fixed phrases were duplicated in range edits was fixed by passing the assembled previous result and the failure reason to the retry; this stage passed 98.\n\nI then checked request fulfillment and meaning preservation with a separate LLM evaluation and allowed at most one rewrite using the failure reason, which passed 104. Because the evaluator rejected valid drafts by also judging the generation JSON format, I separated the generation and evaluation prompts, and I fixed a preservation check that was too strict when a heading and formatting change were requested together. If a draft fails again, no edit is returned.\n\nAI drafts instructions and edits, code checks permissions and execution scope, and users decide publication and final application.",
+      "result": "Users can define recurring tasks, publish them as Skills and reuse them. The final instructions are rechecked on publication, and actual document changes require a preview and user approval. A plan–approve–execute check of folder organisation on 6 documents confirmed it worked correctly.\n\nEditing quality was compared on 114 drafts from 19 request types. Passing the edit goal down to the editing step and fixing the retry input raised passes from 94 to 98; evaluating request fulfillment and meaning preservation separately and allowing one rewrite raised them to 104. I separated the generation and evaluation prompts to stop the evaluator rejecting valid drafts, and no edit is returned if a draft fails again.\n\nAI drafts instructions and edits, code checks permissions and execution scope, and users decide publication and final application.",
       "metrics": [
         [
           "Original Agent",
@@ -119,7 +119,7 @@
           "91.2%"
         ]
       ],
-      "tradeoff": "Normalized average editing-evaluation time increased from 11.11s to 18.92s. I accepted the latency while limiting rewrites.",
+      "tradeoff": "Normalized average editing-evaluation time increased from 11.11s to 18.92s. I accepted the latency but limited the number of rewrites.",
       "links": [
         {
           "label": "Building user-defined Agent Skills (Korean)",
@@ -134,7 +134,7 @@
       "designSteps": [
         {
           "title": "Authoring and publishing user-defined instructions",
-          "problem": "Recurring tasks such as meeting notes vary by user; developers cannot prebuild every workflow.",
+          "problem": "Recurring tasks such as meeting notes vary by user, so developers cannot prebuild every workflow. Yet making users repeat the same request process for a recurring task each time is inconvenient.",
           "judgment": "Let users define and reuse natural-language instructions instead of adding each workflow as a feature. Treat AI-generated instructions as proposals until users review them.",
           "implementation": "Turned natural-language requests into reusable Markdown Skills. Users review and edit drafts; the Skill and version are stored on final publication. A published skill is appended as an immutable version rather than overwritten, with a separate pointer to the version that runs. Which run used which version of the instructions stays traceable, so an earlier definition survives a problematic new version.",
           "verification": "Skill module unit tests confirm that authoring returns only a proposal and stores nothing, that publishing creates a new version and points the active version at it, and that published Skills load from other workspaces and via slash commands. When the feature was finished, 74 Skill module tests and all 546 pipeline tests passed."
@@ -148,21 +148,21 @@
         },
         {
           "title": "Previewing changes and applying them after approval",
-          "problem": "Publishing a reviewed Skill does not approve every later document change. Users still need to inspect the target documents and proposed modifications.",
+          "problem": "Even with a published Skill, hallucination can create, edit or organise documents in ways the user did not want, and having to go roll them back each time frustrates users. So the documents and content to be changed had to be confirmed separately at execution.",
           "judgment": "Separate instruction publication from approval of actual changes. Keep task classification in the router and execution in the executor, while letting users inspect what will change.",
           "implementation": "Displayed before/after diffs for edits and a folder-and-document move plan for organization. Code checked output format and edit scope; only approved changes were executed.",
           "verification": "With 6 documents, the plan–approve–execute check made no changes before approval. After approval, it created 3 topic folders and moved the documents."
         },
         {
           "title": "Deciding the scope of conversation context and edit input",
-          "problem": "A long conversation cannot be passed to the model in full, and sending a whole document for an edit drives up cost and latency. I had to decide what to keep and what to cut.",
+          "problem": "Long conversations or large documents to edit inflate model input, raising the cost and waiting time users bear. I had to decide what to keep and what to cut.",
           "judgment": "Keep the last six messages (about three exchanges) verbatim and compress everything older into a rolling summary. For edits, send only the target line range plus surrounding context, and refuse a range that straddles the boundary of a table or code block.",
           "implementation": "Once recent messages reach six, the rolling summary is regenerated from the previous summary plus those messages; if the summarization call fails the summary is left unchanged so the conversation does not break. The router receives the summary and recent messages along with the routing decisions from earlier turns, so it can resolve what a referring expression points back to. Edit input is cut to the target line range with context lines above and below, and ranges crossing a structural boundary are rejected.",
           "verification": "For a 1,000-line document the model received 1,786 of 31,999 characters (5.58%), and 1.12% for 5,000 lines; p95 time to build the input was 7.7ms and 34.4ms. Tests confirm that every range partly crossing a table, code block or math block is refused, and in 3 real HTTP requests a partial code-block selection was blocked with 422."
         },
         {
           "title": "Tracing LLM runs while bounding sensitive data",
-          "problem": "The evaluation loop ran as plain Python, so extraction, evaluation, correction and retry could not be inspected stage by stage. Turning tracing on, however, would send raw tool lookups and personal data to an external tracing tool.",
+          "problem": "The evaluation loop ran as plain Python, so extraction, evaluation, correction and retry could not be inspected stage by stage. Turning tracing on, however, would send raw tool lookups and personal data to an external tracing tool, weakening security.",
           "judgment": "I separated what has to be observable from what must not leave the system. Graphs that decide answer quality get node-level tracing; the agent graph that edits a user’s own documents runs with tracing off and keeps raw content out of persisted state.",
           "implementation": "Rebuilt the evaluation loop as a LangGraph graph so answer generation, evaluation and retry each surface as their own node. Even with tracing configured on, a missing key leaves graph execution intact and skips only tracing, which avoids warnings and pointless network retries. The agent graph disables tracing and excludes raw tool lookups from persisted state, and that state is deleted before the run record once retention ends. The prompt log I write myself masks numeric personal data before writing.",
           "verification": "Ran real requests and confirmed that graph nodes and model call spans appear in the trace. Timing experiments run with tracing and prompt logging both disabled, so instrumentation overhead stays out of the measured times."
@@ -211,22 +211,22 @@
       "designSteps": [
         {
           "title": "Deciding that stopping execution was not enough",
-          "problem": "An AI task saves documents, folders, wiki pages and skills several times between model calls, so stopping execution left part of a cancelled task in place. Execution spanning the core DB, the AI DB and object storage could not be wrapped in one long transaction.",
-          "judgment": "I chose to undo already-committed changes too. Asking the model to perform the inverse was rejected because it cannot guarantee original values, approval scope or idempotency, and locking the whole service in one transaction was rejected because it cannot absorb long-running model, HTTP and object-storage work or its failures.",
+          "problem": "An AI task saves documents, folders, wiki pages and skills several times between model calls, so stopping execution left part of a cancelled task in place. Yet execution spanning the core DB, the AI DB and object storage could not be wrapped in one long transaction either.",
+          "judgment": "I chose to undo already-committed changes too. Asking the model to perform the inverse cannot guarantee original values, approval scope or idempotency, and locking the whole service in one transaction cannot absorb long-running model, HTTP and object-storage work or its failures, so both were rejected.",
           "implementation": "The AI side derives reverse actions from the run record while the backend performs atomic recovery of business data. Agent tools store a pre-change snapshot with reverse-action arguments and an idempotency key tied to the original approval, and ordinary tasks record before and after values through each database’s triggers inside the same transaction. Object storage persists the original and the intended result before writing.",
           "verification": "A test that runs the real worker makes model creation fail during recovery and confirms the cancellation finishes without any model or gateway call. Cancelling a two-folder, six-document organisation task at each of 9 points returned the workspace to its original state, and after a lost response a new worker resumed recovery with the same idempotency key."
         },
         {
           "title": "Blocking later writes and undoing children first",
-          "problem": "A handler still running after a cancellation would overwrite recovered values, and undoing a parent first left the changes its children had made behind.",
-          "judgment": "Persist the cancellation first to block later writes, wait for the running handler to finish, then undo children first in reverse order.",
+          "problem": "A handler still running after a cancellation would overwrite recovered values, and undoing a parent first left the changes its children had made behind. Recovery could fail, leaving users unable to return to the version they wanted.",
+          "judgment": "Persist the cancellation first to block later writes, and once the running handler finishes, undo children first in reverse order.",
           "implementation": "The agent turn and recovery share one PostgreSQL execution lock. The lock releases when a worker connection ends, so a leftover in-progress record cannot block recovery. Body recovery is saved as a new revision, so a late event cannot overwrite the source again.",
           "verification": "Tests confirm that writes after cancellation are refused, recovery waits for the running handler, and children are restored before their parent. Even after the running process was force-killed, recovery waited on the same lock and finished, and a late event from an earlier revision could not overwrite the restored body. If another user later changed the data, recovery did not overwrite it and stayed retryable; cancelling again after the conflict cleared completed normally."
         },
         {
           "title": "Recovering without erasing other tasks’ contributions",
           "problem": "A wiki concept page merges contributions from several documents, so overwriting it with an older snapshot also removed valid contributions added later by other documents.",
-          "judgment": "Removing just the relevant part from the finished result was rejected because which sentence came from which document cannot be told apart reliably, and restoring an entire older snapshot was rejected too. Instead the history is append-only and recovery excludes only the target contribution before reassembling.",
+          "judgment": "Removing just the relevant part from the finished result was hard because which sentence came from which document cannot be told apart reliably. Restoring an entire older snapshot was rejected too, because information is lost if a new document contributed in between. Instead the history is append-only and recovery excludes only the target contribution before reassembling.",
           "implementation": "Operations, page revisions and per-document contributions are recorded append-only, and recovery restores or reassembles the page with the target contribution excluded. Pages and history are soft-deleted rather than removed, which preserves the audit trail.",
           "verification": "Right before recovery, the contribution list (operation, revision, active flag) is re-read under a lock, and recovery is refused if it differs from the preview. Tests confirm that pages are rebuilt from the selected contributions only and that if any page fails, no current state changes. Recovery itself is recorded as a new operation and revision."
         }
@@ -268,19 +268,19 @@
       "experiments": [
         [
           "Selective repair and missed errors",
-          "Open-source PDF-to-Markdown conversion damaged table row/column relationships and equations. I needed a way to repair errors without processing everything again.",
+          "Open-source conversion broke table row/column relationships and equations, so the key figures in PDF papers came out in a form hard to bring into the Wiki. I needed a way to repair the damaged parts.",
           "Docling extracted the structure, and only damaged tables and equations were repaired with local Qwen sLLMs. Tables, where row/column positions matter, were handled mainly by the vision model (qwen2.5vl:7b); equations were drafted by the text model (qwen2.5:7b) and checked by the vision model only when needed. This restored more than applying both models to everything and cut sLLM processing time by about 42%. Keeping OCR and prompts unchanged and only re-cropping images with Docling's strict bboxes fixed two previously failing equations.\n\nEvaluating repaired and untouched regions separately, 85 of the 96 sLLM-repaired regions passed, but 107 errors or omissions remained in untouched content. A separate experiment adding OCR comparison raised the pass rate from 80.00% to 97.53%, but also selected 50 correct regions for repair; the sum of processing-stage times was about 12 minutes 35 seconds.",
           "Selecting repair targets missed errors, and extra checks to catch them added cost. I decided to test whether having the vision sLLM read every original page could avoid this dependence on damage detection."
         ],
         [
           "Table/equation errors and cost in full-page sLLM conversion",
-          "Selective repair missed errors. Adding OCR checks also flagged correct content, increasing evaluation time and cost.",
+          "Letting AI decide what to fix missed errors, and adding OCR checks also flagged correct content, increasing check time and cost. I needed a way to pick and fix only the damaged parts.",
           "Full conversion of 25 research PDFs with the vision sLLM (qwen2.5vl:7b), which can check the original page directly, (415 pages) achieved a 91.92% content-preservation pass rate. However, only 58.84% of tables and equations fully matched in values and structure, and processing every page imposed a heavy processing load.",
-          "Rather than send all content through the same model path, I decided to use AI only where needed for body text and give tables and equations inputs that preserved their structure. I looked for fast text extraction with selective AI repair."
+          "I judged that sending all content through the model the same way was the problem. Body text should use AI only where needed, and tables and equations should get inputs that preserve their structure. So I split the paths for body, tables and equations, and looked for fast body extraction with AI fixes only where needed."
         ],
         [
           "Comparing text extraction, adopting AnyDoc, and moving to commercial APIs",
-          "Full-page sLLM processing still left table/equation errors and required sending all body text to the model. I needed fast text extraction alongside separate table/equation repair.",
+          "Full-page sLLM processing still left table/equation errors, and sending all body text to the model was a heavy load. To cut that load and improve speed and accuracy, I needed separate repair for the tables and equations that usually break, alongside fast body extraction.",
           "I found AnyDoc on Threads and, after seeing its GitHub comparison with Docling, tested it on the same 4 PDFs (30 pages).\n\nThe recorded Docling run took 134.19s, while AnyDoc text extraction took 1.68s, about 80 times shorter. Docling’s time also included OCR and table analysis. One AnyDoc document had garbled characters because the PDF lacked mappings from character codes to actual characters.",
           "The processing scopes differed, so this was not an 80-fold improvement in complete conversion. Still, AnyDoc was useful for fast text extraction. I kept separate table/equation repair, switched body extraction to AnyDoc, used AI on garbled or misordered pages, and preserved original figures. With no early users yet, running GPU servers for an sLLM would cost more than it saved, so from this point I switched the repair model to commercial LLM APIs."
         ]
@@ -314,7 +314,7 @@
       "diagram": "flowchart TD\n A[Document processing request] --> K[Kafka distributes document jobs]\n K --> W[Multiple workers with per-worker request limits]\n W --> L[Lock writes within the same workspace]\n V[Embedding generation] --> G[Check contention on a shared GPU]\n L --> D[Check time, memory and content preservation]\n G --> D\n D --> R[Choose scaling policy per stage]",
       "diagramCaption": "Evaluated scaling separately for Wiki generation and embedding generation.",
       "resultTitle": "73.8% less analysis time for 4 documents · 300 queued jobs with zero loss",
-      "result": "With 4 workers and 2 concurrent requests each, analysis time for 4 documents fell by about 73.8%. Combined process memory rose from 351.7MiB to 1,401.0MiB — about fourfold. Of 16 facts fixed in advance, 10, 14 and 11 were fully preserved with 1, 2 and 4 workers, so although each condition ran once on a small sample, I did not treat quality as identical.\n\nI rejected both raising concurrent requests further and parallelising embedding generation on the same GPU, since each made things slower. My initial assumption that more concurrency is always faster did not hold, and I began treating external-response waits and device contention as separate problems.\n\nReplaying saved AI responses for 100 documents under 3 queue configurations processed all 300 jobs without omissions or failures.\n\nI adopted a maximum of 4 workers: although memory increased about fourfold, I judged that the AI service’s MSA deployment on EKS could distribute the load.",
+      "result": "With 4 workers and 2 concurrent requests each, total processing time for 4 documents fell by about 73.8%. Combined process memory rose from 351.7MiB to 1,401.0MiB, about fourfold. Of 16 facts fixed in advance, 10, 14 and 11 were fully preserved with 1, 2 and 4 workers, so although each condition ran once on a small sample, I did not treat quality as identical.\n\nI excluded raising concurrent requests further and parallelising embedding generation on the same GPU, since both made things slower. External-response waits and device contention are different bottlenecks, so each stage needed its own scaling approach.\n\nReplaying saved AI responses for 100 documents under 3 configurations processed all 300 jobs without omissions or failures.\n\nJudging that the memory increase could be absorbed by distributing AI functions on EKS as MSA, I used at most 4 workers for parallel document processing.",
       "metrics": [
         [
           "1 worker",
@@ -332,7 +332,7 @@
           "351.7 → 1,401.0MiB"
         ]
       ],
-      "tradeoff": "One analysis run per configuration on the same documents. These are not end-to-end timings including storage and post-processing. Five or more workers were not measured, so I do not claim 4 is optimal.",
+      "tradeoff": "One analysis run per configuration on the same documents. These are not end-to-end timings including storage and post-processing.",
       "experiments": []
     },
     {
@@ -383,7 +383,7 @@
       "experiments": [
         [
           "Building an agent loop with separate roles",
-          "Giving one session all the work blurred the plan and criteria as context was summarized.",
+          "Giving one session all the work blurred the plan and criteria as context was summarized. Agents then drifted from the plan, leaving commits missing or producing code that differed from it. Fixing that cost more time, so I set out to cut that waste.",
           "Fixed the work plan and criteria in documents and split roles into implementation, review and integration review. Each branch had its own workspace with two agents running in parallel, and a coordinator agent judged dependencies and priority between tasks.",
           "Sessions could change and still continue from the same documents, so splitting long work across agents did not scatter its direction."
         ],
@@ -644,7 +644,7 @@
         ],
         [
           "Extended support to health functional foods after exhibition feedback",
-          "Took the request from our first exhibition and, within the data we held, extended search and autocomplete, caution and co-administration information, medication reminders and logs, and chatbot answers to cover health functional foods."
+          "The first service covered only drugs, and most first-exhibition feedback asked to check health supplements too. Within the supplement data obtained from public datasets, I extended search and autocomplete, caution and interaction info, medication reminders and logs, and chatbot answers, turning the requests into shipped features."
         ]
       ],
       "gallery": [
@@ -727,7 +727,7 @@
       "fields": {
         "text11": "Highlights ",
         "text12": "01 / PROFILE",
-        "text13": "RAG evidence selection: coverage 66.25% → 91.25%, false evidence 20 → 0",
+        "text13": "RAG evidence selection: coverage 66.25% → 91.25%, evidence attached to unanswerable questions 20 → 0",
         "text14": "Built a golden set and ran a blinded offline comparison with a matched candidate pool and two independent judge models, then replaced the evidence-selection stage. Tuning candidate count and parallel batches cut median selection time from 9.090s to 1.137s.",
         "text15": "Agent execution environment: user-defined skills behind approval, edit quality 82.5% → 91.2% (114 drafts)",
         "text16": "Split responsibility so code enforces permissions and prompt-injection checks, the model drafts instructions and edits, and the user publishes and approves. Nothing changes in a document before the user approves it.",
@@ -883,7 +883,7 @@
     "eyebrow": "AI Agents · Execution environment design · Data pipelines",
     "title": "A developer who digs into root causes and enjoys solving difficult problems",
     "description": "The problems I encountered, the experiments and results, and the decisions that shaped each implementation.",
-    "experience1Title": "RAG evidence selection: coverage 66.25% → 91.25%, false evidence 20 → 0",
+    "experience1Title": "RAG evidence selection: coverage 66.25% → 91.25%, evidence attached to unanswerable questions 20 → 0",
     "experience1Description": "Built a golden set and ran a blinded offline comparison with a matched candidate pool and two independent judge models, then replaced the evidence-selection stage. Tuning candidate count and parallel batches cut median selection time from 9.090s to 1.137s.",
     "experience2Title": "Agent execution environment: user-defined skills behind approval, edit quality 82.5% → 91.2% (114 drafts)",
     "experience2Description": "Split responsibility so code enforces permissions and prompt-injection checks, the model drafts instructions and edits, and the user publishes and approves. Nothing changes in a document before the user approves it.",
