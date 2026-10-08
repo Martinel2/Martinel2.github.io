@@ -5,7 +5,7 @@
       "id": "fruition-jev-evidence",
       "project": "Fruition",
       "category": "AI Agent · RAG · Jev",
-      "title": "RAG evidence coverage: 66.25% → 91.25%, with 75% less time after tuning",
+      "title": "RAG evidence coverage: 66.25% → 91.25%, with 87% less time after tuning",
       "short": "RAG evidence coverage: 66.25% → 91.25%",
       "period": "2026.09",
       "summary": "Jev is a decision-only model that must pick from a fixed set of options. Applied first to request routing, it scored 81/98 against 77/98 for the existing JSON approach and 63/98 for GPT-5-nano on the same options, with a shorter decision time. I then applied it to RAG evidence selection, raising evidence coverage from 66.25% to 91.25%, and reduced its added latency by tuning candidates and parallel batches.",
@@ -17,9 +17,9 @@
         "Quality evaluation"
       ],
       "problem": "Existing retrieval missed needed evidence and attached evidence even to unanswerable questions. The correct sources were all in the initial candidates, but for 76 of 90 questions they were cut when checking was limited to the first 8 pages. I needed a step that picks the right evidence and says when there is none.\n\nRetrieval stays a fixed pipeline of semantic, keyword and wiki-graph search, with the answer shown apart from its evidence and path. A query agent that plans its own retrieval was deferred until one question needs several plans and replanning; until then the fixed pipeline gathers the same evidence in fewer calls and is easier to trace.",
-      "diagram": "flowchart TD\n Q[User question] --> S[Collect semantic and keyword search candidates]\n S --> C[Top 300 candidates]\n C --> J[Jev selects evidence in up to 4 parallel batches]\n J --> E{Sufficient evidence?}\n E -->|Yes| A[Pass selected evidence to answer generation]\n E -->|No| N[No evidence]\n",
+      "diagram": "flowchart TD\n Q[User question] --> S[Collect semantic and keyword search candidates]\n S --> C[Top 300 candidates]\n C --> J[Jev selects evidence in up to 8 parallel batches]\n J --> E{Sufficient evidence?}\n E -->|Yes| A[Pass selected evidence to answer generation]\n E -->|No| N[No evidence]\n",
       "diagramCaption": "The evaluated evidence-selection design. Reference answers were used only for evaluation, never as retrieval or model inputs.",
-      "resultTitle": "Questions with sufficient evidence: 53/80 → 73/80; total median time 2.251s",
+      "resultTitle": "Questions with sufficient evidence: 53/80 → 73/80; total median time 1.137s",
       "result": "On a self-authored golden set of 80 answerable questions, the share with evidence supporting every required fact rose from 66.25% to 91.25%. On a separate 20 unanswerable questions, false evidence returns fell from 20 to 0. The improved selector was still slower than the original, but I chose Jev because accuracy mattered more to the service.\n\nI also tried grouping equivalent expressions: correct answers stayed similar on 76 questions (71 previously, 72 with Jev), while median decision time fell from 8.162s to 0.254s.",
       "metrics": [
         [
@@ -29,8 +29,8 @@
         ],
         [
           "Jev evidence-selection time",
-          "Median 9.090s → 2.251s",
-          "500 candidates, sequential → 300 candidates, 4 parallel batches"
+          "Median 9.090s → 1.137s",
+          "500 candidates, sequential → 300 candidates, 8 parallel batches"
         ],
         [
           "False evidence returns on 20 unanswerable questions",
@@ -38,7 +38,7 @@
           "Original selector → tuned Jev"
         ]
       ],
-      "tradeoff": "The speedup compares Jev before and after its own settings changed. Retrieval gathers candidates and Jev makes the final evidence call, so the selection stage can be swapped on its own. Jev is an external decision model released in September 2026, so I have no long-run operational evidence for it yet, and even after tuning it stays slower than the previous selector. Answers stream to the user, but evidence selection has to finish before generation starts, so the 2.251s remains user-visible waiting and shortening it is still open work. The candidate-generator comparison is a ranking replay over stored scores, and it measures candidate preservation rather than final answer accuracy.",
+      "tradeoff": "The speedup compares Jev before and after its own settings changed. Retrieval gathers candidates and Jev makes the final evidence call, so the selection stage can be swapped on its own. Jev is an external decision model released in September 2026, so I have no long-run operational evidence for it yet, and even after tuning it stays slower than the previous selector. Answers stream to the user, but evidence selection has to finish before generation starts, so the 1.137s remains user-visible waiting and shortening it is still open work. The candidate-generator comparison is a ranking replay over stored scores, and it measures candidate preservation rather than final answer accuracy. The parallelism comparison ran once per condition, and only the 4-batch run was on a different day.",
       "links": [
         {
           "label": "Introducing Jev · TypeSafe AI",
@@ -65,10 +65,10 @@
           "Jev selected better evidence even with matched candidates and return conditions, so I kept retrieval for candidate collection and Jev for final selection. Results on public papers and self-authored questions were not treated as general accuracy. Next I would tune candidate count and batch processing to reduce sequential waiting."
         ],
         [
-          "300 candidates and 4 parallel batches to reduce latency",
+          "300 candidates and a parallelism comparison to reduce latency",
           "Jev improved evidence selection, but sequential processing of up to 500 candidates raised median preparation-and-selection time to 9.090s versus 0.431s previously. I needed to reduce waiting without losing accuracy.",
-          "Reduced the candidate pool to the top 300 and ran up to 4 batches in parallel. Time fell to 2.251s, while questions with all required evidence increased from 70 to 73.",
-          "At 2.251s, the tuned approach was still slower than the original 0.431s. I considered fewer candidates and more parallel batches, but rejected further candidate reduction because some required evidence ranked below 250.\n\nI adopted Jev despite the added latency because accuracy was central to the service."
+          "Reduced the candidate pool to the top 300 and ran up to 4 batches in parallel. Time fell to 2.251s, while questions with all required evidence increased from 70 to 73.\n\nThe parallel count had been set without evidence, so I re-ran the same 100 questions with only parallelism changed to 4, 6, 8 and 10. Median selection time was 2.066, 1.165, 0.945 and 0.886s, and blind grading of the 42 questions whose selections differed gave 37, 38, 36 and 37 fully supported, with no real difference.",
+          "Beyond 8 the gain was only 0.06s, and in production concurrent requests grow as workers × parallelism, so I chose 8. At 1.137s including candidate filtering it is still slower than the original 0.431s; I rejected cutting candidates further because some required evidence ranked below 250.\n\nI adopted Jev despite the added latency because accurate evidence is central to the service."
         ],
         [
           "Comparing candidate generators to find the limits of the production setting",
@@ -728,7 +728,7 @@
         "text11": "Highlights ",
         "text12": "01 / PROFILE",
         "text13": "RAG evidence selection: coverage 66.25% → 91.25%, false evidence 20 → 0",
-        "text14": "Built a golden set and ran a blinded offline comparison with a matched candidate pool and two independent judge models, then replaced the evidence-selection stage. Tuning candidate count and parallel batches cut median selection time from 9.090s to 2.251s.",
+        "text14": "Built a golden set and ran a blinded offline comparison with a matched candidate pool and two independent judge models, then replaced the evidence-selection stage. Tuning candidate count and parallel batches cut median selection time from 9.090s to 1.137s.",
         "text15": "Agent execution environment: user-defined skills behind approval, edit quality 82.5% → 91.2% (114 drafts)",
         "text16": "Split responsibility so code enforces permissions and prompt-injection checks, the model drafts instructions and edits, and the user publishes and approves. Nothing changes in a document before the user approves it.",
         "text17": "Data pipelines: PDF conversion pass rate 45.17% → 89.89%, drug conversion $200 estimated → $11.18 spent",
@@ -751,7 +751,7 @@
         "text28": "Parallel Wiki generation\nProblem: Documents were processed one at a time, so large uploads waited long for their Wiki.\nDecision: Compared worker count, concurrent requests and GPU parallelism. More workers helped while waiting on external AI; more concurrent requests and GPU parallelism were slower, so I dropped them. Accepted about 4x memory, since EKS can spread services.\nSolution: Distributed per-document jobs over Kafka with up to 4 workers.\nResult: Analysis of 4 documents fell from 282.11s to 73.89s (about 74% faster).",
         "text116": "Improving retrieval for grounded AI answers",
         "text117": "Finds the document evidence AI answers need, and attaches none to questions the documents cannot answer.",
-        "text27": "Evidence selection for RAG\nProblem: In a service that answers from documents, retrieval missed evidence and attached evidence to unanswerable questions, undermining trust.\nDecision: GPT selection cost about 2.5x and took longer; tuning weights and RRF gave similar scores across settings, so I adopted Jev, which picks only from fixed options and had first been validated on request routing (77 → 81 of 98 correct).\nSolution: Two stages: BGE-M3 and BM25 gather candidates and Jev picks the final evidence. Compared on identical candidates with blind cross-grading, then tuned to 300 candidates and 4 parallel batches.\nResult: Coverage on 80 answerable questions rose from 66.25% to 91.25%. Median selection time 9.090s → 2.251s (still slower than the original 0.431s).",
+        "text27": "Evidence selection for RAG\nProblem: In a service that answers from documents, retrieval missed evidence and attached evidence to unanswerable questions, undermining trust.\nDecision: GPT selection cost about 2.5x and took longer; tuning weights and RRF gave similar scores across settings, so I adopted Jev, which picks only from fixed options and had first been validated on request routing (77 → 81 of 98 correct).\nSolution: Two stages: BGE-M3 and BM25 gather candidates and Jev picks the final evidence. Compared on identical candidates with blind cross-grading, then cut candidates to 300 and compared 4, 6, 8 and 10 parallel batches, choosing 8 with no accuracy difference.\nResult: Coverage on 80 answerable questions rose from 66.25% to 91.25%. Median selection time 9.090s → 1.137s (still slower than the original 0.431s).",
         "text118": "User-defined agent Skills with approval-based execution",
         "text119": "Recurring tasks are saved and reused as Skills, and AI-made changes apply only after the user approves them.",
         "text29": "User-defined task instructions (Skills)\nProblem: Recurring tasks differ by user, so they cannot all be built as features, and AI edits arrived with parts of the request missing, leaving repeatable work to chance.\nDecision: AI drafts instructions, code checks permissions and scope, and the user decides publishing and applying.\nSolution: Authoring, review and publishing of natural-language instructions with checks against bypassing permission or approval; preview and separate approval before changes; semantic evaluation with at most one rewrite.\nResult: Edit quality 94 → 104 of 114 drafts (82.5% → 91.2%); documents stayed unchanged before approval.",
@@ -884,7 +884,7 @@
     "title": "A developer who digs into root causes and enjoys solving difficult problems",
     "description": "The problems I encountered, the experiments and results, and the decisions that shaped each implementation.",
     "experience1Title": "RAG evidence selection: coverage 66.25% → 91.25%, false evidence 20 → 0",
-    "experience1Description": "Built a golden set and ran a blinded offline comparison with a matched candidate pool and two independent judge models, then replaced the evidence-selection stage. Tuning candidate count and parallel batches cut median selection time from 9.090s to 2.251s.",
+    "experience1Description": "Built a golden set and ran a blinded offline comparison with a matched candidate pool and two independent judge models, then replaced the evidence-selection stage. Tuning candidate count and parallel batches cut median selection time from 9.090s to 1.137s.",
     "experience2Title": "Agent execution environment: user-defined skills behind approval, edit quality 82.5% → 91.2% (114 drafts)",
     "experience2Description": "Split responsibility so code enforces permissions and prompt-injection checks, the model drafts instructions and edits, and the user publishes and approves. Nothing changes in a document before the user approves it.",
     "experience3Title": "Data pipelines: PDF conversion pass rate 45.17% → 89.89%, drug conversion $200 estimated → $11.18 spent",

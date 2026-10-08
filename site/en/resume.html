@@ -24,8 +24,8 @@
 <a href="https://www.linkedin.com/in/%EC%9E%AC%ED%98%95-%EA%B9%80-b75920345/">LinkedIn ↗</a>
 </div>
 </div>
-<a class="button resume-download" href="resume.pdf?v=9505fc816d" download="Jaehyeong_Kim_Resume.pdf">Download resume PDF ↓</a>
-<a class="button resume-download" href="resume.docx?v=9505fc816d" download="Jaehyeong_Kim_Resume.docx">Download resume Word ↓</a>
+<a class="button resume-download" href="resume.pdf?v=b53a3074a9" download="Jaehyeong_Kim_Resume.pdf">Download resume PDF ↓</a>
+<a class="button resume-download" href="resume.docx?v=b53a3074a9" download="Jaehyeong_Kim_Resume.docx">Download resume Word ↓</a>
 </section>
 <section class="resume-section">
 <h2>Highlights <span>01 / PROFILE</span>
@@ -34,7 +34,7 @@
 <ul class="profile-list">
 <li>
 <strong>RAG evidence selection: coverage 66.25% → 91.25%, false evidence 20 → 0</strong>
-<p>Built a golden set and ran a blinded offline comparison with a matched candidate pool and two independent judge models, then replaced the evidence-selection stage. Tuning candidate count and parallel batches cut median selection time from 9.090s to 2.251s.</p>
+<p>Built a golden set and ran a blinded offline comparison with a matched candidate pool and two independent judge models, then replaced the evidence-selection stage. Tuning candidate count and parallel batches cut median selection time from 9.090s to 1.137s.</p>
 </li>
 <li>
 <strong>Agent execution environment: user-defined skills behind approval, edit quality 82.5% → 91.2% (114 drafts)</strong>
@@ -66,8 +66,8 @@ Team: me (all AI), 1 backend (Spring backend), 1 frontend &amp; DevOps (frontend
 <ul><li>Evidence selection for RAG
 <strong class="field-label" data-label="Problem">Problem:</strong> In a service that answers from documents, retrieval missed evidence and attached evidence to unanswerable questions, undermining trust.
 <strong class="field-label" data-label="Decision">Decision:</strong> GPT selection cost about 2.5x and took longer; tuning weights and RRF gave similar scores across settings, so I adopted Jev, which picks only from fixed options and had first been validated on request routing (77 → 81 of 98 correct).
-<strong class="field-label" data-label="Solution">Solution:</strong> Two stages: BGE-M3 and BM25 gather candidates and Jev picks the final evidence. Compared on identical candidates with blind cross-grading, then tuned to 300 candidates and 4 parallel batches.
-<strong class="field-label" data-label="Result">Result:</strong> Coverage on 80 answerable questions rose from 66.25% to 91.25%. Median selection time 9.090s → 2.251s (still slower than the original 0.431s).</li></ul>
+<strong class="field-label" data-label="Solution">Solution:</strong> Two stages: BGE-M3 and BM25 gather candidates and Jev picks the final evidence. Compared on identical candidates with blind cross-grading, then cut candidates to 300 and compared 4, 6, 8 and 10 parallel batches, choosing 8 with no accuracy difference.
+<strong class="field-label" data-label="Result">Result:</strong> Coverage on 80 answerable questions rose from 66.25% to 91.25%. Median selection time 9.090s → 1.137s (still slower than the original 0.431s).</li></ul>
 </div>
 <div class="resume-topic">
 <h4>User-defined agent Skills with approval-based execution</h4>
