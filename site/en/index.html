@@ -10,7 +10,7 @@
 <a class="skip" href="#main">Skip to content</a>
 <header class="header"><a class="identity" href="./"><span class="monogram">JH<span>.</span></span><span>Jaehyeong Kim <small>JAEHYEONG KIM</small></span></a>
 <nav aria-label="Main navigation"><a href="./" aria-current="page">Home</a><a href="./#about">About</a><a href="./#skills">Skills</a><a href="./#projects">Projects</a><a href="./#activities">Activities</a></nav><a class="language-switch" href="../" hreflang="ko" lang="ko" aria-label="한국어로 보기">한국어</a></header>
-<main id="main"><section class="home-hero"><div class="home-intro"><p class="eyebrow">AI APPLICATION DEVELOPER / BACKEND ENGINEER</p><h1>Hello,<br>I’m Jaehyeong Kim.</h1><h2>A developer who digs into root causes<br>and enjoys solving difficult problems</h2><div class="home-actions"><a class="button" href="resume.pdf?v=04275c5ab4" target="_blank" rel="noopener"><img src="../assets/icons/file-text.svg" alt="" width="20" height="20">Resume</a><a class="button" href="portfolio.html"><img src="../assets/icons/briefcase.svg" alt="" width="20" height="20">Portfolio</a><a class="button" href="https://www.linkedin.com/in/%EC%9E%AC%ED%98%95-%EA%B9%80-b75920345/" target="_blank" rel="noopener"><img src="../assets/icons/linkedin.svg" alt="" width="20" height="20">LinkedIn</a><a class="button" href="https://github.com/Martinel2" target="_blank" rel="noopener"><img src="../assets/icons/github.svg" alt="" width="20" height="20">GitHub</a></div></div></section>
+<main id="main"><section class="home-hero"><div class="home-intro"><p class="eyebrow">AI APPLICATION DEVELOPER / BACKEND ENGINEER</p><h1>Hello,<br>I’m Jaehyeong Kim.</h1><h2>A developer who digs into root causes<br>and enjoys solving difficult problems</h2><div class="home-actions"><a class="button" href="resume.pdf?v=9505fc816d" target="_blank" rel="noopener"><img src="../assets/icons/file-text.svg" alt="" width="20" height="20">Resume</a><a class="button" href="portfolio.html"><img src="../assets/icons/briefcase.svg" alt="" width="20" height="20">Portfolio</a><a class="button" href="https://www.linkedin.com/in/%EC%9E%AC%ED%98%95-%EA%B9%80-b75920345/" target="_blank" rel="noopener"><img src="../assets/icons/linkedin.svg" alt="" width="20" height="20">LinkedIn</a><a class="button" href="https://github.com/Martinel2" target="_blank" rel="noopener"><img src="../assets/icons/github.svg" alt="" width="20" height="20">GitHub</a></div></div></section>
 <section class="home-about home-section" id="about"><p class="eyebrow">ABOUT ME</p><h2>About me</h2><p>I enjoy taking a deep dive into problems.</p><p>An AI application developer who raised RAG evidence coverage from 66.25% to 91.25% and AI document-editing quality from 82.5% to 91.2%, designing evaluation, approval and rollback so AI does not answer from wrong evidence or change users&#x27; documents on its own.</p><p>An AI application developer who raised RAG evidence coverage from 66.25% to 91.25% and AI document-editing quality from 82.5% to 91.2%, designing evaluation, approval and rollback so AI does not answer from wrong evidence or change users&#x27; documents on its own. I owned the entire AI side of Fruition, an AI workspace that turns documents into knowledge, and the backend and AI of Pilltip, a medication service that explains drug information in plain language. Both handle sensitive personal data, so I drew an explicit line between what the model sees and what application code decides. Outside of code, I have been weight training for two years.</p></section>
 <section class="home-section home-skills" id="skills">
 <p class="eyebrow">SKILLS</p><h2>Skills </h2>
@@ -144,56 +144,34 @@ Team: me (all AI), 1 backend (Spring backend), 1 frontend &amp; DevOps (frontend
 <p class="topic-intro">Finds the document evidence AI answers need, and attaches none to questions the documents cannot answer.</p>
 <ul><li>Evidence selection for RAG
 <strong class="field-label" data-label="Problem">Problem:</strong> In a service that answers from documents, retrieval missed evidence and attached evidence to unanswerable questions, undermining trust.
-<strong class="field-label" data-label="Decision">Decision:</strong> GPT selection cost about 2.5x and took longer; tuning weights and RRF gave similar scores across settings, so I adopted Jev, which picks only from fixed options.
+<strong class="field-label" data-label="Decision">Decision:</strong> GPT selection cost about 2.5x and took longer; tuning weights and RRF gave similar scores across settings, so I adopted Jev, which picks only from fixed options and had first been validated on request routing (77 → 81 of 98 correct).
 <strong class="field-label" data-label="Solution">Solution:</strong> Two stages: BGE-M3 and BM25 gather candidates and Jev picks the final evidence. Compared on identical candidates with blind cross-grading, then tuned to 300 candidates and 4 parallel batches.
 <strong class="field-label" data-label="Result">Result:</strong> Coverage on 80 answerable questions rose from 66.25% to 91.25%. Median selection time 9.090s → 2.251s (still slower than the original 0.431s).</li></ul>
 </div>
 <div class="resume-topic">
-<h4>Agent execution environment - skills, approval, routing and conversation context</h4>
-<p class="topic-intro">Designed reusable Skills with user approval before changes. Applied Jev to request routing, and set the scope of the conversation context and edit input the model receives.</p>
+<h4>User-defined agent Skills with approval-based execution</h4>
+<p class="topic-intro">Recurring tasks are saved and reused as Skills, and AI-made changes apply only after the user approves them.</p>
 <ul><li>User-defined task instructions (Skills)
 <strong class="field-label" data-label="Problem">Problem:</strong> Recurring tasks differ by user, so they cannot all be built as features, and AI edits arrived with parts of the request missing, leaving repeatable work to chance.
 <strong class="field-label" data-label="Decision">Decision:</strong> AI drafts instructions, code checks permissions and scope, and the user decides publishing and applying.
 <strong class="field-label" data-label="Solution">Solution:</strong> Authoring, review and publishing of natural-language instructions with checks against bypassing permission or approval; preview and separate approval before changes; semantic evaluation with at most one rewrite.
-<strong class="field-label" data-label="Result">Result:</strong> Edit quality 94 → 104 of 114 drafts (82.5% → 91.2%); documents stayed unchanged before approval.</li><li>Jev-based request routing
-<strong class="field-label" data-label="Problem">Problem:</strong> Misrouting a question as an edit led to the wrong action, directly hurting the service&#x27;s reliability.
-<strong class="field-label" data-label="Decision">Decision:</strong> Jev picks only from fixed options, which fits routing; as a newly released model it was validated first on low-risk routing.
-<strong class="field-label" data-label="Solution">Solution:</strong> Applied Jev to choose task type and conditions, and compared it with the existing approach and GPT-5-nano on the same 98 requests.
-<strong class="field-label" data-label="Result">Result:</strong> Fully correct decisions rose from 77 to 81 (GPT-5-nano 63); median decision time fell from 8.967s to 0.658s.</li><li>Conversation memory and edit input scope
-<strong class="field-label" data-label="Problem">Problem:</strong> Sending whole conversations and documents to the model raises cost and latency.
-<strong class="field-label" data-label="Solution">Solution:</strong> Keep the last six messages verbatim with a rolling summary for older ones, and send only the target lines plus context for edits, cutting input for a 1,000-line document to 5.58% of the source.</li></ul>
+<strong class="field-label" data-label="Result">Result:</strong> Edit quality 94 → 104 of 114 drafts (82.5% → 91.2%); documents stayed unchanged before approval.</li></ul>
 </div>
 <div class="resume-topic">
-<h4>Execution reliability and LLM tracing</h4>
-<p class="topic-intro">Undoing changes an AI task already saved, and making each stage of a run inspectable. Execution spans several stores and cannot be one transaction, so recovery runs as reverse actions.</p>
-<ul><li>Undoing a cancelled task in reverse
-<strong class="field-label" data-label="Problem">Problem:</strong> an AI task saves documents, folders, wiki pages and skills between model calls, so stopping execution leaves some changes behind.
-<strong class="field-label" data-label="Solution">Solution:</strong> persist the cancellation first to block later writes, then undo children first using a pre-change snapshot and an idempotency key tied to the approval. Recovery uses the run record alone, never a model call, and cancellation is final only once full recovery is confirmed.</li><li>Recovering without erasing other tasks’ contributions
-<strong class="field-label" data-label="Problem">Problem:</strong> a concept page merges contributions from several documents, so an older snapshot would erase valid contributions from other documents.
-<strong class="field-label" data-label="Solution">Solution:</strong> record operations, revisions and per-document contributions append-only, then reassemble with only the target contribution excluded. Soft delete instead of removal keeps the audit trail.</li><li>LLM run tracing and the boundary around sensitive data
-<strong class="field-label" data-label="Problem">Problem:</strong> the evaluation loop ran as plain Python, so stages could not be inspected separately, and whatever reached the tracing tool could carry sensitive data.
-<strong class="field-label" data-label="Solution">Solution:</strong> rebuilt the loop as a LangGraph graph so generation, evaluation and retry each trace as a node. The agent graph keeps tracing off and excludes raw tool lookups from persisted state, and my own prompt log masks numeric personal data before writing. Timing runs disable tracing and logging entirely.</li></ul>
-</div>
-<div class="resume-topic">
-<h4>Document conversion pipeline and faster Wiki generation</h4>
-<p class="topic-intro">Converted uploaded PDFs for retrieval and grounded answers, and reduced Wiki generation time.</p>
+<h4>PDF document conversion</h4>
+<p class="topic-intro">Converted uploaded paper PDFs into Markdown that keeps tables and equations, so they can be searched and cited in answers.</p>
 <ul><li>PDF → Markdown conversion
 <strong class="field-label" data-label="Problem">Problem:</strong> Broken tables and equations in paper PDFs made the figures behind Wiki pages and answers unusable.
 <strong class="field-label" data-label="Decision">Decision:</strong> Repairing only detected damage missed errors, and full AI conversion lacked table/equation accuracy and was costly, so I split processing by content type. Body text uses fast AnyDoc extraction; repair moved from an sLLM to commercial LLM APIs to avoid GPU server costs.
 <strong class="field-label" data-label="Solution">Solution:</strong> Extracted body text with AnyDoc and repaired only garbled parts with AI, read table/equation regions separately, and kept original figures.
-<strong class="field-label" data-label="Result">Result:</strong> Pass rate on the same 30 pages (445 units, blind) rose from 45.17% to 89.89%.</li><li>Parallel Wiki generation
-<strong class="field-label" data-label="Problem">Problem:</strong> Documents were processed one at a time, so large uploads waited long for their Wiki.
-<strong class="field-label" data-label="Decision">Decision:</strong> Compared worker count, concurrent requests and GPU parallelism. More workers helped while waiting on external AI; more concurrent requests and GPU parallelism were slower, so I dropped them. Accepted about 4x memory, since EKS can spread services.
-<strong class="field-label" data-label="Solution">Solution:</strong> Distributed per-document jobs over Kafka with up to 4 workers.
-<strong class="field-label" data-label="Result">Result:</strong> Analysis of 4 documents fell from 282.11s to 73.89s (about 74% faster).</li></ul>
+<strong class="field-label" data-label="Result">Result:</strong> Pass rate on the same 30 pages (445 units, blind) rose from 45.17% to 89.89%.</li></ul>
 </div>
 <p class="scope-note">MSA: Splitting only by feature would keep DB load the same while adding hops, so I proposed splitting by data ownership and co-designed boundaries and communication with teammates and mentors.</p>
-<p class="scope-note">Internal evaluations. RAG timing compares Jev before/after tuning. Parallel document timing covers analysis only, excluding storage and post-processing.</p>
+<p class="scope-note">All figures are from internal evaluations.</p>
 <p class="scope-note">See the detailed portfolio for the problem-solving process and experimental results.</p>
 <a class="text-link" href="portfolio.html#fruition-jev-evidence">RAG evidence selection ↗</a>
 <a class="text-link" href="portfolio.html#fruition-agent">Agent execution environment ↗</a>
 <a class="text-link" href="portfolio.html#fruition-document">PDF conversion ↗</a>
-<a class="text-link" href="portfolio.html#fruition-ingest">Parallel document processing ↗</a>
 </article></dialog><dialog class="project-dialog" id="pilltip-dialog" aria-labelledby="pilltip-title"><form method="dialog"><button class="button" autofocus>Close ×</button></form><article class="resume-project" id="pilltip">
 <div class="resume-project-title">
 <h3 id="pilltip-title">Pilltip</h3>
@@ -219,23 +197,10 @@ Team: me (backend &amp; AI), 1 Android (Kotlin app), 1 backend &amp; security (u
 <strong class="field-label" data-label="Solution">Solution:</strong> Weaviate semantic search and AI orchestration route to drug search, medication risk and dosage paths; pregnancy, current medications and underlying conditions are judged in internal code.
 <strong class="field-label" data-label="Result">Result:</strong> Personalized symptom-based search with those profile fields excluded from external LLM inputs.</li></ul>
 </div>
-<div class="resume-topic">
-<h4>Backend feature implementation</h4>
-<p class="topic-intro">Built server features for drug search, risk information, medication reminders and logs, and family profiles. Integrated with teammates responsible for the mobile app, users and security.</p>
-<ul><li>Designed the drug database on Java and Spring Boot with search, autocomplete and DUR risk display. Elasticsearch handles partial matching and autocomplete and Redis caches repeated risk lookups, cutting search responses from 5–7s to 0.8s on average.</li><li>Built FCM medication reminders and logs, deep-link friend invites and family profile switching, and kept API docs, meeting notes and ADRs in Notion to share decisions.</li></ul>
-</div>
-<div class="resume-topic">
-<h4>Feature work driven by feedback from live exhibitions</h4>
-<p class="topic-intro">We ran the booth twice as Pusan National University’s representative exhibition team, demonstrating to more than 100 visitors and collecting 10 pieces of feedback. Most asked for health supplements, so I built that within the data we already had.</p>
-<ul><li>Extending support to health functional foods
-<strong class="field-label" data-label="Problem">Problem:</strong> at the first exhibition visitors could only check prescription drugs and asked to see health functional foods too.
-<strong class="field-label" data-label="Solution">Solution:</strong> within the data we held, added them to search and autocomplete, surfaced caution and co-administration information, allowed them in reminders and logs, and included them in chatbot answers.
-<strong class="field-label" data-label="Result">Result:</strong> a request from the floor became the next slice of work. Limited to the data we had obtained, not the exhaustive coverage we have for drugs.</li></ul>
-</div>
 <p class="scope-note">See the detailed portfolio for the problem-solving process and experimental results.</p>
 <a class="text-link" href="portfolio.html#pilltip-data">Data pipeline case study ↗</a>
 <a class="text-link" href="portfolio.html#pilltip-personalization">Personalization case study ↗</a>
 </article></dialog>
-<dialog class="project-dialog resume-format-dialog" id="resume-format-dialog" aria-labelledby="resume-format-title"><form method="dialog"><button class="button" autofocus>Close ×</button></form><h2 id="resume-format-title">Resume</h2><div class="resume-formats"><a class="button" href="resume.pdf?v=04275c5ab4" target="_blank" rel="noopener">View PDF</a><a class="button resume-download" href="resume.docx?v=04275c5ab4" download="Jaehyeong_Kim_Resume.docx">Download Word</a></div></dialog></main>
+<dialog class="project-dialog resume-format-dialog" id="resume-format-dialog" aria-labelledby="resume-format-title"><form method="dialog"><button class="button" autofocus>Close ×</button></form><h2 id="resume-format-title">Resume</h2><div class="resume-formats"><a class="button" href="resume.pdf?v=9505fc816d" target="_blank" rel="noopener">View PDF</a><a class="button resume-download" href="resume.docx?v=9505fc816d" download="Jaehyeong_Kim_Resume.docx">Download Word</a></div></dialog></main>
 <footer class="site-footer"><span>© 2026 Jaehyeong Kim</span><div class="footer-links"><a href="mailto:kkuldangi2@gmail.com">Email ↗</a><a href="https://github.com/Martinel2">GitHub ↗</a><a href="https://velog.io/@kkuldangi3/posts">Blog ↗</a><a href="https://www.linkedin.com/in/%EC%9E%AC%ED%98%95-%EA%B9%80-b75920345/">LinkedIn ↗</a><a href="#top">Back to top ↑</a></div></footer>
 </body></html>
