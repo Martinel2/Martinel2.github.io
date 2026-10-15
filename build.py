@@ -168,7 +168,7 @@ def page(title, description, body, resume=False, path=None, body_class=''):
 <meta name="theme-color" content="#0d0f12"><meta property="og:title" content="{title} · 김재형">
 <meta property="og:description" content="{description}"><meta property="og:type" content="website">
 <meta property="og:locale" content="ko_KR"><meta property="og:image" content="https://Martinel2.github.io/assets/og.png">
-<link rel="canonical" href="https://Martinel2.github.io/{path}"><link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="canonical" href="https://Martinel2.github.io/{path}"><link rel="icon" href="assets/favicon-32.png" type="image/png" sizes="32x32"><link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 {analytics_meta}<link rel="stylesheet" href="assets/style.css?v={hashlib.sha256((ASSETS / 'style.css').read_bytes()).hexdigest()[:10]}"><script defer src="assets/site.js?v={hashlib.sha256((ASSETS / 'site.js').read_bytes()).hexdigest()[:10]}"></script>
 </head><body id="top" class="{'resume-page' if resume else ('portfolio-page' if path else 'home-page')}{' ' + body_class if body_class else ''}">
 <a class="skip" href="#main">본문으로 바로가기</a>
