@@ -6,3 +6,4 @@ artifacts/
 .dev.vars*
 ~$*.docx
 local/
+.taste-skill/

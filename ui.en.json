@@ -35,7 +35,7 @@
   "Mermaid 원문 보기": "View Mermaid source",
   "결과와 배운 점": "Results and lessons",
   "결과의 범위 · 트레이드오프": "Scope and tradeoffs",
-  "프로젝트 소개": "Project overview",
+  "프로젝트 소개": "project overview",
   "담당 범위와 협업": "Responsibilities and collaboration",
   "담당 기능과 서비스 화면": "Features and service screens",
   "팀 발표 자료의 서비스 화면과 구조입니다. 각 설명에 제 담당 범위를 표시했습니다. 이미지를 누르면 원본 크기로 볼 수 있습니다.": "Screens and architecture from team presentations. Captions identify my contributions. Select an image to view the original; original presentation images are in Korean.",
@@ -70,5 +70,14 @@
   "내 주요 개발": "My main work",
   "백준 solved.ac 2022년부터 2025년까지의 연도별 스트릭": "Baekjoon solved.ac streak calendars for 2022 to 2025",
   "팀 구성과 내 역할": "Team and my role",
-  "해결하면 얻는 것": "What solving it enables"
+  "해결하면 얻는 것": "What solving it enables",
+  "핵심 사례": "Key cases",
+  "사례 읽기 →": "Read the case →",
+  "← 이전 사례": "← Previous case",
+  "다음 사례 →": "Next case →",
+  "← 전체 사례 보기": "← All cases",
+  "사례 목차": "Case contents",
+  "다른 사례": "Other cases",
+  "김재형 홈": "Jaehyeong Kim, home",
+  "시작 계기·팀·서비스 화면 보기 →": "Story, team and screens →"
 }

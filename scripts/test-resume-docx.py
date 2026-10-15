@@ -25,5 +25,5 @@ for lang in ('ko', 'en'):
         assert settings.find('w:documentProtection', ns) is None
         if lang == 'en':
             assert not re.search('[가-힣]', actual), 'Untranslated English DOCX text'
-            assert any('github.io/en/portfolio.html#' in url for url in links)
+            assert any('github.io/en/portfolio/' in url for url in links)
 print('PASS: KO/EN DOCX text parity, 1 flowing section, 6 images, editable tables, links and no editing lock')

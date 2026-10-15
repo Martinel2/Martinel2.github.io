@@ -29,7 +29,7 @@ try {
   page.on('pageerror', e => errors.push(e.message));
   for (const width of [1440, 390, 320]) {
     await page.setViewport({ width, height: 1000 });
-    for (const route of ['/', '/portfolio.html', '/resume.html']) {
+    for (const route of ['/', '/portfolio.html', '/portfolio/fruition.html', '/portfolio/pilltip.html', ...content.cases.map(c => `/portfolio/${c.id}.html`), '/resume.html']) {
       const response = await page.goto(`${base}${route}`, { waitUntil: 'networkidle2' });
       assert.equal(response.status(), 200);
       assert.equal(await page.$$eval('h1', els => els.length), 1);
@@ -46,7 +46,7 @@ try {
       assert.deepEqual(broken, []);
       assert.equal(await page.$('.activity-gallery'),null);
       const evidence=await page.$$eval('.evidence-thumb img',async imgs=>{for(const i of imgs)i.loading='eager';await Promise.all(imgs.map(i=>i.decode()));return imgs.map(i=>({width:i.naturalWidth,height:i.getBoundingClientRect().height}));});
-      assert.equal(evidence.length,route==='/portfolio.html'?2:6);
+      assert.equal(evidence.length,route.startsWith('/portfolio/')?0:route.startsWith('/portfolio')?2:6);
       assert.ok(evidence.every(i=>i.width>0&&i.height<=120),'Evidence thumbnails must load at compact sizes');
 
       if (route === '/') {
@@ -59,7 +59,7 @@ try {
           await page.click(trigger);
           assert.equal(new URL(page.url()).pathname, '/');
           assert.ok(await page.$eval(`#${id}-dialog`, el=>el.open));
-          assert.ok(await page.$(`#${id}-dialog a[href^="portfolio.html#"]`));
+          assert.ok(await page.$(`#${id}-dialog a[href^="portfolio/"]`));
           assert.ok(await page.$eval(`#${id}-dialog`, el=>el.scrollWidth<=el.clientWidth+1));
           await page.screenshot({path:`artifacts/${id}-dialog-${width}.png`});
           await page.keyboard.press('Escape');
@@ -102,21 +102,60 @@ try {
 
         await page.screenshot({path:`artifacts/home-${width}.png`});
       } else if (route === '/portfolio.html') {
-        await page.waitForFunction(() => document.documentElement.dataset.diagrams === 'ready', { timeout: 60000 });
-        assert.equal(await page.$$eval('.mermaid svg', els => els.length), content.cases.length);
+        // The index lists every case and links each to its own page; projects keep their anchors.
+        const items = await page.$$eval('.case-item:not(.project-card)', els => els.map(el => ({ id: el.id, href: el.querySelector('h3 a').getAttribute('href') })));
+        assert.deepEqual(items.map(i => i.id), content.cases.map(c => c.id));
+        assert.ok(items.every(i => i.href === `portfolio/${i.id}.html`));
+        assert.ok(await page.$('#project-fruition') && await page.$('#project-pilltip'));
+        assert.equal(await page.$eval('h1', el => el.textContent), content.overview.title.replace(/\n/g, ''));
+        assert.equal(await page.$$eval('.writings a[href*="velog.io"]', els => els.length), 3);
+        assert.equal(await page.$$eval('.experience-index li', els => els.length), 3);
+        assert.equal(await page.$$eval('.highlights, .hero', els => els.length), 0);
+        assert.ok(!(await page.$eval('body', el => el.textContent)).includes('edit_goal'));
+        await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; window.scrollTo({ top: 0, behavior: 'instant' }); });
+        await page.screenshot({ path: `artifacts/portfolio-${width}.png` });
+      } else if (route === '/portfolio/fruition.html' || route === '/portfolio/pilltip.html') {
+        // A project page: its story, team and screens, then its cases.
+        const project = content.projects.find(x => route.endsWith(`/${x.name.toLowerCase()}.html`));
+        assert.equal(await page.$eval('h1', el => el.textContent), project.name);
+        assert.equal(await page.$$eval('.project-context', els => els.length), 1);
+        assert.equal(await page.$$eval('.case-item', els => els.length), content.cases.filter(c => c.project === project.name).length);
         const images = await page.$$eval('.project-figure img', async imgs => {
           for (const img of imgs) img.loading = 'eager';
           await Promise.all(imgs.map(img => img.decode()));
           return imgs.map(img => ({ loaded: img.naturalWidth > 0, alt: img.alt }));
         });
-        assert.equal(images.length, 10);
-        assert.ok(images.every(img => img.loaded && img.alt.length > 10));
-        assert.ok(await page.$('#fruition-jev-evidence'));
-        assert.equal(await page.$$eval('.case[id^="fruition-jev-"]', els => els.length), 1);
-        assert.equal(await page.$eval('h1', el => el.textContent), content.overview.title.replace(/\n/g, ''));
-        assert.equal(await page.$$eval('.experience-index li', els => els.length), 3);
-        assert.equal(await page.$$eval('.highlights, .hero', els => els.length), 0);
-        assert.equal(await page.$$eval('.project-context', els => els.length), 2);
+        assert.ok(images.length >= 4 && images.every(img => img.loaded && img.alt.length > 10));
+        await page.$eval('.project-context', el => el.scrollIntoView({ behavior: 'instant' }));
+        await page.screenshot({ path: `artifacts/projects-${width}.png` });
+        if (width === 1440 && project.name === 'Fruition') {
+          const popup = new Promise(resolve => page.once('popup', resolve));
+          await page.click('.project-figure > a');
+          const imagePage = await popup;
+          await imagePage.waitForFunction(() => document.querySelector('img')?.naturalWidth > 0);
+          assert.ok(imagePage.url().endsWith('fruition-workspace.jpg'));
+          await imagePage.close();
+        }
+      } else if (route.startsWith('/portfolio/')) {
+        // One case per page: its title is the page heading, its contents link to its own sections and steps.
+        const c = content.cases.find(x => route.endsWith(`/${x.id}.html`));
+        assert.equal(await page.$eval('h1', el => el.textContent), c.title);
+        assert.equal(await page.$$eval('.case', els => els.length), 1);
+        assert.equal(await page.$$eval('.experiment-timeline > li', els => els.length), (c.designSteps || c.experiments).length);
+        assert.ok(await page.$$eval('.toc a[href^="#"]', links => links.length > 0 && links.every(a => document.getElementById(a.hash.slice(1)))));
+        await page.waitForFunction(() => document.documentElement.dataset.diagrams === 'ready', { timeout: 60000 });
+        assert.equal(await page.$$eval('.mermaid svg', els => els.length), 1);
+        const fits = await page.$$eval('.project-figure img', imgs => imgs.every(img => img.getBoundingClientRect().height <= Math.min(innerHeight * 0.72, 640) + 1));
+        assert.ok(fits, 'Pictures must fit on screen');
+        assert.equal(await page.$$eval('.case table', els => els.length), 0);
+        const hasSteps = (c.designSteps || c.experiments).length > 0;
+        const labels = await page.$$eval('.experiment-timeline li:first-child strong', els => els.map(el => el.textContent));
+        if (c.designSteps) assert.deepEqual(labels, ['문제 상황', '판단', '구현', '확인한 결과']);
+        else if (hasSteps) { assert.ok(c.experiments.every(row => row.length === 4)); assert.deepEqual(labels, ['문제 상황', '시도와 결과', '판단']); }
+        assert.ok(!(await page.$eval('.case', el => el.textContent)).includes('다음 개선'));
+        assert.equal(await page.$$eval('.experiment-timeline strong', els => els.filter(el => el.textContent === '개선').length), 0);
+        if (c.id === 'pilltip-personalization') assert.match(await page.$eval('.case', el => el.textContent), /설계와 구현 과정/);
+        if (hasSteps) {
         const lineBreaks = await page.$eval('.experiment-timeline p', el => {
           const original = el.innerHTML;
           el.textContent = '첫째\n둘째\n\n새문단';
@@ -127,41 +166,17 @@ try {
         });
         assert.ok(Math.abs(lineBreaks.line - lineBreaks.height) < 2, 'Enter must preserve a line break');
         assert.ok(Math.abs(lineBreaks.paragraph - 2 * lineBreaks.height) < 2, 'Blank line must preserve paragraph spacing');
-        for (const c of content.cases) {
-          assert.equal(await page.$$eval(`#${c.id} .experiment-timeline > li`, els => els.length), (c.designSteps || c.experiments).length);
-          assert.equal(await page.$$eval(`#${c.id} table`, els => els.length), 0);
-          if (c.designSteps) {
-            assert.deepEqual(await page.$$eval(`#${c.id} .experiment-timeline li:first-child strong`, els => els.map(el => el.textContent)), ['문제 상황', '판단', '구현', '확인한 결과']);
-          } else if (c.experiments.length) {
-            assert.ok(c.experiments.every(row => row.length === 4));
-            assert.deepEqual(await page.$$eval(`#${c.id} .experiment-timeline li:first-child strong`, els => els.map(el => el.textContent)), ['문제 상황', '시도와 결과', '판단']);
-          }
-          assert.ok(!(await page.$eval(`#${c.id} .experiment-timeline`, el => el.textContent)).includes('다음 개선'));
-          assert.equal(await page.$$eval(`#${c.id} .experiment-timeline strong`, els => els.filter(el => el.textContent === '개선').length), 0);
         }
-        assert.ok(!(await page.$eval('body', el => el.textContent)).includes('edit_goal'));
-        assert.match(await page.$eval('#pilltip-personalization', el => el.textContent), /설계와 구현 과정/);
-        assert.equal(await page.$$eval('.writings a[href*="velog.io"]', els => els.length), 3);
-        await page.$eval('.project-context', el => el.scrollIntoView({ behavior: 'instant' }));
-        await page.screenshot({ path: `artifacts/projects-${width}.png` });
-        if (width === 1440) {
-          const popup = new Promise(resolve => page.once('popup', resolve));
-          await page.click('.project-figure > a');
-          const imagePage = await popup;
-          await imagePage.waitForFunction(() => document.querySelector('img')?.naturalWidth > 0);
-          assert.ok(imagePage.url().endsWith('fruition-workspace.jpg'));
-          await imagePage.close();
-        }
-        await page.click('.toc a[href="#pilltip-data"]');
-        await page.waitForFunction(() => location.hash === '#pilltip-data');
-        await page.waitForFunction(() => document.querySelector('.toc a[href="#pilltip-data"]').getAttribute('aria-current') === 'location');
         await page.$eval('.diagram details', el => { el.open = true; });
         assert.ok(await page.$eval('.diagram-source', el => el.textContent.includes('flowchart TD')));
         await page.$eval('.diagram details', el => { el.open = false; });
-        await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; window.scrollTo({ top: 0, behavior: 'instant' }); });
-        await page.screenshot({ path: `artifacts/portfolio-${width}.png` });
-        if (width === 1440) await page.$eval('#fruition-agent', el => el.scrollIntoView({ behavior: 'instant' }));
-        if (width === 1440) await page.screenshot({ path: 'artifacts/case-desktop.png', fullPage: false });
+        if (width === 1440) {
+          const target = `#${c.id}-result`;
+          await page.click(`.toc a[href="${target}"]`);
+          await page.waitForFunction(t => location.hash === t, {}, target);
+          await page.waitForFunction(t => document.querySelector(`.toc a[href="${t}"]`).getAttribute('aria-current') === 'location', {}, target);
+          if (c.id === 'fruition-agent') await page.screenshot({ path: 'artifacts/case-desktop.png' });
+        }
       } else {
         // The AI row leads the skills section on purpose; every row needs a label and a list.
         const skills = await page.$$eval('.skill-rows > div', rows => rows.map(row => ({
@@ -189,16 +204,17 @@ try {
     }
   }
   await page.goto(base+'/#fruition-document');
-  await page.waitForFunction(()=>location.pathname.endsWith('/portfolio.html'));
-  assert.equal(new URL(page.url()).hash,'#fruition-document');
+  await page.waitForFunction(()=>location.pathname.endsWith('/portfolio/fruition-document.html'));
   await page.setJavaScriptEnabled(false);
   await page.goto(base+'/portfolio.html');
-  assert.equal(await page.$$eval('.case', els => els.length), content.cases.length, 'Core content must not require JS');
+  assert.equal(await page.$$eval('.case-item:not(.project-card)', els => els.length), content.cases.length, 'Core content must not require JS');
+  await page.goto(base+'/portfolio/fruition-agent.html');
+  assert.ok((await page.$eval('body', el => el.textContent)).includes(content.cases.find(c => c.id === 'fruition-agent').summary.slice(0, 20)) && await page.$$eval('.case-part', els => els.length) === 4, 'A case page must not require JS');
   const context = await browser.createBrowserContext();
   const offline = await context.newPage();
   await offline.setRequestInterception(true);
   offline.on('request', req => req.url().includes('mermaid@') ? req.abort() : req.continue());
-  await offline.goto(base+'/portfolio.html');
+  await offline.goto(base+'/portfolio/fruition-agent.html');
   await offline.waitForFunction(() => document.documentElement.dataset.diagrams === 'fallback');
   assert.ok(await offline.$eval('.mermaid', el => el.textContent.includes('flowchart TD')));
   await context.close();

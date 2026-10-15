@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>문서 병렬 분석 - 처리시간 73.8% 단축 · 김재형</title><meta name="description" content="문서를 활용한 Wiki 생성이 순차 처리로 구성되어 있어, 대형 문서의 Wiki 생성 시 처리 시간이 증가해 사용자의 부정적 경험을 우려했습니다. 이에 Worker를 늘린 효과와 자원 사용을 확인하고, 문서 분석과 벡터 생성에 서로 다른 확장 기준을 세웠습니다.">
+<meta name="theme-color" content="#0d0f12"><meta property="og:title" content="문서 병렬 분석 - 처리시간 73.8% 단축 · 김재형">
+<meta property="og:description" content="문서를 활용한 Wiki 생성이 순차 처리로 구성되어 있어, 대형 문서의 Wiki 생성 시 처리 시간이 증가해 사용자의 부정적 경험을 우려했습니다. 이에 Worker를 늘린 효과와 자원 사용을 확인하고, 문서 분석과 벡터 생성에 서로 다른 확장 기준을 세웠습니다."><meta property="og:type" content="website">
+<meta property="og:locale" content="ko_KR"><meta property="og:image" content="https://Martinel2.github.io/assets/og.png">
+<link rel="canonical" href="https://Martinel2.github.io/portfolio/fruition-ingest.html"><link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/style.css?v=a64be2344c"><script defer src="../assets/site.js?v=3983672765"></script>
+<link rel="alternate" hreflang="ko" href="https://martinel2.github.io/portfolio/fruition-ingest.html"><link rel="alternate" hreflang="en" href="https://martinel2.github.io/en/portfolio/fruition-ingest.html"></head><body id="top" class="portfolio-page case-page">
+<a class="skip" href="#main">본문으로 바로가기</a>
+<header class="header"><a class="identity" href=".././" aria-label="김재형 홈"><img src="../assets/logo/logo.webp" alt="" width="156" height="42"><img class="logo-lit" src="../assets/logo/logo-lit.webp" alt="" width="156" height="42"></a>
+<nav aria-label="주 메뉴"><a href=".././" >홈</a><a href=".././#about">소개</a><a href=".././#skills">기술</a><a href=".././#projects">프로젝트</a><a href=".././#activities">활동</a></nav><a class="language-switch" href="../en/portfolio/fruition-ingest.html" hreflang="en" lang="en" aria-label="View in English">EN</a></header>
+<main id="main"><div class="sky"><header class="case-hero case-header"><div class="case-kicker"><span>CASE 05</span><span>Fruition / Kafka 비동기 병렬 처리 · AI 파이프라인</span></div><h1 id="fruition-ingest-title">문서 병렬 분석 - 처리시간 282.11초 → 73.89초 단축</h1><p class="case-summary">문서를 활용한 Wiki 생성이 순차 처리로 구성되어 있어, 대형 문서의 Wiki 생성 시 처리 시간이 증가해 사용자의 부정적 경험을 우려했습니다. 이에 Worker를 늘린 효과와 자원 사용을 확인하고, 문서 분석과 벡터 생성에 서로 다른 확장 기준을 세웠습니다.</p><div class="case-glance"><div><strong>282.11초</strong><span>Worker 1개</span></div><div><strong>73.89초</strong><span>Worker 4개</span></div><div><strong>약 4배</strong><span>프로세스 메모리 합</span></div></div><p class="case-meta">2026.09</p><div class="tags"><span>AI 파이프라인</span><span>Kafka</span><span>PostgreSQL</span><span>동시성·메모리</span></div></header><svg class="hills" viewBox="0 0 1440 200" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path class="hill-back" d="M0 92C120 40 250 30 380 70S600 140 760 96 1010 18 1170 52 1360 96 1440 70V200H0Z"/><path class="hill-mid" d="M0 140C160 96 300 104 470 132S760 168 930 128 1210 92 1440 128V200H0Z"/><path class="hill-front" d="M0 178C210 150 420 160 640 170S1080 146 1440 168V200H0Z"/></svg></div><div class="work-layout"><aside class="toc"><div class="toc-inner"><p class="eyebrow">목차</p><nav aria-label="사례 목차"><a href="#fruition-ingest-background">배경</a><a href="#fruition-ingest-process">실험과 개선 과정</a><a href="#fruition-ingest-structure">개선한 처리 흐름</a><a href="#fruition-ingest-result">결과와 배운 점</a></nav><a class="toc-back" href="../portfolio.html">← 전체 사례 보기</a></div></aside><div class="cases"><article class="case" id="fruition-ingest" aria-labelledby="fruition-ingest-title">
+
+<section class="case-part" id="fruition-ingest-background"><h3><span>01</span> 배경</h3><p>문서를 Wiki로 생성하는 AI 파이프라인을 순차 처리하면 뒤의 문서가 외부 AI 응답을 기다려야 했습니다. 이를 위해 작업자를 늘리면 API 호출과 메모리 사용도 함께 증가하므로 어느 단계까지 확장할지 확인해야 했습니다. 작업 분배에는 메시지를 다시 읽을 수 있고 같은 키 안에서 순서를 보장하는 Kafka를 써, 오래 걸리는 AI 작업을 비동기로 돌리면서 ID 기준으로 중복 처리를 막았습니다.
+
+Worker를 1개에서 4개로 늘려 분석 시간을 282.11초에서 73.89초로 줄였습니다. 반면 Worker 안의 동시 AI 요청을 2개에서 4개로 늘리자 95.92초로 오히려 느려졌고, 같은 GPU에서 벡터 생성을 2개 돌리자 각각 약 9.5초에서 19~21초로 늘었습니다. 두 단계는 병렬화 효과가 달라 확장 기준을 나눴습니다.</p><div class="case-expected"><strong>해결하면 얻는 것</strong><p>Wiki 생성이 늦어지면 사용자는 올린 문서를 바로 쓰지 못하고, 첫 사용에서 가치를 느끼기도 전에 이탈할 수 있다고 우려했습니다. 대기를 줄인다면 업로드 직후부터 검색과 질문에 문서를 쓸 수 있다고 생각했습니다.</p></div></section>
+<section class="case-part" id="fruition-ingest-process"><h3><span>02</span> 실험과 개선 과정</h3><ol class="experiment-timeline"></ol></section>
+<section class="case-part" id="fruition-ingest-structure"><h3><span>03</span> 개선한 처리 흐름</h3><figure class="diagram"><figcaption><span>ARCHITECTURE</span><span>Mermaid diagram</span></figcaption><div class="diagram-scroll" tabindex="0" role="region" aria-label="문서 병렬 분석 - 처리시간 73.8% 단축 구조도"><pre class="mermaid">flowchart TD
+ A[문서 처리 요청] --&gt; K[Kafka에서 문서별 작업 분배]
+ K --&gt; W[여러 Worker로 분석 · Worker별 동시 요청 제한]
+ W --&gt; L[같은 워크스페이스의 저장은 잠금으로 조정]
+ V[벡터 생성] --&gt; G[같은 GPU의 처리 경합 확인]
+ L --&gt; D[시간·메모리·내용 보존을 함께 확인]
+ G --&gt; D
+ D --&gt; R[단계별 증설 여부 판단]</pre></div><p class="diagram-caption">문서의 Wiki 생성과 벡터 생성의 확장 가능성을 나눠 확인한 구조입니다.</p><details><summary>Mermaid 원문 보기</summary><pre class="diagram-source">flowchart TD
+ A[문서 처리 요청] --&gt; K[Kafka에서 문서별 작업 분배]
+ K --&gt; W[여러 Worker로 분석 · Worker별 동시 요청 제한]
+ W --&gt; L[같은 워크스페이스의 저장은 잠금으로 조정]
+ V[벡터 생성] --&gt; G[같은 GPU의 처리 경합 확인]
+ L --&gt; D[시간·메모리·내용 보존을 함께 확인]
+ G --&gt; D
+ D --&gt; R[단계별 증설 여부 판단]</pre></details></figure></section>
+<section class="case-part" id="fruition-ingest-result"><h3><span>04</span> 결과와 배운 점</h3><h4>문서 4개 분석 시간 73.8% 단축 · 문서 100개 큐 재현 300건 누락·실패 0건</h4><p>Worker 4개, 각 2개 동시 요청 조건에서 문서 4개의 총 처리 시간을 약 73.8% 줄였습니다. 대신 프로세스 메모리 합이 351.7MiB에서 1,401.0MiB로 약 4배 늘었습니다. 미리 정해 둔 사실 16개 중 완전히 보존된 수도 Worker 1·2·4개에서 10·14·11개로 달라, 조건별 1회의 작은 표본이지만 품질이 같다고 보지는 않았습니다.
+
+동시 요청을 더 늘리는 제안과, 같은 GPU에서 벡터 생성을 병렬화하는 제안은 오히려 느려져 제외했습니다. 외부 응답 대기와 장치 경합은 서로 다른 병목이라, 확장 방식도 단계마다 달라야 했습니다.
+
+저장된 AI 응답으로 문서 100개의 큐 처리를 3가지 조건에서 재현해, 총 300건 모두 누락·실패 없이 처리됨을 확인했습니다.
+
+메모리 증가는 MSA로 EKS에서 AI 기능을 분산 배치해 감당할 수 있다고 보고, 문서 병렬 처리에는 최대 Worker 4개를 쓰기로 했습니다.</p><div class="result-metrics"><div><span>Worker 1개</span><strong>282.11초</strong><small>4문서(8번의 호출)</small></div><div><span>Worker 4개</span><strong>73.89초</strong><small>최대 API 동시 요청 8개</small></div><div><span>프로세스 메모리 합</span><strong>약 4배</strong><small>351.7 → 1,401.0MiB</small></div></div><div class="limits"><strong>결과의 범위 · 트레이드오프</strong><p>같은 문서로 조건별 1회 분석한 결과입니다. 저장, 후처리까지 포함한 E2E 속도는 아닙니다.</p></div></section>
+</article></div></div><nav class="case-pager" aria-label="다른 사례"><a class="prev" href="../portfolio/fruition-document.html"><span>← 이전 사례</span><strong>PDF 변환 - 통과율 45.17% → 89.89% 개선</strong></a><a class="next" href="../portfolio/fruition-agent-loop.html"><span>다음 사례 →</span><strong>에이전트 루프 - 60시간만에 MSA로 서비스 전환하기</strong></a></nav></main>
+<footer class="site-footer"><span>© 2026 김재형</span><div class="footer-links"><a href="mailto:kkuldangi2@gmail.com">Email ↗</a><a href="https://github.com/Martinel2">GitHub ↗</a><a href="https://velog.io/@kkuldangi3/posts">Blog ↗</a><a href="https://www.linkedin.com/in/%EC%9E%AC%ED%98%95-%EA%B9%80-b75920345/">LinkedIn ↗</a><a href="#top">맨 위로 ↑</a></div></footer>
+</body></html>

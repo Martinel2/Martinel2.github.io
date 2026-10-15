@@ -8,7 +8,7 @@
       "title": "RAG evidence coverage: 66.25% → 91.25%, with 87% less time after tuning",
       "short": "RAG evidence coverage: 66.25% → 91.25%",
       "period": "2026.09",
-      "summary": "Jev is a decision-only model that must pick from a fixed set of options. Applied first to request routing, it scored 81/98 against 77/98 for the existing JSON approach and 63/98 for GPT-5-nano on the same options, with a shorter decision time. I then applied it to RAG evidence selection, raising evidence coverage from 66.25% to 91.25%, and reduced its added latency by tuning candidates and parallel batches.",
+      "summary": "Fruition answers from uploaded documents, so I thought wrong evidence would make the whole answer untrustworthy. After seeing Jev improve request routing, I applied it to evidence selection and raised coverage from 66.25% to 91.25%. I cut the added time by tuning candidates and parallelism.",
       "tags": [
         "Jev 1.13.0",
         "BGE-M3",
@@ -16,12 +16,12 @@
         "RAG",
         "Quality evaluation"
       ],
-      "problem": "Existing retrieval missed needed evidence and attached evidence even to unanswerable questions. The correct sources were all in the initial candidates, but for 76 of 90 questions they were cut when checking was limited to the first 8 pages. I needed a step that picks the right evidence and says when there is none.",
-      "expected": "Wrong evidence makes the whole answer untrustworthy, and users who lose trust stop coming back. Picking the right evidence turns document-based answers into a reason to keep using and paying for the service.",
+      "problem": "Existing retrieval missed needed evidence and attached evidence even to unanswerable questions, leading to wrong answers. I believed accurate information is this project's core, so I checked each step: the correct sources were all in the initial candidates, but limiting checks to the first 8 pages dropped them for 76 of 90 questions. I needed a step that picks the right evidence and says when there is none.",
+      "expected": "If evidence is wrong, the whole answer can't be trusted, and users who lose trust don't come back. Since the core of the project is giving users the information they need on accurate evidence, high accuracy is what makes users trust the product, keep using it and pay again.",
       "diagram": "flowchart TD\n Q[User question] --> S[Collect semantic and keyword search candidates]\n S --> C[Top 300 candidates]\n C --> J[Jev selects evidence in up to 8 parallel batches]\n J --> E{Sufficient evidence?}\n E -->|Yes| A[Pass selected evidence to answer generation]\n E -->|No| N[No evidence]\n",
       "diagramCaption": "The evaluated evidence-selection design. Reference answers were used only for evaluation, never as retrieval or model inputs.",
       "resultTitle": "Questions with sufficient evidence: 53/80 → 73/80; total median time 1.137s",
-      "result": "On a self-authored golden set of 80 answerable questions, the share with evidence supporting every required fact rose from 66.25% to 91.25%. On a separate 20 unanswerable questions, false evidence returns fell from 20 to 0. The improved selector was still slower than the original, but I chose Jev because accuracy mattered more to the service.\n\nI also tried grouping equivalent expressions: correct answers stayed similar on 76 questions (71 previously, 72 with Jev), while median decision time fell from 8.162s to 0.254s.",
+      "result": "On our own golden set, I raised the share of 80 answerable questions whose needed facts were fully supported from 66.25% to 91.25%. On a separate set of 20 questions, I cut evidence wrongly attached to documents with no answer from 20 to 0. It is still slower than the original selector, but I judged accuracy mattered more to the service and decided to adopt Jev.\n\nI also applied it to grouping expressions with the same meaning. Correct answers on 76 questions stayed similar (71 original, 72 Jev), and I confirmed median decision time could drop from 8.162s to 0.254s.",
       "metrics": [
         [
           "Evidence coverage (LLM evaluation on golden set)",
@@ -39,7 +39,7 @@
           "Original selector → tuned Jev"
         ]
       ],
-      "tradeoff": "Retrieval stays a fixed pipeline of semantic, keyword and wiki-graph search, with the answer shown apart from its evidence and path. A query agent that plans its own retrieval was deferred until one question needs several plans and replanning; until then the fixed pipeline gathers the same evidence in fewer calls and is easier to trace. The speedup compares Jev before and after its own settings changed, and even after tuning it stays slower than the previous selector. Evidence selection has to finish before the answer, so the 1.137s remains user-visible waiting and shortening it is still open work. Retrieval gathers candidates and Jev makes the final evidence call, so the selection stage can be swapped on its own. The parallelism comparison ran once per condition, and only the 4-batch run was on a different day.",
+      "tradeoff": "Retrieval stays a fixed pipeline (semantic and keyword search plus Wiki graph traversal) that shows the answer, evidence, related pages and search path separately. I held off on a self-planning Query Agent because of cost and hallucination risk, and will add one when a question needs repeated planning and replanning; until then the fixed pipeline uses fewer calls and is easier to debug.\n\nThe time savings compare Jev settings before and after tuning; it is still slower than the original selector, and the 1.137s remains user wait time to reduce. Retrieval gathers candidates and Jev decides, so the selector can be swapped.",
       "links": [
         {
           "label": "Introducing Jev · TypeSafe AI",
@@ -86,7 +86,7 @@
       "title": "User-defined Agent Skills: designing controlled execution",
       "short": "Agent execution environment: authoring, validation and approval",
       "period": "2026.08 - 2026.09",
-      "summary": "Designed Agent Skills, implemented with AI coding tools, so users could define and reuse recurring document tasks, such as meeting notes. Connected instruction drafting and checks to user review and publication, followed by separate approval for actual changes.",
+      "summary": "I built Agent Skills so users can define and reuse repetitive work such as writing meeting notes. I also thought users must be able to trust every document AI changes, so I designed review, publishing and change approval as one flow and implemented it with AI coding tools.",
       "tags": [
         "LangGraph",
         "Agent Skill",
@@ -98,8 +98,8 @@
         "LangSmith",
         "LLM observability"
       ],
-      "problem": "Recurring document tasks differ by user, so developers could not build every one in advance. AI-generated edits also reached user review with parts of the request missing or awkward rewording, and code checks on format and scope alone could not catch this.",
-      "expected": "If AI edits vary each time, users re-request and their prepaid credits go to rework, which makes them hesitate to pay again. Stable results and no changes before approval let them trust recurring tasks to it and keep using it.",
+      "problem": "Each user repeats different tasks, such as organising meeting notes, so developers couldn't build them all in advance. AI edit drafts also reached users with parts of the request missing or sentences awkwardly changed, and code checks on format and scope couldn't catch it. That made a stable service impossible: leaving tasks that need the same output every time to luck frustrates users. Since users prepay for API usage, it could also become a reason not to pay again.",
+      "expected": "If AI edits vary and users have to ask again, their prepaid credits go to rework, and users who see that as waste hesitate to pay again. Stable results and no changes before approval let them trust recurring tasks to it and keep using it.",
       "diagram": "flowchart TD\n U[User describes a recurring task] --> S[Draft Skill, mask personal data and check prompt injection]\n S --> P[User review and recheck on publication]\n P --> K[Store reusable instructions]\n Q[User requests document work] --> R[Router selects task and conditions]\n K -. Reuse when needed .-> R\n R --> E[Edit while preserving goal and scope]\n R --> F[Plan folder organization and compare with request]\n E --> V[Check format, edit scope, personal data and injection]\n V --> D[Show validated changes and diff]\n F --> D\n D --> A{User approval}\n A -->|Approve| W[Apply edits or organize folders]\n A -->|Cancel| N[Keep originals]",
       "diagramCaption": "User-defined instructions and the document workflow that uses them. Executors do not reclassify the task; they validate proposed changes and apply them after user approval.",
       "resultTitle": "Reusable tasks and approval workflow; editing passes 82.5% → 91.2% (114 drafts)",
@@ -178,7 +178,7 @@
       "title": "Cancelling an AI task and undoing what it already saved",
       "short": "Task cancellation - undoing saved changes in reverse",
       "period": "2026.08 — 2026.09",
-      "summary": "An AI task saves documents, folders, wiki pages and skills several times between model calls. Stopping execution alone leaves part of a cancelled task behind, so I built a path that undoes already-committed changes in reverse order. Contributions left by other tasks survive, because recovery excludes only the target contribution from an append-only history.",
+      "summary": "In a service where AI changes documents, I thought users can't hand work to AI unless cancelling is reliable. Stopping execution leaves saved document, folder, Wiki and Skill changes behind, so I built a path that reverses even committed changes in reverse order. To keep contributions other jobs made correctly, I restored pages without only the cancelled contribution.",
       "tags": [
         "Compensating recovery",
         "Idempotency keys",
@@ -187,7 +187,7 @@
         "Audit history"
       ],
       "problem": "An AI task runs across several stores and cannot be wrapped in one long transaction, so I had to decide what a cancellation should undo and how far it should reach.",
-      "expected": "If cancelling leaves the AI's changes behind, user data gets damaged, users stop handing over large jobs, and churn and support requests follow. Reliable rollback is what lets users trust AI with large jobs.",
+      "expected": "If AI changes remain after a user cancels, their data is damaged, which leads to churn and support requests. Reliable undo lets users hand even large tasks to AI with confidence, which grows credit usage.",
       "diagram": "flowchart TD\n A[User cancels] --> B[Persist cancellation first · block later writes]\n B --> C[Wait for the running handler to finish]\n C --> D[Derive reverse actions from the run record · no model call]\n D --> E[Undo children first, in reverse]\n E --> F{Current values and references unchanged}\n F -->|Yes| G[Atomic recovery · body saved as a new revision]\n F -->|No| H[Leave as rollback_failed for retry]\n G --> I{Full recovery confirmed}\n I -->|Yes| J[cancelled]\n I -->|No| H",
       "diagramCaption": "Cancellation is persisted first to block later writes, then reverse actions derived from the run record undo children first. Cancellation is only final once full recovery is confirmed; otherwise it stays retryable.",
       "resultTitle": "A cancelled task’s changes are undone while other tasks’ contributions survive",
@@ -242,7 +242,7 @@
       "title": "PDF → Markdown: internal pass rate 45.17% → 89.89%",
       "short": "PDF conversion: pass rate 45.17% → 89.89%",
       "period": "2026.07 — 2026.09",
-      "summary": "To use research papers as knowledge, PDF-to-Markdown conversion had to preserve table values and equations. I traced omissions introduced during AI repair and split processing paths by content type and original layout.",
+      "summary": "To use papers, which mostly arrive as PDFs, as knowledge, table figures and equations had to survive conversion to Markdown first. So I traced where AI repair dropped content and split processing paths by original layout and content type.",
       "tags": [
         "Open-source PDF conversion: AnyDoc, Docling",
         "LLM API",
@@ -250,8 +250,8 @@
         "Python",
         "LLM-as-a-Judge"
       ],
-      "problem": "Using research papers as service knowledge required Markdown that preserved not only body text but also tables, equations and figures.",
-      "expected": "If PDF restoration drops and key figures go missing, documents cannot fully enter the Wiki, users get a lower-quality service, and they may leave. Restoration quality is the foundation of Wiki and answer quality.",
+      "problem": "Graduate students, our core users, mostly work with papers distributed as PDFs. I tried open-source tools that convert PDFs to Markdown so they could be used as knowledge, but table row/column relationships and equations came out broken.",
+      "expected": "If PDF restoration is poor and key figures go missing, the document can't fully enter the Wiki and users get a lower-quality service. I thought that could make users leave.",
       "diagram": "flowchart TD\n A[Original PDF] --> B[Separate text, tables, equations and figures]\n B --> C[Preserve text context and position]\n B --> D[AI reads original table and equation regions]\n B --> E[Preserve original figures]\n C --> F[Reassemble in original order]\n D --> F\n E --> F\n F --> G{Check markers and missing content}\n G -->|Pass| H[Converted document]\n G -->|Mismatch| I[Keep original content for that region]",
       "diagramCaption": "A conceptual view of processing by content type and reassembling at the original positions. This is the current design; experiments did not all use the same path.",
       "resultTitle": "Pass rate against 30 original pages: 45.17% → 89.89%",
@@ -307,15 +307,15 @@
       "title": "Parallel document analysis: 282.11s → 73.89s",
       "short": "Parallel analysis: 73.8% less processing time",
       "period": "2026.09",
-      "summary": "Sequential Wiki generation could make large documents slow to process and hurt the user experience. I measured worker scaling and resource use, then set different scaling policies for document analysis and embedding generation.",
+      "summary": "Wiki generation ran sequentially, and I was concerned slow processing of large documents would hurt the user experience. I measured the effect and resource cost of more Workers and set separate scaling rules for analysis and embedding.",
       "tags": [
         "AI pipeline",
         "Kafka",
         "PostgreSQL",
         "Concurrency and memory"
       ],
-      "problem": "Sequential processing left later documents waiting on earlier external AI responses. Kafka distributes per-document jobs (re-readable, ordered per key), so long AI work runs asynchronously while IDs prevent duplicates. Raising workers from 1 to 4 cut analysis of 4 documents from 282.11s to 73.89s, but raising concurrent requests per worker from 2 to 4 slowed it to 95.92s, and 2 embedding processes on one GPU each went from about 9.5s to 19–21s. The two stages scale differently, so I set separate thresholds.",
-      "expected": "If Wiki generation is slow, users cannot use what they uploaded and may leave before seeing any value. Shorter waits let them search and ask about documents right after upload.",
+      "problem": "Sequential processing made later documents wait for external AI responses, and more workers also mean more API calls and memory, so I had to find how far to scale. I used Kafka because it can replay messages and keeps order within a key, so long AI jobs run asynchronously while IDs prevent duplicates.\n\n1 → 4 Workers cut analysis from 282.11s to 73.89s. Raising concurrent requests per Worker from 2 to 4 slowed it to 95.92s, and two embedding jobs on one GPU stretched each from about 9.5s to 19–21s, so the two stages got separate scaling rules.",
+      "expected": "I was concerned that a slow Wiki keeps users from using their uploads, so they may leave before seeing value. A shorter wait lets them search and ask right after upload.",
       "diagram": "flowchart TD\n A[Document processing request] --> K[Kafka distributes document jobs]\n K --> W[Multiple workers with per-worker request limits]\n W --> L[Lock writes within the same workspace]\n V[Embedding generation] --> G[Check contention on a shared GPU]\n L --> D[Check time, memory and content preservation]\n G --> D\n D --> R[Choose scaling policy per stage]",
       "diagramCaption": "Evaluated scaling separately for Wiki generation and embedding generation.",
       "resultTitle": "73.8% less analysis time for 4 documents · 300 queued jobs with zero loss",
@@ -347,7 +347,7 @@
       "title": "Coding agent loop: 16 MSA migration PRs merged in 5 days",
       "short": "Agent loop: 16 PRs merged in 5 days",
       "period": "2026.08",
-      "summary": "I delegated moving the AI features into the MSA structure to coding agents, while I set the work plan and review criteria and decided what to merge. Agents ran in parallel in a separate workspace per branch, and a coordinator agent managed order and priority.",
+      "summary": "The MSA migration had to finish within a week to deploy and get feedback on schedule. I judged there wasn't enough time to do it by hand, so I gave the porting to coding agents while I set the work plan and review criteria and decided on merges. I set up the loop so a coordinating agent managed order and priorities.",
       "tags": [
         "Coding agents",
         "Claude Code",
@@ -355,7 +355,7 @@
         "Code review"
       ],
       "problem": "The MSA migration had to be done within a week so we could deploy on schedule and get feedback on the new structure. The features were already built, so moving them meant too many changes to make by hand in time, and the work was split across several streams. I built a coding-agent loop so the work could keep going while I rested or slept. With about a week left before the MSA migration deadline, moving the AI features into the new service structure had split into several streams. Long single sessions lost track of the plan as context was summarized.",
-      "expected": "A late migration would push back both deployment and feedback, and fixing code that drifted from the plan adds rework cost. The goal was to hold the schedule with the same team.",
+      "expected": "I judged that a late migration would delay both deployment and feedback, and increase rework on code that drifted from the plan. So the goal was to keep the schedule with the same team.",
       "diagram": "flowchart TD\n P[Work plan and criteria docs · me] --> C[Coordinator agent · dependencies and priority]\n C --> W1[Branch workspace · implementer + reviewer agents]\n C --> W2[Other branch workspaces · in parallel]\n W1 --> R[PR creation · integration review]\n W2 --> R\n R --> F[Required fixes applied · regression check]\n F --> J[Merge decision · me]",
       "diagramCaption": "I set the plan and criteria; agents with separate implementer and reviewer roles worked in parallel per branch.",
       "resultTitle": "16 PRs merged in 5 days · 13 required fixes applied before merge",
@@ -414,7 +414,7 @@
       "title": "Drug data pipeline: $200 estimated → $11.18 spent",
       "short": "Drug data conversion: $200 estimated → $11.18 spent",
       "period": "2025.07 · reproduced 2026.10",
-      "summary": "Built a data preparation pipeline to rewrite difficult drug information in plain language. Split the text into sentence blocks, converted each unique sentence once and mapped results back to each drug, for $11.18 in actual API spending. In 2026 I reproduced the same preparation in PySpark to measure the effect of each stage.",
+      "summary": "Pilltip helps users understand whether they can take a medicine right now, so I thought turning difficult drug information into easy wording was the core. To keep the feature within budget, I reduced the number and cost of model calls and processed 1GB of drug data for an actual $11.18. In 2026 I reproduced the same cleaning in PySpark to measure each step.",
       "tags": [
         "Data pipeline",
         "GPT Batch API",
@@ -422,7 +422,7 @@
         "MinHashLSH"
       ],
       "problem": "Rewriting about 44,000 drug records (about 1GB) as-is was estimated to cost about $200 in API calls. I needed a way to explain every drug within budget without cutting the number of drugs covered.",
-      "expected": "If conversion costs exceed the budget, fewer drugs get explanations and the service shrinks. Lowering per-item cost lets the same budget cover every drug.",
+      "expected": "I judged that if conversion cost exceeded the budget, we would have to cut the drugs we explain and narrow the service. Lowering the cost per conversion, I thought, would let the same budget cover every drug.",
       "diagram": "flowchart TD\n A[Original drug text: about 1GB] --> B[Split into sentence blocks]\n B --> M[Keep drug ID to block ID mappings]\n B --> C[Merge exact duplicate sentences]\n C --> G[Convert unique sentences with GPT Batch API]\n G --> R[Map converted text back to each drug]\n M --> R\n C -.-> S[2026 PySpark reproduction · measured ending normalization and MinHashLSH]",
       "diagramCaption": "Converted each repeated sentence once and kept per-drug mappings to attach results. In 2026 the same process was reproduced in PySpark and measured.",
       "resultTitle": "Actual API spend $11.18 · PySpark reproduction cut text by 94.1%",
@@ -444,7 +444,7 @@
           "2026 PySpark reproduction · 744MB → 44.1MB"
         ]
       ],
-      "tradeoff": "About $200 was the upfront estimate; $11.18 was actual spending. The 2026 figures come from re-collected data, not the 2025 dataset. The reproduction code was written with AI coding tools; I designed the experiment and chose the thresholds.",
+      "tradeoff": "About $200 was the upfront estimate; $11.18 was actual spending. Seven days of preprocessing labour are not included. The 2026 figures come from re-collected data, not the 2025 dataset. The reproduction code was written with AI coding tools; I designed the experiment and chose the thresholds.",
       "image": {
         "src": "assets/projects/pilltip-blocks.png",
         "alt": "Output showing drug text split into indexed blocks with drug ID to block ID mappings",
@@ -481,7 +481,7 @@
       "title": "Medication chatbot: keeping health profiles out of external AI inputs",
       "short": "Medication chatbot: health profiles kept internal",
       "period": "2025.09",
-      "summary": "Built a medication chatbot using RAG and AI orchestration for app integration. Separated symptom-based drug discovery from health-profile decisions, using the model for language understanding and code to control sensitive profile use.",
+      "summary": "Pilltip has to guide medication by health condition, but I thought that health information is the most sensitive personal data. So I built a chatbot that guides medication through RAG-based AI orchestration while separating symptom-based drug search from profile-based decisions. It uses the model's language understanding, while code controls how far the sensitive profile is used.",
       "tags": [
         "Spring AI",
         "Weaviate",
@@ -489,13 +489,13 @@
         "AI Orchestration"
       ],
       "problem": "Users describe symptoms in different words from drug indications, so keyword search could not match symptoms to drugs. Personalization also needed pregnancy status, current medications and underlying conditions, but sending that health profile to an external LLM as-is would make it hard to control where sensitive data goes.",
-      "expected": "Sending health data to external AI brings leak risk and regulatory burden, while not using it loses personalization, the core feature. Deciding internally keeps both.",
+      "expected": "I judged that sending health information to external AI brings leak risk and regulatory burden, while not sending it loses personalisation, the core feature. Handling the decision internally, I thought, could protect both.",
       "diagram": "flowchart TD\n S[Natural-language symptoms] --> V[Weaviate: semantic search of indications]\n P[Pregnancy, medications and underlying conditions] --> T[Internal tool: profile decisions]\n V --> R[Personalized information]\n T --> R\n B[External LLM input boundary] -.-> X[Exclude these profile fields]\n classDef accent fill:#e5edff,stroke:#4164c8,color:#142b60;\n class T,B,X accent;",
       "diagramCaption": "A conceptual view of responsibilities and data boundaries, not the exact call sequence or a guarantee against every form of data leakage.",
       "resultTitle": "Separating symptom search from internal health-profile decisions",
       "result": "Enabled natural-language drug discovery while excluding pregnancy status, current medications and underlying conditions from external LLM inputs. Explicitly separated information sent to AI from information evaluated by internal code. In a domain that handles sensitive data, I settled the boundary between what the model may judge and what code stays responsible for before writing the implementation.",
       "metrics": [],
-      "tradeoff": "Profile-rule changes require code updates. Even so, limiting how much sensitive health data reaches external models came first, so this decision stays in code rather than with the AI. It removes specific profile fields from external inputs; it does not measure blocking across every possible path. With more users, AI processing should move to a separate service.",
+      "tradeoff": "Internal code has to change when profile conditions change, but keeping sensitive health information from reaching external models came first, so I handled this decision in code instead of AI. This removes specific profile fields from external input; it is not a measurement of leak prevention on every path. As users grow, I think AI processing should move to a separate service.",
       "processTitle": "Design and implementation",
       "designSteps": [
         {
@@ -718,8 +718,8 @@
       "title": "Introduction",
       "fields": {
         "text1": "RESUME / JAEHYEONG KIM",
-        "text2": "A developer who digs into root causes",
-        "text3": "and enjoys solving difficult problems",
+        "text2": "I build services that use AI",
+        "text3": "to make people’s lives better.",
         "text4": "AI Application Developer · Backend Engineer",
         "text5": "I enjoy taking a deep dive into problems.",
         "text6": "An AI application developer who raised RAG evidence coverage from 66.25% to 91.25% and AI document-editing quality from 82.5% to 91.2%, designing evaluation, approval and rollback so AI does not answer from wrong evidence or change users' documents on its own.",
@@ -736,9 +736,9 @@
         "text11": "Highlights ",
         "text12": "01 / PROFILE",
         "text13": "RAG evidence selection: coverage 66.25% → 91.25%, evidence attached to unanswerable questions 20 → 0",
-        "text14": "Wrong evidence makes the whole answer untrustworthy, so I replaced evidence selection with Jev; GPT was costly and slow, and weight tuning gained little. Blind comparison on identical candidates, then tuning candidates and parallelism cut median time from 9.090s to 1.137s.",
+        "text14": "I thought wrong evidence makes the whole answer untrustworthy, so I replaced evidence selection with Jev. GPT cost about 2.5× more, and tuning search weights kept scores flat. Selection got much slower, so I tuned candidates and parallelism to cut median time from 9.090s to 1.137s.",
         "text15": "Agent execution environment: user-defined skills behind approval, edit quality 82.5% → 91.2% (114 drafts)",
-        "text16": "AI changing documents freely would break trust, so code checks permissions and prompt injection, AI drafts, and users approve. Code checks missed omitted requests, so drafts get a semantic evaluation and one rewrite at most.",
+        "text16": "Users repeat different tasks, so I let them define their own Skills. I judged that users can't trust AI that changes documents freely, so code checks permissions and scope, and changes apply only after approval. Code checks missed omitted requests, so drafts get a semantic evaluation and one rewrite at most.",
         "text17": "Data pipelines: PDF conversion pass rate 45.17% → 89.89%, drug conversion $200 estimated → $11.18 spent",
         "text18": "Broken tables and equations lose the figures answers rely on, so body text uses fast AnyDoc and table and equation regions are read separately. Converting each repeated sentence once with Batch API kept about 44,000 drug records within budget."
       }
@@ -755,14 +755,14 @@
         "text25": "How it started: a teammate’s pain point with managing documents, refined through design thinking — saved documents could not be found when needed.\nTeam: me (all AI), 1 backend (Spring backend), 1 frontend & DevOps (frontend, MSA deployment on AWS), external designer · 3 mentors",
         "text114": "PDF document conversion",
         "text115": "Converted uploaded paper PDFs into Markdown that keeps tables and equations, so they can be searched and cited in answers.",
-        "text26": "PDF → Markdown conversion\nProblem: Broken tables and equations in paper PDFs made the figures behind Wiki pages and answers unusable.\nDecision: Repairing only detected damage missed errors, and full AI conversion lacked table/equation accuracy and was costly, so I split processing by content type. Body text uses fast AnyDoc extraction; repair moved from an sLLM to commercial LLM APIs to avoid GPU server costs.\nSolution: Extracted body text with AnyDoc and repaired only garbled parts with AI, read table/equation regions separately, and kept original figures.\nResult: Pass rate on the same 30 pages (445 units, blind) rose from 45.17% to 89.89%. Key figures now enter the Wiki intact, reducing quality-driven churn.",
+        "text26": "PDF → Markdown conversion\nProblem: Broken tables and equations in paper PDFs made the figures behind Wiki pages and answers unusable.\nDecision: Repairing only detected damage missed errors, and full AI conversion lacked table/equation accuracy and was costly, so I split processing by content type. Body text uses fast AnyDoc extraction; repair moved from an sLLM to commercial LLM APIs to avoid GPU server costs.\nSolution: Extracted body text with AnyDoc and repaired only garbled parts with AI, read table/equation regions separately, and kept original figures.\nResult: Pass rate on the same 30 pages (445 units, blind) rose from 45.17% to 89.89%. Figures in tables and equations no longer drop out of the Wiki.",
         "text28": "Parallel Wiki generation\nProblem: Documents were processed one at a time, so large uploads waited long for their Wiki.\nDecision: Compared worker count, concurrent requests and GPU parallelism. More workers helped while waiting on external AI; more concurrent requests and GPU parallelism were slower, so I dropped them. Accepted about 4x memory, since EKS can spread services.\nSolution: Distributed per-document jobs over Kafka with up to 4 workers.\nResult: Analysis of 4 documents fell from 282.11s to 73.89s (about 74% faster).",
         "text116": "Improving retrieval for grounded AI answers",
         "text117": "Finds the document evidence AI answers need, and attaches none to questions the documents cannot answer.",
-        "text27": "Evidence selection for RAG\nProblem: In a service that answers from documents, retrieval missed evidence and attached evidence to unanswerable questions, undermining trust.\nDecision: GPT selection cost about 2.5x and took longer; tuning weights and RRF gave similar scores across settings, so I adopted Jev, which picks only from fixed options and had first been validated on request routing (77 → 81 of 98 correct).\nSolution: Two stages: BGE-M3, the best Korean semantic model in benchmarks, and BM25 for exact terms gather candidates and Jev picks the final evidence. Compared on identical candidates with blind cross-grading, then cut candidates to 300 and compared 4, 6, 8 and 10 parallel batches, choosing 8 with no accuracy difference.\nResult: Coverage on 80 answerable questions rose from 66.25% to 91.25%. Median selection time 9.090s → 1.137s (still slower than the original 0.431s). Higher evidence reliability gives users a reason to trust answers and keep using the service.",
+        "text27": "Evidence selection for RAG\nProblem: In a service that answers from documents, retrieval missed evidence and attached evidence to unanswerable questions, undermining trust.\nDecision: GPT selection cost about 2.5x and took longer; tuning weights and RRF gave similar scores across settings, so I adopted Jev, which picks only from fixed options and had first been validated on request routing (77 → 81 of 98 correct).\nSolution: Two stages: BGE-M3, the best Korean semantic model in benchmarks, and BM25 for exact terms gather candidates and Jev picks the final evidence. Compared on identical candidates with blind cross-grading, then cut candidates to 300 and compared 4, 6, 8 and 10 parallel batches, choosing 8 with no accuracy difference.\nResult: Coverage on 80 answerable questions rose from 66.25% to 91.25%. Median selection time 9.090s → 1.137s (still slower than the original 0.431s).",
         "text118": "User-defined agent Skills with approval-based execution",
         "text119": "Recurring tasks are saved and reused as Skills, and AI-made changes apply only after the user approves them.",
-        "text29": "User-defined task instructions (Skills)\nProblem: Recurring tasks differ by user, so they cannot all be built as features, and AI edits arrived with parts of the request missing, leaving repeatable work to chance.\nDecision: AI drafts instructions, code checks permissions and scope, and the user decides publishing and applying. Code format checks missed omitted requests, so I added LLM semantic evaluation.\nSolution: Authoring, review and publishing of natural-language instructions with checks against bypassing permission or approval; preview and separate approval before changes; semantic evaluation with at most one rewrite. Generation, evaluation and rewrite run as LangGraph nodes for step-level tracing, and published Skills are stored as immutable versions in PostgreSQL.\nResult: Edit quality 94 → 104 of 114 drafts (82.5% → 91.2%); documents stayed unchanged before approval. Stable results keep prepaid credits from going to rework.",
+        "text29": "User-defined task instructions (Skills)\nProblem: Recurring tasks differ by user, so they cannot all be built as features, and AI edits arrived with parts of the request missing, leaving repeatable work to chance.\nDecision: AI drafts instructions, code checks permissions and scope, and the user decides publishing and applying. Code format checks missed omitted requests, so I added LLM semantic evaluation.\nSolution: Authoring, review and publishing of natural-language instructions with checks against bypassing permission or approval; preview and separate approval before changes; semantic evaluation with at most one rewrite. Generation, evaluation and rewrite run as LangGraph nodes for step-level tracing, and published Skills are stored as immutable versions in PostgreSQL.\nResult: Edit quality 94 → 104 of 114 drafts (82.5% → 91.2%); documents stayed unchanged before approval. Failed drafts 20 → 10.",
         "text30": "Jev-based request routing\nProblem: Misrouting a question as an edit led to the wrong action, directly hurting the service's reliability.\nDecision: Jev picks only from fixed options, which fits routing; as a newly released model it was validated first on low-risk routing.\nSolution: Applied Jev to choose task type and conditions, and compared it with the existing approach and GPT-5-nano on the same 98 requests.\nResult: Fully correct decisions rose from 77 to 81 (GPT-5-nano 63); median decision time fell from 8.967s to 0.658s.",
         "text143": "Conversation memory and edit input scope\nProblem: Sending whole conversations and documents to the model raises cost and latency, adding to users' prepaid cost and waiting time.\nDecision: Recent turns need full text while older ones need only the gist; edits need only the target and its surroundings.\nSolution: Keep the last six messages verbatim with a rolling summary for older ones, and send only the target lines plus context for edits.\nResult: Edit input for a 1,000-line document cut to 5.58% of the source.",
         "text144": "Bounding the edit input\nProblem: sending a whole document to the model drives up cost and latency.\nSolution: send only the target line range plus surrounding context, and reject ranges that straddle a table or code-block boundary. A benchmark tracks input size against the source and average and p95 time.",
@@ -889,12 +889,12 @@
   ],
   "overview": {
     "eyebrow": "AI Agents · Execution environment design · Data pipelines",
-    "title": "A developer who digs into root causes and enjoys solving difficult problems",
-    "description": "The problems I encountered, the experiments and results, and the decisions that shaped each implementation.",
+    "title": "I build services that use AI\nto make people’s lives better.",
+    "description": "For each project, the parts I contributed: the problem, the alternatives I weighed, why I chose one, how I built it and how I verified it.",
     "experience1Title": "RAG evidence selection: coverage 66.25% → 91.25%, evidence attached to unanswerable questions 20 → 0",
-    "experience1Description": "Wrong evidence makes the whole answer untrustworthy, so I replaced evidence selection with Jev; GPT was costly and slow, and weight tuning gained little. Blind comparison on identical candidates, then tuning candidates and parallelism cut median time from 9.090s to 1.137s.",
+    "experience1Description": "I thought wrong evidence makes the whole answer untrustworthy, so I replaced evidence selection with Jev. GPT cost about 2.5× more, and tuning search weights kept scores flat. Selection got much slower, so I tuned candidates and parallelism to cut median time from 9.090s to 1.137s.",
     "experience2Title": "Agent execution environment: user-defined skills behind approval, edit quality 82.5% → 91.2% (114 drafts)",
-    "experience2Description": "AI changing documents freely would break trust, so code checks permissions and prompt injection, AI drafts, and users approve. Code checks missed omitted requests, so drafts get a semantic evaluation and one rewrite at most.",
+    "experience2Description": "Users repeat different tasks, so I let them define their own Skills. I judged that users can't trust AI that changes documents freely, so code checks permissions and scope, and changes apply only after approval. Code checks missed omitted requests, so drafts get a semantic evaluation and one rewrite at most.",
     "experience3Title": "Data pipelines: PDF conversion pass rate 45.17% → 89.89%, drug conversion $200 estimated → $11.18 spent",
     "experience3Description": "Broken tables and equations lose the figures answers rely on, so body text uses fast AnyDoc and table and equation regions are read separately. Converting each repeated sentence once with Batch API kept about 44,000 drug records within budget.",
     "profileRole": "AI Application Developer · Backend Engineer",
@@ -927,8 +927,8 @@
   "home": {
     "hero": {
       "eyebrow": "AI APPLICATION DEVELOPER / BACKEND ENGINEER",
-      "greeting": "Hello,",
-      "nameLine": "I’m Jaehyeong Kim."
+      "greeting": "Hello, I’m an\nAI application developer,",
+      "nameLine": "Jaehyeong Kim."
     },
     "about": {
       "eyebrow": "ABOUT ME",
@@ -974,6 +974,251 @@
       "affiliationLabel": "Affiliation",
       "roleLabel": "Role",
       "detailsLabel": "Contributions & results"
+    },
+    "easterEgg": {
+      "buttonLabel": "See what I do without AI",
+      "title": "What I do without AI",
+      "text": "As an AI application developer I use AI as much as I can, but work that needs care, like cooking, is something AI can't do yet, so I put my own care into it.",
+      "photos": [
+        {
+          "src": "assets/cooking/01.webp",
+          "alt": "Sausage curry rice box"
+        },
+        {
+          "src": "assets/cooking/02.webp",
+          "alt": "Bacon cream pasta"
+        },
+        {
+          "src": "assets/cooking/03.webp",
+          "alt": "Zucchini pancakes"
+        },
+        {
+          "src": "assets/cooking/04.webp",
+          "alt": "Spicy stir-fried pork"
+        },
+        {
+          "src": "assets/cooking/05.webp",
+          "alt": "Olive oil pasta"
+        },
+        {
+          "src": "assets/cooking/06.webp",
+          "alt": "Mapo tofu"
+        },
+        {
+          "src": "assets/cooking/07.webp",
+          "alt": "Braised tofu"
+        },
+        {
+          "src": "assets/cooking/08.webp",
+          "alt": "Vegetable egg bake"
+        },
+        {
+          "src": "assets/cooking/09.webp",
+          "alt": "Chicken galbi udon"
+        },
+        {
+          "src": "assets/cooking/10.webp",
+          "alt": "Omurice"
+        },
+        {
+          "src": "assets/cooking/11.webp",
+          "alt": "Shrimp cream pasta box"
+        },
+        {
+          "src": "assets/cooking/12.webp",
+          "alt": "Side-dish lunch box"
+        },
+        {
+          "src": "assets/cooking/13.webp",
+          "alt": "Egg toast lunch box"
+        },
+        {
+          "src": "assets/cooking/14.webp",
+          "alt": "French toast in the pan"
+        },
+        {
+          "src": "assets/cooking/15.webp",
+          "alt": "Stir-fried fish cake"
+        },
+        {
+          "src": "assets/cooking/16.webp",
+          "alt": "Hamburg steak curry"
+        },
+        {
+          "src": "assets/cooking/17.webp",
+          "alt": "Shrimp olive oil pasta"
+        },
+        {
+          "src": "assets/cooking/18.webp",
+          "alt": "Tofu and stir-fried pork box"
+        },
+        {
+          "src": "assets/cooking/19.webp",
+          "alt": "Side-dish lunch box"
+        },
+        {
+          "src": "assets/cooking/20.webp",
+          "alt": "Egg toast sandwich"
+        },
+        {
+          "src": "assets/cooking/21.webp",
+          "alt": "Oyakodon"
+        },
+        {
+          "src": "assets/cooking/22.webp",
+          "alt": "Chili shrimp and scrambled egg rice"
+        },
+        {
+          "src": "assets/cooking/23.webp",
+          "alt": "Gyudon"
+        },
+        {
+          "src": "assets/cooking/24.webp",
+          "alt": "Soy-glazed chicken box"
+        },
+        {
+          "src": "assets/cooking/25.webp",
+          "alt": "Omelette"
+        },
+        {
+          "src": "assets/cooking/26.webp",
+          "alt": "French toast lunch box"
+        },
+        {
+          "src": "assets/cooking/27.webp",
+          "alt": "Marinated meat lunch box"
+        },
+        {
+          "src": "assets/cooking/28.webp",
+          "alt": "Rolled omelette rolls"
+        },
+        {
+          "src": "assets/cooking/29.webp",
+          "alt": "Pork belly lunch box"
+        },
+        {
+          "src": "assets/cooking/30.webp",
+          "alt": "Spicy seafood stir-fry"
+        },
+        {
+          "src": "assets/cooking/31.webp",
+          "alt": "Curry and side-dish box"
+        },
+        {
+          "src": "assets/cooking/32.webp",
+          "alt": "Fried rice and dumplings"
+        },
+        {
+          "src": "assets/cooking/33.webp",
+          "alt": "Bacon pasta lunch box"
+        },
+        {
+          "src": "assets/cooking/34.webp",
+          "alt": "Dumpling curry box"
+        },
+        {
+          "src": "assets/cooking/35.webp",
+          "alt": "Rolled omelette"
+        },
+        {
+          "src": "assets/cooking/36.webp",
+          "alt": "Side-dish lunch box"
+        },
+        {
+          "src": "assets/cooking/37.webp",
+          "alt": "Gyudon lunch box"
+        },
+        {
+          "src": "assets/cooking/38.webp",
+          "alt": "Two shrimp pastas"
+        },
+        {
+          "src": "assets/cooking/39.webp",
+          "alt": "Okonomiyaki"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Pasta",
+          "photos": [
+            "assets/cooking/02.webp",
+            "assets/cooking/05.webp",
+            "assets/cooking/11.webp",
+            "assets/cooking/17.webp",
+            "assets/cooking/33.webp",
+            "assets/cooking/38.webp"
+          ]
+        },
+        {
+          "name": "Rice bowls & curry",
+          "photos": [
+            "assets/cooking/01.webp",
+            "assets/cooking/16.webp",
+            "assets/cooking/21.webp",
+            "assets/cooking/22.webp",
+            "assets/cooking/23.webp",
+            "assets/cooking/31.webp",
+            "assets/cooking/34.webp",
+            "assets/cooking/37.webp"
+          ]
+        },
+        {
+          "name": "Eggs & toast",
+          "photos": [
+            "assets/cooking/08.webp",
+            "assets/cooking/10.webp",
+            "assets/cooking/13.webp",
+            "assets/cooking/14.webp",
+            "assets/cooking/20.webp",
+            "assets/cooking/25.webp",
+            "assets/cooking/26.webp",
+            "assets/cooking/28.webp",
+            "assets/cooking/35.webp"
+          ]
+        },
+        {
+          "name": "Stir-fries & braises",
+          "photos": [
+            "assets/cooking/03.webp",
+            "assets/cooking/04.webp",
+            "assets/cooking/06.webp",
+            "assets/cooking/07.webp",
+            "assets/cooking/09.webp",
+            "assets/cooking/15.webp",
+            "assets/cooking/24.webp",
+            "assets/cooking/27.webp",
+            "assets/cooking/29.webp",
+            "assets/cooking/30.webp"
+          ]
+        },
+        {
+          "name": "Side dishes & more",
+          "photos": [
+            "assets/cooking/12.webp",
+            "assets/cooking/18.webp",
+            "assets/cooking/19.webp",
+            "assets/cooking/32.webp",
+            "assets/cooking/36.webp",
+            "assets/cooking/39.webp"
+          ]
+        }
+      ],
+      "topic": "Cooking",
+      "meLabel": "Jaehyeong",
+      "busy": [
+        "Running the tests…",
+        "Tuning Jev parallelism…",
+        "That PDF table broke again",
+        "Reading review comments…"
+      ],
+      "reveal": "Up in that graph, there is a path between my two projects!",
+      "questHint": "Start at Fruition and click along the lines to Pilltip",
+      "questProgress": "Find the path between the two projects",
+      "questWrong": "Not quite. Start again from Fruition!",
+      "questDone": "Found it! Click me in the middle",
+      "questSolvedHint": "Click me in the middle of the graph",
+      "busyDone": "You heard me out! Someone is hanging from the clouds at the very bottom",
+      "whisper": "Is there anything AI can’t do?"
     }
   }
 }

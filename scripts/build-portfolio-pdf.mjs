@@ -1,3 +1,4 @@
+import {rm} from 'node:fs/promises';
 import puppeteer from 'puppeteer';
 import {readFile} from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';
@@ -15,7 +16,7 @@ export async function buildPortfolioPdf(browser, lang='ko') {
   // The diagrams load from a CDN, so retry a transient failure before giving up.
   let diagrams;
   for(let attempt=0;attempt<3&&diagrams!=='ready';attempt++){
-    await page.goto(pathToFileURL(resolve(dir,'portfolio.html')).href,{waitUntil:'load'});
+    await page.goto(pathToFileURL(resolve(dir,'portfolio-print.html')).href,{waitUntil:'load'});
     await page.waitForFunction(()=>document.documentElement.dataset.diagrams,{timeout:30000});
     diagrams=await page.evaluate(()=>document.documentElement.dataset.diagrams);
   }
@@ -186,6 +187,8 @@ export async function buildPortfolioPdf(browser, lang='ko') {
   if(overflow.length)throw Error('Portfolio slides overflow: '+overflow.join(', '));
   const count=await page.$$eval('.slide',s=>s.length);
   await page.close();
+  // The combined page only feeds this deck; it never ships with the site.
+  await rm(resolve(dir,'portfolio-print.html'),{force:true});
   console.log(`Built ${count}-slide ${dir}/portfolio.pdf.`);
 }
 

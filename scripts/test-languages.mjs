@@ -19,18 +19,19 @@ try{
  const page=await browser.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
  for(const width of [1440,390,320]){
   await page.setViewport({width,height:1000});
-  for(const route of ['','portfolio.html','resume.html']){
+  for(const route of ['','portfolio.html','portfolio/fruition-jev-evidence.html','resume.html']){
    await page.goto(`${base}/en/${route}`,{waitUntil:'networkidle2'});
    assert.equal(await page.$eval('html',e=>e.lang),'en');
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`Overflow ${route} ${width}`);
    assert.equal(await page.evaluate(()=>/[가-힣]/.test(document.body.innerText.replaceAll('한국어',''))),false);
-   const resources=await page.$$eval('a[href],img[src],link[href],script[src]',els=>els.map(e=>e.href||e.src).filter(url=>url.startsWith(location.origin)));
+   const resources=await page.$$eval('a[href],img[src],link[href],script[src]',els=>els.map(e=>e.href?.baseVal!==undefined?new URL(e.href.baseVal,location.href).href:e.href||e.src).filter(url=>url.startsWith(location.origin)));
    for(const url of resources){const path=new URL(url).pathname;await stat(resolve(root,'.'+(path.endsWith('/')?path+'index.html':path)));}
    const documents=await page.$$eval('a[href*="resume.pdf"],a[href*="resume.docx"]',els=>els.map(e=>new URL(e.href).pathname));
-   assert.ok(documents.length);assert.ok(documents.every(path=>path.startsWith('/en/')));
-   if(route==='portfolio.html'){
+   if(!route.startsWith('portfolio/'))assert.ok(documents.length);assert.ok(documents.every(path=>path.startsWith('/en/')));
+   if(route==='portfolio.html')assert.equal(await page.$$eval('.case-item:not(.project-card)',els=>els.length),caseCount);
+   if(route.startsWith('portfolio/')){
     await page.waitForFunction(()=>document.documentElement.dataset.diagrams==='ready');
-    assert.equal(await page.$$eval('.mermaid svg',els=>els.length),caseCount);
+    assert.equal(await page.$$eval('.mermaid svg',els=>els.length),1);
    }
    if(route===''){
     await page.click('.home-actions a[href^="resume.pdf"]');
@@ -42,7 +43,7 @@ try{
     assert.equal(await page.$eval('#fruition-dialog',e=>e.scrollWidth<=e.clientWidth+1),true);
     await page.keyboard.press('Escape');
    }
-   const hash=route==='portfolio.html'?'#fruition-jev-evidence':route==='resume.html'?'#pilltip':'#skills';
+   const hash=route==='portfolio.html'?'#project-fruition':route.startsWith('portfolio/')?'#fruition-jev-evidence-result':route==='resume.html'?'#pilltip':'#skills';
    await page.evaluate(hash=>location.hash=hash,hash);
    // Wait for site.js to carry the hash onto the switch link before each click, so the round trip
    // does not race the in-flight navigation.
@@ -54,7 +55,7 @@ try{
    assert.equal(new URL(page.url()).pathname,'/'+route);assert.equal(new URL(page.url()).hash,hash);
    await switchLanguage();
    assert.equal(new URL(page.url()).pathname,'/en/'+route);assert.equal(new URL(page.url()).hash,hash);
-   await page.screenshot({path:`artifacts/en-${route||'home'}-${width}.png`});
+   await page.screenshot({path:`artifacts/en-${(route||'home').replace('/','-')}-${width}.png`});
   }
  }
  await page.setJavaScriptEnabled(false);await page.goto(base+'/en/');
