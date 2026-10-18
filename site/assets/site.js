@@ -194,12 +194,15 @@ if (graph) {
 // The companion stays hidden on the first screen, sits at a desk in the corner while the visitor reads
 // on phones too, small, since its lines hold the easter egg's first clue.
 const companion = document.querySelector('.companion');
-const setPose = name => { const img = companion.querySelector('img'); img.src = img.src.replace(/[^/]+\.webp$/, `${name}.webp`); };
+// Resolves once the new pose is ready to show, so a line never shows up before its picture.
+const setPose = name => { const img = companion.querySelector('img'); img.src = img.src.replace(/[^/]+\.webp$/, `${name}.webp`); return img.decode().catch(() => {}); };
 if (companion) {
   const hero = document.querySelector('.home-hero');
   // Each time it comes back into view it is doing something else.
   const rests = ['think', 'cushion', 'stuck', 'coffee', 'broke', 'boxes', 'camera', 'sweep'];
   let rest = 0;
+  // Fetch every pose once the page has loaded, so switching between them is instant.
+  addEventListener('load', () => { for (const name of rests) new Image().src = companion.querySelector('img').src.replace(/[^/]+\.webp$/, `${name}.webp`); });
   const update = () => {
     const end = innerHeight + scrollY >= document.documentElement.scrollHeight - 60;
     const past = scrollY > hero.offsetHeight * 0.6;
@@ -281,15 +284,23 @@ if (meNode && cooking && buddy && quest && trigger) {
   // A pose for each busy line, in the same order. The lines go round for anyone; only during the easter egg
   // does hearing them all out get the line that points to the clouds.
   const poses = ['cushion', 'think', 'broke', 'coffee', 'sweep', 'boxes', 'stuck', 'camera'];
+  // Lines come in a random order, each once per round, so hearing them all still takes one round.
+  const shuffle = () => {
+    const order = busy.map((_, i) => i);
+    for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+    return order;
+  };
+  let order = shuffle();
   let line = eggLevel >= UNLOCKED ? busy.length : 0;
   buddy.addEventListener('click', () => {
     if (eggLevel >= AWAKE) reach(TALKED);
     if (line === busy.length) {
       line = 0;
-      if (eggLevel >= AWAKE) { reach(UNLOCKED); setPose('think'); say(buddy, buddy.dataset.done, 3600); return; }
+      order = shuffle();
+      if (eggLevel >= AWAKE) { reach(UNLOCKED); setPose('think').then(() => say(buddy, buddy.dataset.done, 3600)); return; }
     }
-    setPose(poses[line % poses.length]);
-    say(buddy, busy[line++]);
+    const i = order[line++];
+    setPose(poses[i % poses.length]).then(() => say(buddy, busy[i]));
   });
   const hanger = document.querySelector('.hanging');
   // Before its turn, the one in the clouds points back to whichever step comes next.
