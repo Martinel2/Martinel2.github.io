@@ -826,11 +826,6 @@
       "fields": {
         "text71": "Activities & contributions ",
         "text72": "04 / EXPERIENCE",
-        "text150": "2026.07 — 2026.09",
-        "text151": "200 SIGNAL · TQQQ 200-day moving average signal app (personal project)",
-        "text152": "I turned a publicly posted TQQQ 200-day moving average strategy into a written spec and an Android app on live quotes, used by 2 family members. I marked the source post’s claimed returns as unverified and reproduced 45 cycles, measuring a 40.00% win rate rather than the claimed 19%. Counting partial exits as trades lifts that to 72.73%, showing the post’s two win rates count different units. I backtested 5 strategy variants under the same assumptions, comparing CAGR and MDD across sub-periods. At the users’ request I added a second QQQ-based strategy and SGOV/SPYM handling for cash waiting on an entry.",
-        "text153": "The app was never released, and account data stays on the device.",
-        "text154": "GitHub repository ↗",
         "text73": "2026.06 — 2026.06",
         "text74": "Rhwp open-source contributions",
         "text75": "Gave Claude Code a work plan and contribution rules to automate the flow from issue analysis to PR, including HWP/HWPX save-error fixes; 7 PRs merged and listed as a contributor.",
@@ -845,7 +840,7 @@
         "text83": "Represented Pusan National University at the Pilltip booth, demonstrating the service to more than 100 visitors and answering technical questions. Most of the 10 pieces of feedback asked for health supplement coverage.",
         "text132": "2022.02 — 2025.07",
         "text133": "945-day Baekjoon problem-solving streak",
-        "text134": "Longest streak of 945 consecutive days on solved.ac. 1,659 problems solved, Platinum IV.",
+        "text134": "Aiming for one problem a day, I reached a longest streak of 945 consecutive days on solved.ac. 1,659 problems solved, solved.ac Platinum IV. Solutions are recorded in a GitHub repository.",
         "text136": "Baekjoon solutions repository ↗"
       }
     },
