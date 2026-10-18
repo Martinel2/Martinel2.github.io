@@ -99,7 +99,10 @@ main,footer,.header{max-width:var(--max);margin-inline:auto}
 .companion .bubble::after{left:auto;right:36px}
 .companion-figure img{position:absolute;bottom:0;left:50%;height:100%;width:auto;transform:translateX(-50%)}
 @keyframes hop{40%{transform:translateY(-18px)}}
-.cooking-dialog>p{font-size:17px;line-height:1.7;margin:8px 0 20px}
+.pose-strip{display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-end;gap:6px 12px;margin:0 0 20px}
+.pose-strip img{height:96px;width:auto}
+@media(max-width:680px){.pose-strip img{height:64px}}
+.cooking-dialog>p{font-size:17px;line-height:1.7;margin:60px 0 20px}
 .cooking-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
 .cooking-grid[hidden]{display:none}
 .cooking-graph{max-width:440px;margin:0 auto 18px}
@@ -581,9 +584,8 @@ summary{cursor:pointer}
 @media(max-width:680px){.project-dialog:not(.cooking-dialog):not(.resume-format-dialog){padding:0 20px 28px}.project-dialog form .button{margin-right:-8px}}
 
 /* Easter egg switch: the role line looks like plain text; once woken, the characters answer clicks. */
-.egg-trigger{cursor:text;outline-offset:6px}
-.home-page .companion-figure,.home-page .hanging{cursor:default}
-.egg-awake .companion-figure,.egg-awake .hanging{cursor:pointer}
+.egg-trigger{cursor:text;outline-offset:6px;transition:text-shadow .4s}
+.egg-trigger:hover{cursor:pointer;text-shadow:0 0 14px rgb(242 169 0 / 55%)}
 .home-hero{position:relative}
 .egg-whisper{position:fixed;left:0;right:0;top:42%;z-index:40;margin:0;padding:0 20px;text-align:center;font-size:clamp(30px,5vw,64px);font-weight:800;letter-spacing:-.02em;color:var(--primary-strong);text-shadow:0 0 18px #fff,0 0 6px #fff,0 0 2px #fff;opacity:0;pointer-events:none;transform:translateY(12px)}
 .egg-whisper.on{animation:whisper 3.2s ease forwards}

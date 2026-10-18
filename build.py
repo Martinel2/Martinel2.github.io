@@ -95,7 +95,7 @@ def hanging():
     """Me hanging upside down from the clouds at the end of the home page: clicking starts the easter egg."""
     egg = DATA['home']['easterEgg']
     label = 'Jaehyeong, hanging from the clouds' if LANG == 'en' else '구름에 매달린 김재형'
-    return (f'<div class="sky-end">{CLOUDS}<button type="button" class="hanging" aria-label="{label}" data-reveal="{escape(egg["reveal"])}">'
+    return (f'<div class="sky-end">{CLOUDS}<button type="button" class="hanging" aria-label="{label}" data-reveal="{escape(egg["reveal"])}" data-start="{escape(egg["hangStart"])}" data-name="{escape(egg["hangName"])}" data-desk="{escape(egg["hangDesk"])}">'
             f'<span class="bubble" aria-live="polite"></span><img src="assets/character/stand.webp" alt="" width="285" height="480" loading="lazy"></button></div>')
 
 
@@ -136,7 +136,8 @@ def cooking_dialog():
     nodes = ''.join(f'<g class="node{" active" if n == 0 else ""}" data-cat="{n}" tabindex="0" role="button" aria-pressed="{"true" if n == 0 else "false"}"><circle cx="{x}" cy="{y}" r="9"/><text x="{x}" y="{y - 16}">{escape(c["name"])} · {len(c["photos"])}</text></g>' for n, (c, (x, y)) in enumerate(zip(cats, spots)))
     graph = f'<svg class="wiki-graph cooking-graph" viewBox="0 0 420 225" role="group" aria-label="{escape(egg["topic"])}"><g class="edges">{lines}</g>{nodes}<g class="node hub lit"><circle cx="{cx}" cy="{cy}" r="16"/><text x="{cx}" y="{cy - 26}">{escape(egg["topic"])}</text></g></svg>'
     grids = ''.join(f'<div class="cooking-grid" data-cat="{n}"{"" if n == 0 else " hidden"}>' + ''.join(f'<img src="{escape(src)}" alt="{escape(next((ph["alt"] for ph in egg["photos"] if ph["src"] == src), c["name"]))}" loading="lazy">' for src in c['photos']) + '</div>' for n, c in enumerate(cats))
-    return f'<dialog class="project-dialog cooking-dialog" id="cooking-dialog" aria-label="{escape(egg["title"])}"><form method="dialog"><button class="button" autofocus>닫기 ×</button></form><p>{escape(egg["text"])}</p>{graph}{grids}</dialog>'
+    poses = ''.join(f'<img src="assets/character/{name}.webp" alt="" loading="lazy">' for name in ('stand', 'peace', 'think', 'cushion', 'coffee', 'stuck', 'broke', 'boxes', 'camera', 'sweep'))
+    return f'<dialog class="project-dialog cooking-dialog" id="cooking-dialog" aria-label="{escape(egg["title"])}"><form method="dialog"><button class="button" autofocus>닫기 ×</button></form><p>{escape(egg["text"])}</p><div class="pose-strip" aria-hidden="true">{poses}</div>{graph}{grids}</dialog>'
 
 
 def home_text(group, key):
@@ -384,7 +385,7 @@ def home():
         target = '' if key == 'portfolio' else ' target="_blank" rel="noopener"'
         actions += f'<a class="{"button primary" if key == "resume" else "button"}" href="{escape(url)}"{target}><img src="assets/icons/{icon}.svg" alt="" width="18" height="18">{escape(action["label"])}</a>'
     resume_action = DATA['home']['actions']['resume']
-    body = f'''<section class="home-hero sky"><div class="hero-inner"><div class="home-intro"><p class="eyebrow">{home_text("hero", "eyebrow")}</p><h1>{greeting_html()}<br>{home_text("hero", "nameLine")}</h1><p class="home-lead">{t(2)}<br>{t(3)}</p><div class="home-actions">{actions}</div></div><div class="hero-visual">{quest()}{graph_svg()}{character()}</div></div><p class="egg-whisper" aria-live="polite" data-human="{escape(DATA["home"]["easterEgg"]["human"])}">{escape(DATA["home"]["easterEgg"]["whisper"])}</p>{HILLS}</section>
+    body = f'''<section class="home-hero sky"><div class="hero-inner"><div class="home-intro"><p class="eyebrow">{home_text("hero", "eyebrow")}</p><h1>{greeting_html()}<br>{home_text("hero", "nameLine")}</h1><p class="home-lead">{t(2)}<br>{t(3)}</p><div class="home-actions">{actions}</div></div><div class="hero-visual">{quest()}{graph_svg()}{character()}</div></div><p class="egg-whisper" aria-live="polite" data-console="{escape(DATA["home"]["easterEgg"]["console"])}" data-human="{escape(DATA["home"]["easterEgg"]["human"])}">{escape(DATA["home"]["easterEgg"]["whisper"])}</p>{HILLS}</section>
 <div class="home-layout"><div class="home-main">
 <section class="home-about home-section" id="about"><p class="eyebrow">{home_text("about", "eyebrow")}</p><h2>{home_text("about", "title")}</h2><p>{t(5)}</p><p>{t(6)}</p><p>{home_text("about", "description")}</p></section>
 <section class="home-section" id="projects"><p class="eyebrow">{home_text("sections", "projectsEyebrow")}</p><h2>{home_text("sections", "projectsTitle")}</h2><div class="home-projects">{projects}</div></section>

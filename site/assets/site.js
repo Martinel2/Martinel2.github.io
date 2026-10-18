@@ -194,13 +194,19 @@ if (graph) {
 // The companion stays hidden on the first screen, sits at a desk in the corner while the visitor reads
 // on phones too, small, since its lines hold the easter egg's first clue.
 const companion = document.querySelector('.companion');
+const setPose = name => { const img = companion.querySelector('img'); img.src = img.src.replace(/[^/]+\.webp$/, `${name}.webp`); };
 if (companion) {
   const hero = document.querySelector('.home-hero');
+  // Each time it comes back into view it is doing something else.
+  const rests = ['think', 'cushion', 'stuck', 'coffee', 'broke', 'boxes', 'camera', 'sweep'];
+  let rest = 0;
   const update = () => {
     const end = innerHeight + scrollY >= document.documentElement.scrollHeight - 60;
     const past = scrollY > hero.offsetHeight * 0.6;
     // At the very bottom it steps aside for the one hanging from the clouds.
-    companion.dataset.state = !end && past ? 'sit' : 'away';
+    const state = !end && past ? 'sit' : 'away';
+    if (state === 'sit' && companion.dataset.state !== 'sit') setPose(rests[rest++ % rests.length]);
+    companion.dataset.state = state;
   };
   update();
   addEventListener('scroll', () => requestAnimationFrame(update), { passive: true });
@@ -240,6 +246,7 @@ if (meNode && cooking && buddy && quest && trigger) {
   const wiki = meNode.closest('.wiki-graph');
   const whisper = document.querySelector('.egg-whisper');
   const ask = whisper.textContent;
+  if (eggLevel < SOLVED) console.log(`%c${whisper.dataset.console}`, 'font-size:14px;color:#2f5fd0');
   const flash = text => {
     whisper.textContent = text;
     whisper.classList.remove('on'); void whisper.offsetWidth; whisper.classList.add('on');
@@ -260,6 +267,7 @@ if (meNode && cooking && buddy && quest && trigger) {
     flash(whisper.dataset.human);
     if (eggLevel >= AWAKE) return;
     reach(AWAKE);
+    line = 0; // lines heard before waking it up don't count
     document.body.classList.add('egg-awake');
     window.gtag?.('event', 'easter_egg_wake');
   });
@@ -270,21 +278,23 @@ if (meNode && cooking && buddy && quest && trigger) {
   const show = text => { quest.hidden = false; quest.textContent = text; };
   const progress = () => show(questText.questProgress);
   const busy = JSON.parse(buddy.dataset.busy);
-  // A pose for each busy line, in the same order; the last one sends it back to thinking.
-  const poses = ['cushion', 'think', 'stuck', 'coffee', 'think'];
-  const pose = buddy.querySelector('img');
+  // A pose for each busy line, in the same order. The lines go round for anyone; only during the easter egg
+  // does hearing them all out get the line that points to the clouds.
+  const poses = ['cushion', 'think', 'broke', 'coffee', 'sweep', 'boxes', 'stuck', 'camera'];
   let line = eggLevel >= UNLOCKED ? busy.length : 0;
   buddy.addEventListener('click', () => {
-    if (eggLevel < AWAKE) return;
-    reach(TALKED);
-    pose.src = pose.src.replace(/[^/]+\.webp$/, `${poses[Math.min(line, busy.length)]}.webp`);
-    if (line < busy.length) { say(buddy, busy[line++]); return; }
-    reach(UNLOCKED);
-    say(buddy, buddy.dataset.done, 3600);
+    if (eggLevel >= AWAKE) reach(TALKED);
+    if (line === busy.length) {
+      line = 0;
+      if (eggLevel >= AWAKE) { reach(UNLOCKED); setPose('think'); say(buddy, buddy.dataset.done, 3600); return; }
+    }
+    setPose(poses[line % poses.length]);
+    say(buddy, busy[line++]);
   });
   const hanger = document.querySelector('.hanging');
+  // Before its turn, the one in the clouds points back to whichever step comes next.
   hanger?.addEventListener('click', () => {
-    if (eggLevel < UNLOCKED) return;
+    if (eggLevel < UNLOCKED) { say(hanger, hanger.dataset[eggLevel < ASKED ? 'start' : eggLevel < AWAKE ? 'name' : 'desk'], 3200); return; }
     if (stage > 0) { say(hanger, stage === 1 ? questText.questHint : questText.questSolvedHint); return; }
     stage = 1;
     say(hanger, hanger.dataset.reveal, 1800);
