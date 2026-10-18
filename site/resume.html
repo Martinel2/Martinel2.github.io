@@ -24,8 +24,8 @@
 <a href="https://www.linkedin.com/in/%EC%9E%AC%ED%98%95-%EA%B9%80-b75920345/">LinkedIn ↗</a>
 </div>
 </div>
-<a class="button resume-download" href="resume.pdf?v=0338091a8c" download="김재형_이력서.pdf">이력서 PDF 저장 ↓</a>
-<a class="button resume-download" href="resume.docx?v=0338091a8c" download="김재형_이력서.docx">이력서 Word 저장 ↓</a>
+<a class="button resume-download" href="resume.pdf?v=47ebea2484" download="김재형_이력서.pdf">이력서 PDF 저장 ↓</a>
+<a class="button resume-download" href="resume.docx?v=47ebea2484" download="김재형_이력서.docx">이력서 Word 저장 ↓</a>
 </section>
 <section class="resume-section">
 <h2>핵심 경험 <span>01 / PROFILE</span>
@@ -33,16 +33,18 @@
 <div class="resume-content">
 <ul class="profile-list">
 <li>
-<strong>RAG 근거 선택: 근거 충족률 66.25% → 91.25%, 답이 없는 질문에 근거를 붙인 경우 20 → 0건</strong>
+<strong>RAG 근거 선택 개선: 근거 충족률 66.25% → 91.25%, 답이 없는 질문에 근거를 붙인 경우 20 → 0건</strong>
 <p>답변 근거가 틀리면 답변 전체를 믿을 수 없게 된다고 생각해, 근거를 고르는 단계를 판단 전용 모델 Jev로 바꿨습니다. GPT에게 고르게 하면 비용이 약 2.5배였고, 검색 가중치를 여러 값으로 바꿔 봐도 점수가 비슷한 수준에 머물렀기 때문입니다. 다만 처리 시간이 크게 늘어, 후보 수와 병렬 수를 조정해 선택 시간 중앙값을 9.090초에서 1.137초로 줄였습니다.</p>
 </li>
 <li>
-<strong>에이전트 실행 환경: 사용자 정의 Skill과 승인 기반 실행, 편집 품질 82.5% → 91.2%(114건 평가)</strong>
+<strong>에이전트 실행 환경 설계: 사용자 정의 Skill과 승인 기반 실행, 편집 품질 82.5% → 91.2%(114건 평가)</strong>
 <p>회의록 정리처럼 사용자마다 반복하는 작업이 달라, 사용자가 직접 Skill로 정의해 다시 쓸 수 있게 했습니다. 그런데 AI가 문서를 함부로 바꾸면 사용자가 서비스를 믿고 맡길 수 없다고 판단해, 권한과 실행 범위는 코드가 검사하고 실제 반영은 사용자가 승인한 뒤에만 하도록 나눴습니다. 코드 검사만으로는 요청 누락을 잡지 못해, 의미 평가 후 한 번만 다시 쓰게 했습니다.</p>
 </li>
 <li>
-<strong>데이터 파이프라인: PDF 변환 통과율 45.17% → 89.89%, 약품 변환 비용 예상 $200 대비 $11.18</strong>
-<p>논문의 표·수식이 깨지면 답변 근거가 되는 수치를 쓸 수 없어, 본문은 빠른 AnyDoc으로 추출하고 표·수식은 원본 영역을 따로 판독하도록 처리 경로를 나눴습니다. 약품 데이터는 같은 문장을 한 번만 변환하고, 실시간 응답이 필요 없는 작업이라 Batch API를 써 약 4만 4천 건을 예산 안에서 처리했습니다.</p>
+<strong>데이터 파이프라인 구축: PDF 복원율 45.17% → 89.89%, 약품 변환 비용 예상 $200 대비 $11.18</strong>
+<p>논문의 표·수식이 깨지면 답변 근거가 되는 수치를 쓸 수 없어, 본문은 빠른 AnyDoc으로 추출하고 표·수식은 원본 영역을 따로 판독하도록 처리 경로를 나눴습니다. 
+
+약품 데이터는 같은 문장을 한 번만 변환하고, 실시간 응답이 필요 없는 작업이라 Batch API를 써 약 4만 4천 건을 예산 안에서 처리했습니다.</p>
 </li>
 </ul>
 </div>
@@ -73,19 +75,19 @@
 <h4>사용자 정의 Agent Skill과 승인 기반 실행</h4>
 <p class="topic-intro">반복 작업을 Skill로 저장·재사용하고, AI가 만든 변경은 사용자가 승인한 뒤에만 반영되도록 설계했습니다.</p>
 <ul><li>사용자 정의 작업 지침(Skill)
-<strong class="field-label" data-label="문제">문제:</strong> 사용자마다 반복 작업이 달라 모두 기능으로 만들 수 없고, AI 편집안이 요청을 빠뜨린 채 전달돼 같은 결과를 원하는 작업을 운에 맡기게 됨.
-<strong class="field-label" data-label="판단">판단:</strong> 지침은 AI, 권한·실행 범위 검사는 코드, 게시와 실제 반영은 사용자가 맡도록 책임 분리. 코드의 형식 검사만으로는 요청 누락을 못 잡아 LLM 의미 평가를 추가.
-<strong class="field-label" data-label="해결">해결:</strong> 자연어 지침 작성·검토·게시와 권한·승인 우회 검사, 미리보기 후 별도 승인. 편집 결과는 의미 평가 후 최대 1회 재작성. 생성·평가·재작성은 단계별로 추적하도록 LangGraph 노드로 나누고, 게시한 Skill은 PostgreSQL에 불변 버전으로 저장.
-<strong class="field-label" data-label="성과">성과:</strong> 편집 품질 94 → 104/114건(82.5% → 91.2%). 승인 전에는 문서가 바뀌지 않음을 확인. 통과하지 못한 편집안 20건 → 10건.</li></ul>
+<strong class="field-label" data-label="문제">문제:</strong> 사용자마다 반복 작업이 달라 모두 기능으로 만들 수 없고, AI 편집안이 요청을 빠뜨린 채 전달돼 같은 결과를 원하는 작업을 운에 맡기게 됨
+<strong class="field-label" data-label="판단">판단:</strong> 지침은 AI, 권한·실행 범위 검사는 코드, 게시와 실제 반영은 사용자가 맡도록 책임 분리. 코드의 형식 검사만으로는 요청 누락을 못 잡아 LLM 의미 평가를 추가
+<strong class="field-label" data-label="해결">해결:</strong> 자연어 지침 작성·검토·게시와 권한·승인 우회 검사, 미리보기 후 별도 승인. 편집 결과는 의미 평가 후 최대 1회 재작성. 생성·평가·재작성은 단계별로 추적하도록 LangGraph 노드로 나누고, 게시한 Skill은 PostgreSQL에 불변 버전으로 저장
+<strong class="field-label" data-label="성과">성과:</strong> 편집 품질 94 → 104/114건(82.5% → 91.2%). 승인 전에는 문서가 바뀌지 않음을 확인. 통과하지 못한 편집안 20건 → 10건</li></ul>
 </div>
 <div class="resume-topic">
-<h4>PDF 문서 변환</h4>
-<p class="topic-intro">사용자가 올린 논문 PDF를 검색과 답변에 쓸 수 있도록, 표·수식까지 보존하는 Markdown으로 변환했습니다.</p>
+<h4>PDF -&gt; Markdown 복원율 약 90%</h4>
+<p class="topic-intro">사용자가 올린 PDF를 검색과 답변에 쓸 수 있도록, 표와 수식까지 보존해 Markdown으로 변환했습니다.</p>
 <ul><li>PDF → Markdown 변환
-<strong class="field-label" data-label="문제">문제:</strong> 논문 PDF의 표·수식이 깨지면 Wiki와 답변의 근거가 되는 수치를 쓸 수 없음.
-<strong class="field-label" data-label="판단">판단:</strong> 깨진 곳만 고치는 방식은 탐지가 오류를 놓쳤고, 전체 AI 변환은 표·수식 정확도와 비용이 부족해 내용 유형별 처리로 전환. 본문은 추출이 빠른 AnyDoc, 복원은 GPU 운영비가 드는 sLLM 대신 상용 LLM API.
-<strong class="field-label" data-label="해결">해결:</strong> 본문은 AnyDoc으로 추출해 깨진 부분만 AI로 보완, 표·수식은 원본 영역을 따로 판독, 그림은 원본 보존.
-<strong class="field-label" data-label="성과">성과:</strong> 같은 30쪽·445단위 블라인드 평가에서 통과율 45.17% → 89.89%. 표·수식 속 수치가 Wiki에서 빠지지 않게 함.</li></ul>
+<strong class="field-label" data-label="문제">문제:</strong> 논문 PDF의 표·수식이 깨지면 Wiki와 답변의 근거가 되는 수치를 쓸 수 없음
+<strong class="field-label" data-label="판단">판단:</strong> 깨진 곳만 고치는 방식은 탐지가 오류를 놓쳤고, 전체 AI 변환은 표·수식 정확도와 비용이 부족해 내용 유형별 처리로 전환. 본문은 추출이 빠른 AnyDoc, 복원은 GPU 운영비가 드는 sLLM 대신 상용 LLM API
+<strong class="field-label" data-label="해결">해결:</strong> 본문은 AnyDoc으로 추출해 깨진 부분만 AI로 보완, 표·수식은 원본 영역을 따로 판독, 그림은 원본 보존
+<strong class="field-label" data-label="성과">성과:</strong> PDF -&gt; Markdown 복원율 기존 Docling만 사용시, 약 45%에서 약 90%로 개선</li></ul>
 </div>
 <p class="scope-note">MSA: 기능별로만 나누면 DB 부하는 그대로이고 서비스 간 호출만 늘어난다고 보고 데이터 소유권 기준 분리를 제안, 팀원·멘토와 경계·통신 방식을 공동 설계.</p>
 <p class="scope-note">수치는 모두 내부 평가 기준입니다.</p>
@@ -151,7 +153,7 @@
 <span>2026.06 — 2026.06</span>
 <div>
 <h3>Rhwp 오픈소스 기여</h3>
-<p>Claude Code에 작업 계획과 기여 규칙을 주고 이슈 분석부터 PR까지 자동화해, HWP/HWPX 저장 오류 수정 등 PR 7건 병합·Contributor로 등재됐습니다.</p>
+<p>Claude Code에 작업 계획과 기여 규칙을 주고 이슈 분석부터 PR까지 자동화해, HWP/HWPX 저장 오류 수정 등 PR 7건 병합. Contributor로 등재됐습니다.</p>
 <a class="text-link" href="https://github.com/edwardkim/rhwp">GitHub 저장소 ↗</a>
 <a class="text-link" href="https://github.com/edwardkim/rhwp/pull/1213">PR #1213 · 병합 ↗</a>
 <a class="text-link" href="https://github.com/edwardkim/rhwp/pull/1351">PR #1351 · 제출 ↗</a>
@@ -243,8 +245,8 @@
 </div>
 </section>
 <div class="resume-end">
-<p>프로젝트의 문제와 기술 선택을 더 자세히 소개합니다.</p>
-<a class="button primary" href="portfolio.html">포트폴리오 읽기 ↗</a>
+<p>더 자세히 생각의 흐름을 알고 싶다면?</p>
+<a class="button primary" href="portfolio.html">생각의 흐름 속으로 들어가기 ↗</a>
 </div>
 </div></main>
 <footer class="site-footer"><span>© 2026 김재형</span><div class="footer-links"><a href="mailto:kkuldangi2@gmail.com">Email ↗</a><a href="https://github.com/Martinel2">GitHub ↗</a><a href="https://velog.io/@kkuldangi3/posts">Blog ↗</a><a href="https://www.linkedin.com/in/%EC%9E%AC%ED%98%95-%EA%B9%80-b75920345/">LinkedIn ↗</a><a href="#top">맨 위로 ↑</a></div></footer>

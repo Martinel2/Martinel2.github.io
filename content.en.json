@@ -239,8 +239,8 @@
       "id": "fruition-document",
       "project": "Fruition",
       "category": "PDF conversion · Data pipeline",
-      "title": "PDF → Markdown: internal pass rate 45.17% → 89.89%",
-      "short": "PDF conversion: pass rate 45.17% → 89.89%",
+      "title": "PDF → Markdown: about 90% restoration rate",
+      "short": "PDF → Markdown: ~90% restoration rate",
       "period": "2026.07 — 2026.09",
       "summary": "To use papers, which mostly arrive as PDFs, as knowledge, table figures and equations had to survive conversion to Markdown first. So I traced where AI repair dropped content and split processing paths by original layout and content type.",
       "tags": [
@@ -255,7 +255,7 @@
       "diagram": "flowchart TD\n A[Original PDF] --> B[Separate text, tables, equations and figures]\n B --> C[Preserve text context and position]\n B --> D[AI reads original table and equation regions]\n B --> E[Preserve original figures]\n C --> F[Reassemble in original order]\n D --> F\n E --> F\n F --> G{Check markers and missing content}\n G -->|Pass| H[Converted document]\n G -->|Mismatch| I[Keep original content for that region]",
       "diagramCaption": "A conceptual view of processing by content type and reassembling at the original positions. This is the current design; experiments did not all use the same path.",
       "resultTitle": "Pass rate against 30 original pages: 45.17% → 89.89%",
-      "result": "Split the same papers into 445 evaluation units covering body text, tables, equations and other content, then compared them with the originals. The existing Docling output and improved pipeline output were evaluated with method names hidden.\n\nThe practical pass rate rose from 201 (45.17%) to 400 (89.89%), and the strict rate, which requires values and symbols to match exactly, rose from 193 (43.37%) to 393 (88.31%).",
+      "result": "I evaluated the existing Docling and the improved pipeline by splitting the same papers into 445 evaluation units covering body text, tables, equations and other content, and comparing them with the originals.\n\nThe practical pass rate rose from 201 (45.17%) to 400 (89.89%), and the strict rate, which requires values and symbols to match exactly, rose from 193 (43.37%) to 393 (88.31%).",
       "metrics": [
         [
           "Existing Docling",
@@ -273,7 +273,7 @@
         [
           "Selective repair and missed errors",
           "Open-source conversion broke table row/column relationships and equations, so the key figures in PDF papers came out in a form hard to bring into the Wiki. I needed a way to repair the damaged parts.",
-          "Docling extracted the structure, and only damaged tables and equations were repaired with local Qwen sLLMs. Tables, where row/column positions matter, were handled mainly by the vision model (qwen2.5vl:7b); equations were drafted by the text model (qwen2.5:7b) and checked by the vision model only when needed. This restored more than applying both models to everything and cut sLLM processing time by about 42%. Keeping OCR and prompts unchanged and only re-cropping images with Docling's strict bboxes fixed two previously failing equations.\n\nEvaluating repaired and untouched regions separately, 85 of the 96 sLLM-repaired regions passed, but 107 errors or omissions remained in untouched content. A separate experiment adding OCR comparison raised the pass rate from 80.00% to 97.53%, but also selected 50 correct regions for repair; the sum of processing-stage times was about 12 minutes 35 seconds.",
+          "Docling extracted the structure, and only damaged tables and equations were repaired with local Qwen sLLMs. Tables, where row/column positions matter, were handled mainly by the vision model (qwen2.5vl:7b); equations were drafted by the text model (qwen2.5:7b) and checked by the vision model only when needed. This restored more than applying both models to everything and cut sLLM processing time by about 42%. Keeping OCR and prompts unchanged and only re-cropping images with Docling's strict bboxes fixed two previously failing equations.\n\nEvaluating repaired and untouched regions separately, 85 of the 96 sLLM-repaired regions passed, but 107 errors or omissions remained in untouched content. A separate experiment adding OCR comparison raised the pass rate from 80.00% to 97.53%, but also selected 50 correct regions for repair; processing took about 12 minutes 35 seconds.",
           "Selecting repair targets missed errors, and extra checks to catch them added cost. I decided to test whether having the vision sLLM read every original page could avoid this dependence on damage detection."
         ],
         [
@@ -549,7 +549,7 @@
       "contributions": [
         [
           "Lead for all AI features",
-          "Led design and evaluation across PDF conversion, Wiki generation and organization, retrieval and grounded answers, and the document-editing Agent, with implementation done using AI coding tools."
+          "Led design and evaluation across the AI features: building the PDF conversion pipeline, designing the Wiki structure and implementing its generation and upkeep, and the Agent that answers with evidence and edits documents. Implementation was done with AI coding tools."
         ],
         [
           "MSA design contribution",
@@ -573,7 +573,7 @@
         {
           "src": "assets/projects/fruition-wiki.jpg",
           "alt": "Fruition document relationship graph and source evidence search",
-          "caption": "Wiki generation and retrieval — I led the AI features that organize and connect document knowledge and find evidence for questions. Teammates implemented the graph and search UI.",
+          "caption": "Wiki generation and queries — documents are organized into the structure I designed, with concepts linked. I built evidence lookup for questions over the resulting Wiki. Teammates implemented the graph and search UI.",
           "width": 2000,
           "height": 1125
         },
@@ -594,7 +594,7 @@
       ],
       "cover": {
         "src": "assets/projects/fruition-slide-17.png",
-        "alt": "Fruition presentation, slide 17: AI document and knowledge workspace",
+        "alt": "Fruition presentation, slide 17: AI knowledge workspace",
         "width": 2880,
         "height": 1620
       }
@@ -735,12 +735,12 @@
       "fields": {
         "text11": "Highlights ",
         "text12": "01 / PROFILE",
-        "text13": "RAG evidence selection: coverage 66.25% → 91.25%, evidence attached to unanswerable questions 20 → 0",
+        "text13": "Improving RAG evidence selection: coverage 66.25% → 91.25%, evidence attached to unanswerable questions 20 → 0",
         "text14": "I thought wrong evidence makes the whole answer untrustworthy, so I replaced evidence selection with Jev. GPT cost about 2.5× more, and tuning search weights kept scores flat. Selection got much slower, so I tuned candidates and parallelism to cut median time from 9.090s to 1.137s.",
-        "text15": "Agent execution environment: user-defined skills behind approval, edit quality 82.5% → 91.2% (114 drafts)",
+        "text15": "Designing the agent execution environment: user-defined skills behind approval, edit quality 82.5% → 91.2% (114 drafts)",
         "text16": "Users repeat different tasks, so I let them define their own Skills. I judged that users can't trust AI that changes documents freely, so code checks permissions and scope, and changes apply only after approval. Code checks missed omitted requests, so drafts get a semantic evaluation and one rewrite at most.",
-        "text17": "Data pipelines: PDF conversion pass rate 45.17% → 89.89%, drug conversion $200 estimated → $11.18 spent",
-        "text18": "Broken tables and equations lose the figures answers rely on, so body text uses fast AnyDoc and table and equation regions are read separately. Converting each repeated sentence once with Batch API kept about 44,000 drug records within budget."
+        "text17": "Building data pipelines: PDF restoration rate 45.17% → 89.89%, drug conversion $200 estimated → $11.18 spent",
+        "text18": "Broken tables and equations lose the figures answers rely on, so body text uses fast AnyDoc and table and equation regions are read separately.\n\nConverting each repeated sentence once with Batch API kept about 44,000 drug records within budget."
       }
     },
     {
@@ -753,16 +753,16 @@
         "text23": "LLM Wiki-based AI workspace · AI SW Maestro, 17th cohort · Deployed on AWS EKS, in QA",
         "text24": "Team project (3 + designer) / AI lead",
         "text25": "How it started: a teammate’s pain point with managing documents, refined through design thinking — saved documents could not be found when needed.\nTeam: me (all AI), 1 backend (Spring backend), 1 frontend & DevOps (frontend, MSA deployment on AWS), external designer · 3 mentors",
-        "text114": "PDF document conversion",
-        "text115": "Converted uploaded paper PDFs into Markdown that keeps tables and equations, so they can be searched and cited in answers.",
-        "text26": "PDF → Markdown conversion\nProblem: Broken tables and equations in paper PDFs made the figures behind Wiki pages and answers unusable.\nDecision: Repairing only detected damage missed errors, and full AI conversion lacked table/equation accuracy and was costly, so I split processing by content type. Body text uses fast AnyDoc extraction; repair moved from an sLLM to commercial LLM APIs to avoid GPU server costs.\nSolution: Extracted body text with AnyDoc and repaired only garbled parts with AI, read table/equation regions separately, and kept original figures.\nResult: Pass rate on the same 30 pages (445 units, blind) rose from 45.17% to 89.89%. Figures in tables and equations no longer drop out of the Wiki.",
+        "text114": "PDF → Markdown restoration rate ~90%",
+        "text115": "Converted uploaded PDFs into Markdown that keeps tables and equations, so they can be searched and cited in answers.",
+        "text26": "PDF → Markdown conversion\nProblem: Broken tables and equations in paper PDFs made the figures behind Wiki pages and answers unusable\nDecision: Repairing only detected damage missed errors, and full AI conversion lacked table/equation accuracy and was costly, so I split processing by content type. Body text uses fast AnyDoc extraction; repair moved from an sLLM to commercial LLM APIs to avoid GPU server costs\nSolution: Extracted body text with AnyDoc and repaired only garbled parts with AI, read table/equation regions separately, and kept original figures\nResult: PDF → Markdown restoration rate rose from about 45% with Docling alone to about 90%",
         "text28": "Parallel Wiki generation\nProblem: Documents were processed one at a time, so large uploads waited long for their Wiki.\nDecision: Compared worker count, concurrent requests and GPU parallelism. More workers helped while waiting on external AI; more concurrent requests and GPU parallelism were slower, so I dropped them. Accepted about 4x memory, since EKS can spread services.\nSolution: Distributed per-document jobs over Kafka with up to 4 workers.\nResult: Analysis of 4 documents fell from 282.11s to 73.89s (about 74% faster).",
         "text116": "Improving retrieval for grounded AI answers",
         "text117": "Finds the document evidence AI answers need, and attaches none to questions the documents cannot answer.",
         "text27": "Evidence selection for RAG\nProblem: In a service that answers from documents, retrieval missed evidence and attached evidence to unanswerable questions, undermining trust.\nDecision: GPT selection cost about 2.5x and took longer; tuning weights and RRF gave similar scores across settings, so I adopted Jev, which picks only from fixed options and had first been validated on request routing (77 → 81 of 98 correct).\nSolution: Two stages: BGE-M3, the best Korean semantic model in benchmarks, and BM25 for exact terms gather candidates and Jev picks the final evidence. Compared on identical candidates with blind cross-grading, then cut candidates to 300 and compared 4, 6, 8 and 10 parallel batches, choosing 8 with no accuracy difference.\nResult: Coverage on 80 answerable questions rose from 66.25% to 91.25%. Median selection time 9.090s → 1.137s (still slower than the original 0.431s).",
         "text118": "User-defined agent Skills with approval-based execution",
         "text119": "Recurring tasks are saved and reused as Skills, and AI-made changes apply only after the user approves them.",
-        "text29": "User-defined task instructions (Skills)\nProblem: Recurring tasks differ by user, so they cannot all be built as features, and AI edits arrived with parts of the request missing, leaving repeatable work to chance.\nDecision: AI drafts instructions, code checks permissions and scope, and the user decides publishing and applying. Code format checks missed omitted requests, so I added LLM semantic evaluation.\nSolution: Authoring, review and publishing of natural-language instructions with checks against bypassing permission or approval; preview and separate approval before changes; semantic evaluation with at most one rewrite. Generation, evaluation and rewrite run as LangGraph nodes for step-level tracing, and published Skills are stored as immutable versions in PostgreSQL.\nResult: Edit quality 94 → 104 of 114 drafts (82.5% → 91.2%); documents stayed unchanged before approval. Failed drafts 20 → 10.",
+        "text29": "User-defined task instructions (Skills)\nProblem: Recurring tasks differ by user, so they cannot all be built as features, and AI edits arrived with parts of the request missing, leaving repeatable work to chance\nDecision: AI drafts instructions, code checks permissions and scope, and the user decides publishing and applying. Code format checks missed omitted requests, so I added LLM semantic evaluation\nSolution: Authoring, review and publishing of natural-language instructions with checks against bypassing permission or approval; preview and separate approval before changes; semantic evaluation with at most one rewrite. Generation, evaluation and rewrite run as LangGraph nodes for step-level tracing, and published Skills are stored as immutable versions in PostgreSQL\nResult: Edit quality 94 → 104 of 114 drafts (82.5% → 91.2%); documents stayed unchanged before approval. Failed drafts 20 → 10",
         "text30": "Jev-based request routing\nProblem: Misrouting a question as an edit led to the wrong action, directly hurting the service's reliability.\nDecision: Jev picks only from fixed options, which fits routing; as a newly released model it was validated first on low-risk routing.\nSolution: Applied Jev to choose task type and conditions, and compared it with the existing approach and GPT-5-nano on the same 98 requests.\nResult: Fully correct decisions rose from 77 to 81 (GPT-5-nano 63); median decision time fell from 8.967s to 0.658s.",
         "text143": "Conversation memory and edit input scope\nProblem: Sending whole conversations and documents to the model raises cost and latency, adding to users' prepaid cost and waiting time.\nDecision: Recent turns need full text while older ones need only the gist; edits need only the target and its surroundings.\nSolution: Keep the last six messages verbatim with a rolling summary for older ones, and send only the target lines plus context for edits.\nResult: Edit input for a 1,000-line document cut to 5.58% of the source.",
         "text144": "Bounding the edit input\nProblem: sending a whole document to the model drives up cost and latency.\nSolution: send only the target line range plus surrounding context, and reject ranges that straddle a table or code-block boundary. A benchmark tracks input size against the source and average and p95 time.",
@@ -828,7 +828,7 @@
         "text72": "04 / EXPERIENCE",
         "text73": "2026.06 — 2026.06",
         "text74": "Rhwp open-source contributions",
-        "text75": "Gave Claude Code a work plan and contribution rules to automate the flow from issue analysis to PR, including HWP/HWPX save-error fixes; 7 PRs merged and listed as a contributor.",
+        "text75": "Gave Claude Code a work plan and contribution rules to automate the flow from issue analysis to PR, including HWP/HWPX save-error fixes; 7 PRs merged. Listed as a contributor.",
         "text76": "PR #1213 · Merged ↗",
         "text77": "PR #1351 · Submitted ↗",
         "text78": "2025.03 — 2026.01",
@@ -877,8 +877,8 @@
         "text106": "2025.09",
         "text107": "Engineer Information Processing",
         "text108": "Human Resources Development Service of Korea",
-        "text109": "Explore the problems, experiments and technical decisions behind these projects.",
-        "text110": "Read portfolio ↗"
+        "text109": "Want to follow my thinking in more detail?",
+        "text110": "Follow my thinking ↗"
       }
     }
   ],
@@ -890,12 +890,12 @@
     "experience1Description": "I thought wrong evidence makes the whole answer untrustworthy, so I replaced evidence selection with Jev. GPT cost about 2.5× more, and tuning search weights kept scores flat. Selection got much slower, so I tuned candidates and parallelism to cut median time from 9.090s to 1.137s.",
     "experience2Title": "Agent execution environment: user-defined skills behind approval, edit quality 82.5% → 91.2% (114 drafts)",
     "experience2Description": "Users repeat different tasks, so I let them define their own Skills. I judged that users can't trust AI that changes documents freely, so code checks permissions and scope, and changes apply only after approval. Code checks missed omitted requests, so drafts get a semantic evaluation and one rewrite at most.",
-    "experience3Title": "Data pipelines: PDF conversion pass rate 45.17% → 89.89%, drug conversion $200 estimated → $11.18 spent",
+    "experience3Title": "Data pipelines: PDF → Markdown restoration rate ~90%, drug conversion $200 estimated → $11.18 spent",
     "experience3Description": "Broken tables and equations lose the figures answers rely on, so body text uses fast AnyDoc and table and equation regions are read separately. Converting each repeated sentence once with Batch API kept about 44,000 drug records within budget.",
     "profileRole": "AI Application Developer · Backend Engineer",
     "profileLine1": "An AI application developer who raised RAG evidence coverage from 66.25% to 91.25% and AI document-editing quality from 82.5% to 91.2%, designing evaluation, approval and rollback so AI does not answer from wrong evidence or change users' documents on its own.",
     "profileLine2": "I weigh accuracy, cost and response time against each other, confirm the trade-off with an evaluation, and then choose the implementation that fits the service.",
-    "readingOrder": "Short on time? Start with 01, 02 and 04 — the three experiences on the cover: quality evaluation, the agent execution environment, and data pipelines."
+    "readingOrder": ""
   },
   "activities": {
     "title": "Awards and exhibitions",
