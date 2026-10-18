@@ -124,7 +124,7 @@ def companion():
     label = 'Jaehyeong, illustrated' if LANG == 'en' else '김재형 캐릭터'
     busy = escape(json.dumps(egg['busy'], ensure_ascii=False))
     poses = '<img class="pose-think" src="assets/character/think.webp" alt="" width="262" height="480" loading="lazy">'
-    return f'<div class="companion" data-state="away"><button type="button" class="companion-figure" aria-label="{label}" data-busy="{busy}" data-done="{escape(egg["busyDone"])}"><span class="bubble" aria-live="polite"></span>{poses}</button></div>'
+    return f'<div class="companion" data-state="away"><button type="button" class="companion-figure" aria-label="{label}" data-busy="{busy}" data-done="{escape(egg["busyDone"])}" data-listened="{escape(egg["listenDone"])}"><span class="bubble" aria-live="polite"></span>{poses}</button></div>'
 
 
 def cooking_dialog():

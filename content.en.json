@@ -1216,13 +1216,14 @@
       "questWrong": "Not quite. Start again from Fruition!",
       "questDone": "Found it! Click me in the middle",
       "questSolvedHint": "Click me in the middle of the graph",
-      "busyDone": "You heard me out! Someone is hanging from the clouds at the very bottom",
+      "busyDone": "Someone is hanging from the clouds at the very bottom",
       "whisper": "Is there anything AI can’t do?",
       "human": "What I can do because I’m human",
       "hangStart": "Not yet! Start from the greeting at the very top",
       "hangName": "They say the answer is in my name",
       "hangDesk": "Talk to me at the desk first",
-      "console": "Something only a human can do is hidden on this page. Start with the greeting."
+      "console": "Something only a human can do is hidden on this page.",
+      "listenDone": "You heard me out! Now go find what's hidden up there"
     }
   }
 }

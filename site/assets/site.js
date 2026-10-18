@@ -225,12 +225,13 @@ const say = (who, text, ms = 2600) => {
 const standing = document.querySelector('.hero-character');
 const quest = document.querySelector('.graph-quest');
 const questText = quest ? JSON.parse(quest.dataset.texts) : {};
-// Easter egg, in order: clicking the role line in the greeting ("AI application developer") asks a question,
-// and the logo answers it, which wakes it up; until then no character reacts. Then hear out every line of the
-// character at the desk (bottom right while reading), which points to the one hanging from the clouds at the
-// bottom; that one opens a puzzle in the graph; joining the two projects' path adds me to the graph and the
-// character on the hills gives a V-sign. Progress is kept in this browser, so a visitor picks up where they left.
-const ASKED = 1, AWAKE = 2, TALKED = 3, UNLOCKED = 4, SOLVED = 5;
+// Easter egg, in order: hear out every line of the character at the desk (bottom right while reading), which
+// starts it; then clicking the role line in the greeting ("AI application developer") asks a question, and the
+// logo answers it, which wakes it up. One more word with the character at the desk points to the one hanging
+// from the clouds at the bottom; that one opens a puzzle in the graph; joining the two projects' path adds me to
+// the graph and the character on the hills gives a V-sign. Progress is kept in this browser, so a visitor picks
+// up where they left.
+const LISTENED = 1, ASKED = 2, AWAKE = 3, UNLOCKED = 4, SOLVED = 5;
 let eggLevel = 0;
 try { eggLevel = Number(localStorage.getItem('egg-progress')) || 0; } catch {}
 const reach = level => {
@@ -257,7 +258,7 @@ if (meNode && cooking && buddy && quest && trigger) {
   };
   // Each line stops showing once the visitor has found the step after it.
   const question = () => {
-    if (eggLevel >= AWAKE) return;
+    if (eggLevel < LISTENED || eggLevel >= AWAKE) return;
     flash(ask);
     reach(ASKED);
   };
@@ -265,12 +266,11 @@ if (meNode && cooking && buddy && quest && trigger) {
   trigger.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); question(); } });
   if (eggLevel >= AWAKE) document.body.classList.add('egg-awake');
   document.querySelector('.identity')?.addEventListener('click', e => {
-    if (eggLevel < ASKED || eggLevel >= TALKED) return;
+    if (eggLevel < ASKED || eggLevel >= UNLOCKED) return;
     e.preventDefault();
     flash(whisper.dataset.human);
     if (eggLevel >= AWAKE) return;
     reach(AWAKE);
-    line = 0; // lines heard before waking it up don't count
     document.body.classList.add('egg-awake');
     window.gtag?.('event', 'easter_egg_wake');
   });
@@ -281,8 +281,8 @@ if (meNode && cooking && buddy && quest && trigger) {
   const show = text => { quest.hidden = false; quest.textContent = text; };
   const progress = () => show(questText.questProgress);
   const busy = JSON.parse(buddy.dataset.busy);
-  // A pose for each busy line, in the same order. The lines go round for anyone; only during the easter egg
-  // does hearing them all out get the line that points to the clouds.
+  // A pose for each busy line, in the same order. The lines go round for anyone; hearing them all out the
+  // first time starts the easter egg, and once it is awake the next click points to the clouds.
   const poses = ['cushion', 'think', 'broke', 'coffee', 'sweep', 'boxes', 'stuck', 'camera'];
   // Lines come in a random order, each once per round, so hearing them all still takes one round.
   const shuffle = () => {
@@ -291,21 +291,24 @@ if (meNode && cooking && buddy && quest && trigger) {
     return order;
   };
   let order = shuffle();
-  let line = eggLevel >= UNLOCKED ? busy.length : 0;
+  let line = 0, told = false;
   buddy.addEventListener('click', () => {
-    if (eggLevel >= AWAKE) reach(TALKED);
+    if (eggLevel === AWAKE) { reach(UNLOCKED); setPose('think').then(() => say(buddy, buddy.dataset.done, 3600)); return; }
     if (line === busy.length) {
       line = 0;
       order = shuffle();
-      if (eggLevel >= AWAKE) { reach(UNLOCKED); setPose('think').then(() => say(buddy, buddy.dataset.done, 3600)); return; }
+      if (eggLevel === LISTENED && !told) { told = true; setPose('camera').then(() => say(buddy, buddy.dataset.listened, 3600)); return; }
     }
     const i = order[line++];
     setPose(poses[i % poses.length]).then(() => say(buddy, busy[i]));
+    if (line === busy.length) reach(LISTENED);
   });
   const hanger = document.querySelector('.hanging');
   // Before its turn, the one in the clouds points back to whichever step comes next.
   hanger?.addEventListener('click', () => {
-    if (eggLevel < UNLOCKED) { say(hanger, hanger.dataset[eggLevel < ASKED ? 'start' : eggLevel < AWAKE ? 'name' : 'desk'], 3200); return; }
+    // Nothing to say before the easter egg starts: finding the start is part of it.
+    if (eggLevel < LISTENED) return;
+    if (eggLevel < UNLOCKED) { say(hanger, hanger.dataset[eggLevel === AWAKE ? 'desk' : eggLevel < ASKED ? 'start' : 'name'], 3200); return; }
     if (stage > 0) { say(hanger, stage === 1 ? questText.questHint : questText.questSolvedHint); return; }
     stage = 1;
     say(hanger, hanger.dataset.reveal, 1800);
