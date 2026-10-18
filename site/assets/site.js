@@ -216,12 +216,19 @@ const say = (who, text, ms = 2600) => {
 const standing = document.querySelector('.hero-character');
 const quest = document.querySelector('.graph-quest');
 const questText = quest ? JSON.parse(quest.dataset.texts) : {};
-// Easter egg, in order: clicking the role line in the greeting ("AI application developer") wakes it up;
-// until then no character reacts. Then hear out every line of the character at the desk (bottom right while
-// reading), which points to the one hanging from the clouds at the bottom; that one opens a puzzle in the graph;
-// joining the two projects' path adds me to the graph and the character on the hills gives a V-sign.
-let started = false;
-let unlocked = false;
+// Easter egg, in order: clicking the role line in the greeting ("AI application developer") asks a question,
+// and the logo answers it, which wakes it up; until then no character reacts. Then hear out every line of the
+// character at the desk (bottom right while reading), which points to the one hanging from the clouds at the
+// bottom; that one opens a puzzle in the graph; joining the two projects' path adds me to the graph and the
+// character on the hills gives a V-sign. Progress is kept in this browser, so a visitor picks up where they left.
+const ASKED = 1, AWAKE = 2, TALKED = 3, UNLOCKED = 4, SOLVED = 5;
+let eggLevel = 0;
+try { eggLevel = Number(localStorage.getItem('egg-progress')) || 0; } catch {}
+const reach = level => {
+  if (eggLevel >= level) return;
+  eggLevel = level;
+  try { localStorage.setItem('egg-progress', level); } catch {}
+};
 let stage = 0; // 0 not started, 1 puzzle open, 2 solved
 standing?.addEventListener('click', () => { if (stage) say(standing, stage === 2 ? questText.questSolvedHint : questText.questHint); });
 
@@ -232,16 +239,30 @@ const trigger = document.querySelector('.egg-trigger');
 if (meNode && cooking && buddy && quest && trigger) {
   const wiki = meNode.closest('.wiki-graph');
   const whisper = document.querySelector('.egg-whisper');
-  const wake = () => {
+  const ask = whisper.textContent;
+  const flash = text => {
+    whisper.textContent = text;
     whisper.classList.remove('on'); void whisper.offsetWidth; whisper.classList.add('on');
     clearTimeout(whisper.hideTimer); whisper.hideTimer = setTimeout(() => whisper.classList.remove('on'), 3300);
-    if (started) return;
-    started = true;
+  };
+  // Each line stops showing once the visitor has found the step after it.
+  const question = () => {
+    if (eggLevel >= AWAKE) return;
+    flash(ask);
+    reach(ASKED);
+  };
+  trigger.addEventListener('click', question);
+  trigger.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); question(); } });
+  if (eggLevel >= AWAKE) document.body.classList.add('egg-awake');
+  document.querySelector('.identity')?.addEventListener('click', e => {
+    if (eggLevel < ASKED || eggLevel >= TALKED) return;
+    e.preventDefault();
+    flash(whisper.dataset.human);
+    if (eggLevel >= AWAKE) return;
+    reach(AWAKE);
     document.body.classList.add('egg-awake');
     window.gtag?.('event', 'easter_egg_wake');
-  };
-  trigger.addEventListener('click', wake);
-  trigger.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); wake(); } });
+  });
   const path = ['fruition', 'rag', 'chatbot', 'pilltip'];
   let step = 0;
   const node = id => wiki.querySelector(`.node[data-id="${id}"]`);
@@ -249,16 +270,21 @@ if (meNode && cooking && buddy && quest && trigger) {
   const show = text => { quest.hidden = false; quest.textContent = text; };
   const progress = () => show(questText.questProgress);
   const busy = JSON.parse(buddy.dataset.busy);
-  let line = 0;
+  // A pose for each busy line, in the same order; the last one sends it back to thinking.
+  const poses = ['cushion', 'think', 'stuck', 'coffee', 'think'];
+  const pose = buddy.querySelector('img');
+  let line = eggLevel >= UNLOCKED ? busy.length : 0;
   buddy.addEventListener('click', () => {
-    if (!started) return;
+    if (eggLevel < AWAKE) return;
+    reach(TALKED);
+    pose.src = pose.src.replace(/[^/]+\.webp$/, `${poses[Math.min(line, busy.length)]}.webp`);
     if (line < busy.length) { say(buddy, busy[line++]); return; }
-    unlocked = true;
+    reach(UNLOCKED);
     say(buddy, buddy.dataset.done, 3600);
   });
   const hanger = document.querySelector('.hanging');
   hanger?.addEventListener('click', () => {
-    if (!unlocked) return;
+    if (eggLevel < UNLOCKED) return;
     if (stage > 0) { say(hanger, stage === 1 ? questText.questHint : questText.questSolvedHint); return; }
     stage = 1;
     say(hanger, hanger.dataset.reveal, 1800);
@@ -282,7 +308,7 @@ if (meNode && cooking && buddy && quest && trigger) {
     }
   };
   // Once solved, the graph makes room: I sit between the two projects and the other nodes drift apart.
-  const relayout = () => {
+  const relayout = instant => {
     const pos = {}, home = {};
     for (const n of wiki.querySelectorAll('.node[data-id]')) {
       if (n === meNode) continue;
@@ -331,7 +357,7 @@ if (meNode && cooking && buddy && quest && trigger) {
         l.setAttribute('x2', b.x.toFixed(1)); l.setAttribute('y2', b.y.toFixed(1));
       }
     };
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) { for (let i = 0; i < 90; i++) tick(); draw(); return; }
+    if (instant || matchMedia('(prefers-reduced-motion: reduce)').matches) { for (let i = 0; i < 90; i++) tick(); draw(); return; }
     let frame = 0;
     const run = () => { tick(); draw(); if (++frame < 90) requestAnimationFrame(run); };
     requestAnimationFrame(run);
@@ -351,6 +377,7 @@ if (meNode && cooking && buddy && quest && trigger) {
       glowFrom(step < path.length ? id : null);
       if (step === path.length) {
         stage = 2;
+        reach(SOLVED);
         wiki.classList.remove('puzzle');
         // Light spreads out from the path, hop by hop, until the whole graph is lit; only then do I appear.
         const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -385,6 +412,17 @@ if (meNode && cooking && buddy && quest && trigger) {
     show(questText.questWrong);
     say(standing, questText.questWrong);
   });
+  // A visitor who solved it before comes back to the finished graph, without replaying the light.
+  if (eggLevel >= SOLVED) {
+    stage = 2;
+    for (const id of path) node(id)?.classList.add('found');
+    path.slice(1).forEach((id, i) => edge(path[i], id)?.classList.add('found'));
+    wiki.querySelectorAll('line:not([data-a="me"]), .node[data-id]').forEach(el => { if (el !== meNode && !path.includes(el.dataset.id)) el.classList.add('near'); });
+    wiki.classList.add('solved', 'with-me');
+    relayout(true);
+    meNode.tabIndex = 0;
+    standing.classList.add('cheer');
+  }
   const open = () => { cooking.showModal(); window.gtag?.('event', 'easter_egg_open'); };
   meNode.addEventListener('click', open);
   meNode.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
