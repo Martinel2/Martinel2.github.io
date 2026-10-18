@@ -584,8 +584,8 @@ summary{cursor:pointer}
 @media(max-width:680px){.project-dialog:not(.cooking-dialog):not(.resume-format-dialog){padding:0 20px 28px}.project-dialog form .button{margin-right:-8px}}
 
 /* Easter egg switch: the role line looks like plain text; once woken, the characters answer clicks. */
-.egg-trigger{cursor:text;outline-offset:6px;transition:text-shadow .4s}
-.egg-trigger:hover{cursor:pointer;text-shadow:0 0 14px rgb(242 169 0 / 55%)}
+.egg-trigger{cursor:text;outline-offset:6px}
+.egg-trigger:hover{cursor:pointer}
 .home-hero{position:relative}
 .egg-whisper{position:fixed;left:0;right:0;top:42%;z-index:40;margin:0;padding:0 20px;text-align:center;font-size:clamp(30px,5vw,64px);font-weight:800;letter-spacing:-.02em;color:var(--primary-strong);text-shadow:0 0 18px #fff,0 0 6px #fff,0 0 2px #fff;opacity:0;pointer-events:none;transform:translateY(12px)}
 .egg-whisper.on{animation:whisper 3.2s ease forwards}
