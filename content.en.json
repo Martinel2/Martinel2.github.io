@@ -518,6 +518,7 @@
   "projects": [
     {
       "name": "Fruition",
+      "affiliation": "AI SW Maestro, 17th cohort",
       "label": "01 / AI KNOWLEDGE WORKSPACE",
       "description": "An AI workspace that organizes uploaded documents into an LLM-generated Wiki, answers questions using source evidence through RAG, and edits documents in natural language. It is currently deployed on AWS EKS and undergoing QA.",
       "origin": "Started when a teammate raised a pain point with managing documents, which we refined through design thinking.",
@@ -601,6 +602,7 @@
     },
     {
       "name": "Pilltip",
+      "affiliation": "Pusan National University capstone",
       "label": "02 / PERSONALIZED MEDICATION",
       "description": "A personalized AI medication service that explains drug information in plain language and helps users manage their own and their family’s medications and schedules.",
       "origin": "Started as a Pusan National University capstone project.",

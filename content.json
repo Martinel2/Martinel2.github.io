@@ -518,6 +518,7 @@
   "projects": [
     {
       "name": "Fruition",
+      "affiliation": "AI SW 마에스트로 17기",
       "label": "01 / AI KNOWLEDGE WORKSPACE",
       "description": "올린 문서를 LLM이 Wiki로 정리하고, RAG로 원문 근거를 찾아 답하거나 자연어로 문서를 편집하는 AI 워크스페이스입니다. 지금은 AWS EKS에 배포해 QA를 진행하고 있습니다.",
       "origin": "팀원이 겪던 문서 관리의 불편함을 디자인 싱킹으로 구체화하며 시작했습니다.",
@@ -601,6 +602,7 @@
     },
     {
       "name": "Pilltip",
+      "affiliation": "부산대학교 졸업과제",
       "label": "02 / PERSONALIZED MEDICATION",
       "description": "의약품 정보를 쉬운 말로 안내하고, 사용자·가족의 복약 정보와 일정 관리를 돕는 개인 맞춤 AI 복약 서비스입니다.",
       "origin": "부산대학교 졸업과제로 시작했습니다.",

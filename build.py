@@ -355,8 +355,8 @@ def home():
     for project in DATA['projects']:
         links = ''.join(f'<a class="text-link" href="{escape(link["url"])}">{escape(link["label"])} ↗</a>' for link in project.get('links', []))
         target = 'resume.html#' + project['name'].lower()
-        affiliation_key, role_key = (23, 24) if project['name'] == 'Fruition' else (46, 47)
-        affiliation = escape(fields['text' + str(affiliation_key)].rsplit(' · ', 1)[-1])
+        role_key = 24 if project['name'] == 'Fruition' else 47
+        affiliation = escape(project['affiliation'])
         role = escape(fields['text' + str(role_key)].split(' / ', 1)[-1])
         details = f'<a class="read-more" href="{target}">{home_text("projectLabels", "detailsLabel")}</a>'
         cover = project['cover']
