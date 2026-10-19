@@ -55,7 +55,7 @@ try{
  assert.match(await page.$eval('#intro-preview',e=>e.textContent),/안녕하세요,[\s\S]*김재형입니다/);
  assert.ok(await page.$('[data-path="home.actions"]'));
  await page.select('#content-language','en');
- await page.waitForFunction(()=>document.querySelector('#field-home-hero-greeting')?.value==='Hello,');
+ await page.waitForFunction(greeting=>document.querySelector('#field-home-hero-greeting')?.value===greeting,{},english.home.hero.greeting);
  await page.$eval('#field-home-hero-greeting',input=>{input.value='Welcome,';input.dispatchEvent(new Event('input',{bubbles:true}));});
  page.once('dialog',dialog=>dialog.dismiss());
  await page.select('#content-language','ko');
@@ -65,7 +65,7 @@ try{
  await page.waitForFunction(()=>document.querySelector('#status').textContent.includes('저장됐습니다'));
  assert.equal(enStored.home.hero.greeting,'Welcome,');assert.equal(enWrites,1);assert.equal(writes,0);
  await page.select('#content-language','ko');
- await page.waitForFunction(()=>document.querySelector('#field-home-hero-greeting')?.value==='안녕하세요,');
+ await page.waitForFunction(greeting=>document.querySelector('#field-home-hero-greeting')?.value===greeting,{},content.home.hero.greeting);
 
  await page.$eval('#field-home-hero-greeting',input=>{input.value='반갑습니다,';input.dispatchEvent(new Event('input',{bubbles:true}));});
  assert.match(await page.$eval('#intro-preview',e=>e.textContent),/반갑습니다,/);

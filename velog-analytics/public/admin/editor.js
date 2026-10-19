@@ -52,7 +52,7 @@ function render(){sections=[];
   ['actions','이력서·포트폴리오·SNS 버튼','버튼 이름과 LinkedIn·GitHub 주소를 수정합니다. 이력서와 포트폴리오 버튼은 사이트 내부 페이지로 연결됩니다.'],
   ['navigation','상단 메뉴 이름','모든 페이지 상단에 표시되는 메뉴 이름입니다.'],
   ['sections','기술·프로젝트·회고록 제목','섹션 제목과 영문 표기, 블로그 전체 링크를 수정합니다. 기술 제목은 홈·이력서의 기술에서 수정하세요.'],
-  ['projectLabels','프로젝트 카드 안내 문구','소속·역할 항목 이름과 팝업을 여는 문구입니다. 실제 소속은 아래 '프로젝트 카드·상세 소개'의 소속 칸에서, 역할은 프로젝트 팝업에서 수정하세요.']
+  ['projectLabels','프로젝트 카드 안내 문구','소속·역할 항목 이름과 팝업을 여는 문구입니다. 실제 소속은 아래 프로젝트 카드·상세 소개의 소속 칸에서, 역할은 프로젝트 팝업에서 수정하세요.']
  ])sections.push({group:'홈 화면',title,path:['home',key],help});
  const resumeOrder=['text1','text57','text19','text71','text84','text11','text98'];
  for(const key of resumeOrder){
