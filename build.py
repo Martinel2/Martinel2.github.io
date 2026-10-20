@@ -308,7 +308,7 @@ def portfolio():
 <div><a href="https://github.com/edwardkim/rhwp/pull/1213"><span>OPEN SOURCE ↗</span><h3>Rhwp | HWPX 저장 오류 수정</h3><p>Claude Code에 작업 계획과 기여 규칙을 주고 이슈 분석부터 PR까지 자동화해, textFlow 보존 오류 수정(PR #1213) 등 PR 7건이 병합되고 Contributor로 등재됐습니다.</p></a><a class="text-link" href="https://github.com/edwardkim/rhwp">GitHub 저장소 ↗</a></div>
 <div><h3>APPTIVE | 백엔드 멘토링</h3><div class="evidence-row"><a class="evidence-thumb" href="assets/evidence/apptive-merit.jpeg" target="_blank" rel="noopener"><img src="assets/evidence/apptive-merit.jpeg" alt="APPTIVE 백엔드 멘토 공로상" loading="lazy"><span>크게 보기 ↗</span></a><div><p>멘티 경험을 교육 개선으로 연결했습니다. 멘티 12명을 대상으로 6회의 멘토링과 코드 리뷰를 진행했습니다.</p><a class="text-link" href="./#activities">활동 내용 ↗</a></div></div></div><div><h3>백준 945일 연속 문제 해결</h3><div class="evidence-row"><a class="evidence-thumb" href="assets/evidence/baekjoon-streak.png" target="_blank" rel="noopener"><img src="assets/evidence/baekjoon-streak.png" alt="백준 solved.ac 2022년부터 2025년까지의 연도별 스트릭" loading="lazy"><span>크게 보기 ↗</span></a><div><p>하루 한 문제를 목표로 solved.ac 기준 최장 945일 연속 문제를 해결했습니다. 누적 1,659문제, solved.ac Platinum IV.</p><a class="text-link" href="https://github.com/Martinel2/BaekJoon">풀이 저장소 ↗</a></div></div></div></div></section>
 <section class="more-work writings" id="writings"><span class="eyebrow">{home_text("sections", "writingsEyebrow")}</span><div class="writings-heading"><h2>{home_text("sections", "writingsTitle")}</h2><a class="button" href="{home_text("sections", "writingsUrl")}">{home_text("sections", "writingsLinkLabel")} ↗</a></div><div class="more-grid">{writings}</div></section>'''
-    description = '김재형의 AI 응용 개발 포트폴리오. Fruition과 Pilltip의 문제, 기술 선택, Mermaid 구조도, 평가 결과를 소개합니다.'
+    description = '김재형의 AI 엔지니어링 포트폴리오. Fruition과 Pilltip의 문제, 기술 선택, Mermaid 구조도, 평가 결과를 소개합니다.'
     fill = lambda sections, href: re.sub(r'@@CASE:([a-z0-9-]+)@@', lambda m: href(m[1]), body.replace('@@SECTIONS@@', ''.join(sections)))
     # Every case on one page feeds the PDF deck; visitors get an index and one page per case.
     (SITE / 'portfolio-print.html').write_text(page('포트폴리오', description, fill(project_sections, lambda cid: '#' + cid), path='portfolio-print.html'))
@@ -344,7 +344,7 @@ def portfolio():
 def resume():
     fields = {key: value for section in DATA['resume'] for key, value in section['fields'].items()}
     body = re.sub(r'@@(text\d+)@@', lambda match: resume_text(fields[match[1]]), (ROOT / 'templates/resume.html').read_text())
-    (SITE / 'resume.html').write_text(page('이력서', '김재형 | AI Application Developer / Backend Engineer. 프로젝트, 기술, 오픈소스 기여, 수상과 학력.', body, True))
+    (SITE / 'resume.html').write_text(page('이력서', '김재형 | AI Engineer / Backend Engineer. 프로젝트, 기술, 오픈소스 기여, 수상과 학력.', body, True))
 
 
 

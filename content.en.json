@@ -722,9 +722,9 @@
         "text1": "RESUME / JAEHYEONG KIM",
         "text2": "I build services that use AI",
         "text3": "to make people’s lives better.",
-        "text4": "AI Application Developer | Backend Engineer",
+        "text4": "AI Engineer | Backend Engineer",
         "text5": "I enjoy taking a deep dive into problems.",
-        "text6": "An AI application developer who raised RAG evidence coverage from 66.25% to 91.25% and AI document-editing quality from 82.5% to 91.2%, designing evaluation, approval and rollback so AI does not answer from wrong evidence or change users' documents on its own.",
+        "text6": "An AI engineer who raised RAG evidence coverage from 66.25% to 91.25% and AI document-editing quality from 82.5% to 91.2%, designing evaluation, approval and rollback so AI does not answer from wrong evidence or change users' documents on its own.",
         "text7": "kkuldangi2@gmail.com",
         "text8": "GitHub ↗",
         "text9": "Blog ↗",
@@ -894,8 +894,8 @@
     "experience2Description": "Users repeat different tasks, so I let them define their own Skills. I judged that users can't trust AI that changes documents freely, so code checks permissions and scope, and changes apply only after approval. Code checks missed omitted requests, so drafts get a semantic evaluation and one rewrite at most.",
     "experience3Title": "Data pipelines: PDF → Markdown restoration rate ~90%, drug conversion $200 estimated → $11.18 spent",
     "experience3Description": "Broken tables and equations lose the figures answers rely on, so body text uses fast AnyDoc and table and equation regions are read separately. Converting each repeated sentence once with Batch API kept about 44,000 drug records within budget.",
-    "profileRole": "AI Application Developer | Backend Engineer",
-    "profileLine1": "An AI application developer who raised RAG evidence coverage from 66.25% to 91.25% and AI document-editing quality from 82.5% to 91.2%, designing evaluation, approval and rollback so AI does not answer from wrong evidence or change users' documents on its own.",
+    "profileRole": "AI Engineer | Backend Engineer",
+    "profileLine1": "An AI engineer who raised RAG evidence coverage from 66.25% to 91.25% and AI document-editing quality from 82.5% to 91.2%, designing evaluation, approval and rollback so AI does not answer from wrong evidence or change users' documents on its own.",
     "profileLine2": "I weigh accuracy, cost and response time against each other, confirm the trade-off with an evaluation, and then choose the implementation that fits the service.",
     "readingOrder": ""
   },
@@ -923,14 +923,14 @@
   },
   "home": {
     "hero": {
-      "eyebrow": "AI APPLICATION DEVELOPER / BACKEND ENGINEER",
-      "greeting": "Hello, I’m an\nAI application developer,",
+      "eyebrow": "AI ENGINEER / BACKEND ENGINEER",
+      "greeting": "Hello, I’m an\nAI engineer,",
       "nameLine": "Jaehyeong Kim."
     },
     "about": {
       "eyebrow": "ABOUT ME",
       "title": "About me",
-      "description": "An AI application developer who raised RAG evidence coverage from 66.25% to 91.25% and AI document-editing quality from 82.5% to 91.2%, designing evaluation, approval and rollback so AI does not answer from wrong evidence or change users' documents on its own. I owned the entire AI side of Fruition, an AI workspace that turns documents into knowledge, and the backend and AI of Pilltip, a medication service that explains drug information in plain language. Both handle sensitive personal data, so I drew an explicit line between what the model sees and what application code decides. Outside of code, I have kept up weight training for two and a half years."
+      "description": "An AI engineer who raised RAG evidence coverage from 66.25% to 91.25% and AI document-editing quality from 82.5% to 91.2%, designing evaluation, approval and rollback so AI does not answer from wrong evidence or change users' documents on its own. I owned the entire AI side of Fruition, an AI workspace that turns documents into knowledge, and the backend and AI of Pilltip, a medication service that explains drug information in plain language. Both handle sensitive personal data, so I drew an explicit line between what the model sees and what application code decides. Outside of code, I have kept up weight training for two and a half years."
     },
     "sections": {
       "skillsEyebrow": "SKILLS",
@@ -975,7 +975,7 @@
     "easterEgg": {
       "buttonLabel": "See what I do without AI",
       "title": "What I do without AI",
-      "text": "As an AI application developer I use AI as much as I can, but work that needs care, like cooking, is something AI can't do yet, so I put my own care into it.",
+      "text": "As an AI engineer I use AI as much as I can, but work that needs care, like cooking, is something AI can't do yet, so I put my own care into it.",
       "photos": [
         {
           "src": "assets/cooking/01.webp",

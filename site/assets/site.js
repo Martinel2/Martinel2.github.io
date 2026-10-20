@@ -226,7 +226,7 @@ const standing = document.querySelector('.hero-character');
 const quest = document.querySelector('.graph-quest');
 const questText = quest ? JSON.parse(quest.dataset.texts) : {};
 // Easter egg, in order: hear out every line of the character at the desk (bottom right while reading), which
-// starts it; then clicking the role line in the greeting ("AI application developer") asks a question, and the
+// starts it; then clicking the role line in the greeting ("AI engineer") asks a question, and the
 // logo answers it, which wakes it up. One more word with the character at the desk points to the one hanging
 // from the clouds at the bottom; that one opens a puzzle in the graph; joining the two projects' path adds me to
 // the graph and the character on the hills gives a V-sign. Progress is kept in this browser, so a visitor picks
