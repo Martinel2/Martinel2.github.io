@@ -527,15 +527,15 @@
       "team": [
         [
           "AI (본인)",
-          "PDF 변환, Wiki 생성, RAG 검색·근거 답변, 문서 편집 Agent 등 AI 기능 전체"
+          "Python 기반 PDF 변환, Wiki 생성, RAG 검색·근거 답변, 문서 편집 Agent 등 AI 서비스"
         ],
         [
           "백엔드 1명",
-          "Spring 기반 백엔드 전체"
+          "Java Spring Boot 기반 백엔드(문서 서비스, 사용자 서비스)"
         ],
         [
           "프론트엔드·DevOps 1명",
-          "프론트엔드 전체, MSA 기반 AWS 배포"
+          "TypeScript 기반 프론트엔드, MSA 기반 AWS 배포"
         ],
         [
           "디자인",
