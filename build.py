@@ -78,7 +78,7 @@ def graph_svg():
     hubs = [(x, y) for i, _, _, x, y, hub in GRAPH_NODES if hub]
     mx, my = (hubs[0][0] + hubs[1][0]) // 2, (hubs[0][1] + hubs[1][1]) // 2
     me_edges = ''.join(f'<line data-a="me" data-b="{i}" x1="{mx}" y1="{my}" x2="{x}" y2="{y}" pathLength="1"/>' for i, _, _, x, y, hub in GRAPH_NODES if hub)
-    me = (f'<g class="node hub me-node" data-id="me" tabindex="-1" role="button" aria-label="{escape(egg["meLabel"])} · {escape(egg["buttonLabel"])}">'
+    me = (f'<g class="node hub me-node" data-id="me" tabindex="-1" role="button" aria-label="{escape(egg["meLabel"])}, {escape(egg["buttonLabel"])}">'
           f'<clipPath id="me-clip"><circle cx="{mx}" cy="{my}" r="24"/></clipPath><circle class="me-ring" cx="{mx}" cy="{my}" r="27"/>'
           f'<image href="assets/character/face.webp" x="{mx - 24}" y="{my - 24}" width="48" height="48" clip-path="url(#me-clip)"/>'
           f'<text x="{mx}" y="{my + 44}">{escape(egg["meLabel"])}</text></g>')
@@ -133,7 +133,7 @@ def cooking_dialog():
     cats = egg['categories']
     cx, cy, spots = 210, 105, [(70, 40), (350, 40), (55, 165), (365, 165), (210, 200)]
     lines = ''.join(f'<line x1="{cx}" y1="{cy}" x2="{x}" y2="{y}"/>' for x, y in spots[:len(cats)])
-    nodes = ''.join(f'<g class="node{" active" if n == 0 else ""}" data-cat="{n}" tabindex="0" role="button" aria-pressed="{"true" if n == 0 else "false"}"><circle cx="{x}" cy="{y}" r="9"/><text x="{x}" y="{y - 16}">{escape(c["name"])} · {len(c["photos"])}</text></g>' for n, (c, (x, y)) in enumerate(zip(cats, spots)))
+    nodes = ''.join(f'<g class="node{" active" if n == 0 else ""}" data-cat="{n}" tabindex="0" role="button" aria-pressed="{"true" if n == 0 else "false"}"><circle cx="{x}" cy="{y}" r="9"/><text x="{x}" y="{y - 16}">{escape(c["name"])} {len(c["photos"])}</text></g>' for n, (c, (x, y)) in enumerate(zip(cats, spots)))
     graph = f'<svg class="wiki-graph cooking-graph" viewBox="0 0 420 225" role="group" aria-label="{escape(egg["topic"])}"><g class="edges">{lines}</g>{nodes}<g class="node hub lit"><circle cx="{cx}" cy="{cy}" r="16"/><text x="{cx}" y="{cy - 26}">{escape(egg["topic"])}</text></g></svg>'
     grids = ''.join(f'<div class="cooking-grid" data-cat="{n}"{"" if n == 0 else " hidden"}>' + ''.join(f'<img src="{escape(src)}" alt="{escape(next((ph["alt"] for ph in egg["photos"] if ph["src"] == src), c["name"]))}" loading="lazy">' for src in c['photos']) + '</div>' for n, c in enumerate(cats))
     poses = ''.join(f'<img src="assets/character/{name}.webp" alt="" loading="lazy">' for name in ('stand', 'peace', 'think', 'cushion', 'coffee', 'stuck', 'broke', 'boxes', 'camera', 'sweep'))
@@ -149,7 +149,7 @@ def tags(items):
 
 
 def picture(item):
-    return f'''<figure class="project-figure"><a href="{escape(item['src'])}" target="_blank" rel="noopener" aria-label="{escape(item['alt'])} · 원본 크기로 보기, 새 탭">
+    return f'''<figure class="project-figure"><a href="{escape(item['src'])}" target="_blank" rel="noopener" aria-label="{escape(item['alt'])}, 원본 크기로 보기, 새 탭">
 <img src="{escape(item['src'])}" alt="{escape(item['alt'])}" width="{item['width']}" height="{item['height']}" loading="lazy" decoding="async"><span class="image-expand">원본 크기로 보기 ↗</span></a>
 <figcaption>{escape(item['caption'])}</figcaption></figure>'''
 
@@ -165,8 +165,8 @@ def page(title, description, body, resume=False, path=None, body_class=''):
     language_switch = f'<a class="language-switch" href="{switch_path}" hreflang="{"ko" if LANG == "en" else "en"}" lang="{"ko" if LANG == "en" else "en"}" aria-label="{"한국어로 보기" if LANG == "en" else "View in English"}">{"한국어" if LANG == "en" else "EN"}</a>'
     html = f'''<!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{title} · 김재형</title><meta name="description" content="{description}">
-<meta name="theme-color" content="#0d0f12"><meta property="og:title" content="{title} · 김재형">
+<title>{title} | 김재형</title><meta name="description" content="{description}">
+<meta name="theme-color" content="#0d0f12"><meta property="og:title" content="{title} | 김재형">
 <meta property="og:description" content="{description}"><meta property="og:type" content="website">
 <meta property="og:locale" content="ko_KR"><meta property="og:image" content="https://Martinel2.github.io/assets/og.png">
 <link rel="canonical" href="https://Martinel2.github.io/{path}"><link rel="icon" href="assets/favicon-32.png" type="image/png" sizes="32x32"><link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
@@ -201,7 +201,7 @@ def case_html(c, i, fold_steps=True):
         process = f'<ol class="experiment-timeline">{steps}</ol>'
     else:
         rows = ''.join('<tr>' + ''.join(f'<td>{escape(v)}</td>' for v in row) + '</tr>' for row in c['options'])
-        process = f'''<p class="table-note">각 방안의 기대 효과와 확인한 결과를 비교했습니다. 비용 추산·설계 검토는 실제 실험 결과와 구분했습니다.</p><div class="table-scroll" tabindex="0" role="region" aria-label="{escape(c['short'])} 해결 방안 비교"><table><thead><tr><th scope="col">해결 방안</th><th scope="col">기대 효과</th><th scope="col">실험 결과</th><th scope="col">채택 여부와 이유</th></tr></thead><tbody>{rows}</tbody></table></div><div class="decision"><span class="eyebrow">WHY THIS APPROACH</span><p>{escape(c['decision'])}</p></div>'''
+        process = f'''<p class="table-note">각 방안의 기대 효과와 확인한 결과를 비교했습니다. 비용 추산과 설계 검토는 실제 실험 결과와 구분했습니다.</p><div class="table-scroll" tabindex="0" role="region" aria-label="{escape(c['short'])} 해결 방안 비교"><table><thead><tr><th scope="col">해결 방안</th><th scope="col">기대 효과</th><th scope="col">실험 결과</th><th scope="col">채택 여부와 이유</th></tr></thead><tbody>{rows}</tbody></table></div><div class="decision"><span class="eyebrow">WHY THIS APPROACH</span><p>{escape(c['decision'])}</p></div>'''
     implementation = '<ul>' + ''.join(f'<li>{escape(x)}</li>' for x in c['implementation']) + '</ul>' if c.get('implementation') else ''
     next_step = f'<p class="next"><strong>다음 검증</strong> {escape(c["next"])}</p>' if c.get('next') else ''
     metrics = ''.join(f'<div><span>{escape(label)}</span><strong>{escape(value)}</strong><small>{escape(note)}</small></div>' for label, value, note in c['metrics'])
@@ -210,7 +210,7 @@ def case_html(c, i, fold_steps=True):
     fold = lambda body: body if not fold_steps else f'<details class="process"><summary>{(f"See all {steps} steps" if LANG == "en" else f"과정 {steps}단계 펼쳐 보기")}</summary>{body}</details>' if steps else body
     glance = ''.join(f'<div><strong>{escape(value)}</strong><span>{escape(label)}</span></div>' for label, value, note in c['metrics'])
     links = ''.join(f'<a class="text-link" href="{escape(link["url"])}">{escape(link["label"])} ↗</a>' for link in c.get('links', []))
-    source = f'<p class="source">근거 · {escape(c["source"])}</p>' if c.get('source') else ''
+    source = f'<p class="source">근거: {escape(c["source"])}</p>' if c.get('source') else ''
     comparison = ''
     if 'comparison' in c:
         table = c['comparison']
@@ -222,12 +222,12 @@ def case_html(c, i, fold_steps=True):
 <section class="case-part" id="{escape(c['id'])}-background"><h3><span>01</span> 배경</h3><p>{escape(c['problem'])}</p>{f'<div class="case-expected"><strong>해결하면 얻는 것</strong><p>{escape(c["expected"])}</p></div>' if c.get('expected') else ''}</section>
 <section class="case-part" id="{escape(c['id'])}-process"><h3><span>02</span> {section_title}</h3>{fold(process)}</section>
 <section class="case-part" id="{escape(c['id'])}-structure"><h3><span>03</span> {'개선한 처리 흐름' if iterative else '구현과 구조'}</h3>{implementation}{picture(c['image']) if 'image' in c else ''}<figure class="diagram"><figcaption><span>ARCHITECTURE</span><span>Mermaid diagram</span></figcaption><div class="diagram-scroll" tabindex="0" role="region" aria-label="{escape(c['short'])} 구조도"><pre class="mermaid">{escape(c['diagram'])}</pre></div><p class="diagram-caption">{escape(c['diagramCaption'])}</p><details><summary>Mermaid 원문 보기</summary><pre class="diagram-source">{escape(c['diagram'])}</pre></details></figure></section>
-<section class="case-part" id="{escape(c['id'])}-result"><h3><span>04</span> 결과와 배운 점</h3><h4>{escape(c['resultTitle'])}</h4><p>{escape(c['result'])}</p>{f'<div class="result-metrics">{metrics}</div>' if metrics else ''}{comparison}<div class="limits"><strong>결과의 범위 · 트레이드오프</strong><p>{escape(c['tradeoff'])}</p></div>{next_step}{source}{links}</section>
+<section class="case-part" id="{escape(c['id'])}-result"><h3><span>04</span> 결과와 배운 점</h3><h4>{escape(c['resultTitle'])}</h4><p>{escape(c['result'])}</p>{f'<div class="result-metrics">{metrics}</div>' if metrics else ''}{comparison}<div class="limits"><strong>결과의 범위와 트레이드오프</strong><p>{escape(c['tradeoff'])}</p></div>{next_step}{source}{links}</section>
 </article>'''
 
 
 # The headings inside the beyond section below; ui.en.json translates them.
-BEYOND_TITLES = ['Rhwp · HWPX 저장 오류 수정', 'APPTIVE · 백엔드 멘토링', '백준 945일 연속 문제 해결']
+BEYOND_TITLES = ['Rhwp | HWPX 저장 오류 수정', 'APPTIVE | 백엔드 멘토링', '백준 945일 연속 문제 해결']
 
 
 def toc_subs(titles):
@@ -305,8 +305,8 @@ def portfolio():
 <div id="work" class="work-anchor"></div>
 <div class="work-layout"><aside class="toc"><div class="toc-inner"><p class="eyebrow">목차 <span>{len(DATA['cases']):02d}</span></p><p class="toc-guide">{escape(DATA['overview']['readingOrder'])}</p><nav aria-label="프로젝트 목차">{contents}<p class="toc-group">MORE</p><a class="toc-extra" href="#beyond"><span>{len(DATA["cases"]) + 1:02d}</span><span>코드 밖에서도 이어지는 경험</span><span class="toc-arrow">↗</span></a>{toc_subs(BEYOND_TITLES)}<a class="toc-extra" href="#writings"><span>{len(DATA["cases"]) + 2:02d}</span><span>{home_text("sections", "writingsTitle")}</span><span class="toc-arrow">↗</span></a></nav><div class="toc-foot pdf-buttons"><a class="button pdf-button" href="resume.pdf" target="_blank" rel="noopener"><img src="assets/icons/file-text.svg" alt="" width="18" height="18">이력서 PDF</a><a class="button pdf-button" href="portfolio.pdf" target="_blank" rel="noopener"><img src="assets/icons/briefcase.svg" alt="" width="18" height="18">포트폴리오 PDF</a></div></div></aside><div class="cases">@@SECTIONS@@</div></div>
 <section class="more-work" id="beyond"><span class="eyebrow">BEYOND THE PROJECTS</span><h2>코드 밖에서도 이어지는 경험</h2><div class="more-grid">
-<div><a href="https://github.com/edwardkim/rhwp/pull/1213"><span>OPEN SOURCE ↗</span><h3>Rhwp · HWPX 저장 오류 수정</h3><p>Claude Code에 작업 계획과 기여 규칙을 주고 이슈 분석부터 PR까지 자동화해, textFlow 보존 오류 수정(PR #1213) 등 PR 7건이 병합되고 Contributor로 등재됐습니다.</p></a><a class="text-link" href="https://github.com/edwardkim/rhwp">GitHub 저장소 ↗</a></div>
-<div><h3>APPTIVE · 백엔드 멘토링</h3><div class="evidence-row"><a class="evidence-thumb" href="assets/evidence/apptive-merit.jpeg" target="_blank" rel="noopener"><img src="assets/evidence/apptive-merit.jpeg" alt="APPTIVE 백엔드 멘토 공로상" loading="lazy"><span>크게 보기 ↗</span></a><div><p>멘티 경험을 교육 개선으로 연결했습니다. 멘티 12명을 대상으로 6회의 멘토링과 코드 리뷰를 진행했습니다.</p><a class="text-link" href="./#activities">활동 내용 ↗</a></div></div></div><div><h3>백준 945일 연속 문제 해결</h3><div class="evidence-row"><a class="evidence-thumb" href="assets/evidence/baekjoon-streak.png" target="_blank" rel="noopener"><img src="assets/evidence/baekjoon-streak.png" alt="백준 solved.ac 2022년부터 2025년까지의 연도별 스트릭" loading="lazy"><span>크게 보기 ↗</span></a><div><p>하루 한 문제를 목표로 solved.ac 기준 최장 945일 연속 문제를 해결했습니다. 누적 1,659문제, solved.ac Platinum IV.</p><a class="text-link" href="https://github.com/Martinel2/BaekJoon">풀이 저장소 ↗</a></div></div></div></div></section>
+<div><a href="https://github.com/edwardkim/rhwp/pull/1213"><span>OPEN SOURCE ↗</span><h3>Rhwp | HWPX 저장 오류 수정</h3><p>Claude Code에 작업 계획과 기여 규칙을 주고 이슈 분석부터 PR까지 자동화해, textFlow 보존 오류 수정(PR #1213) 등 PR 7건이 병합되고 Contributor로 등재됐습니다.</p></a><a class="text-link" href="https://github.com/edwardkim/rhwp">GitHub 저장소 ↗</a></div>
+<div><h3>APPTIVE | 백엔드 멘토링</h3><div class="evidence-row"><a class="evidence-thumb" href="assets/evidence/apptive-merit.jpeg" target="_blank" rel="noopener"><img src="assets/evidence/apptive-merit.jpeg" alt="APPTIVE 백엔드 멘토 공로상" loading="lazy"><span>크게 보기 ↗</span></a><div><p>멘티 경험을 교육 개선으로 연결했습니다. 멘티 12명을 대상으로 6회의 멘토링과 코드 리뷰를 진행했습니다.</p><a class="text-link" href="./#activities">활동 내용 ↗</a></div></div></div><div><h3>백준 945일 연속 문제 해결</h3><div class="evidence-row"><a class="evidence-thumb" href="assets/evidence/baekjoon-streak.png" target="_blank" rel="noopener"><img src="assets/evidence/baekjoon-streak.png" alt="백준 solved.ac 2022년부터 2025년까지의 연도별 스트릭" loading="lazy"><span>크게 보기 ↗</span></a><div><p>하루 한 문제를 목표로 solved.ac 기준 최장 945일 연속 문제를 해결했습니다. 누적 1,659문제, solved.ac Platinum IV.</p><a class="text-link" href="https://github.com/Martinel2/BaekJoon">풀이 저장소 ↗</a></div></div></div></div></section>
 <section class="more-work writings" id="writings"><span class="eyebrow">{home_text("sections", "writingsEyebrow")}</span><div class="writings-heading"><h2>{home_text("sections", "writingsTitle")}</h2><a class="button" href="{home_text("sections", "writingsUrl")}">{home_text("sections", "writingsLinkLabel")} ↗</a></div><div class="more-grid">{writings}</div></section>'''
     description = '김재형의 AI 응용 개발 포트폴리오. Fruition과 Pilltip의 문제, 기술 선택, Mermaid 구조도, 평가 결과를 소개합니다.'
     fill = lambda sections, href: re.sub(r'@@CASE:([a-z0-9-]+)@@', lambda m: href(m[1]), body.replace('@@SECTIONS@@', ''.join(sections)))
@@ -320,7 +320,7 @@ def portfolio():
         slug = project['name'].lower()
         intro = (f'<article class="case-item project-card"><p class="case-item-kicker"><span>PROJECT</span> {escape(project["name"])}</p>'
                  f'<h3><a href="portfolio/{slug}.html">{escape(project["name"])} 프로젝트 소개</a></h3><p>{escape(project["description"])}</p>'
-                 f'<a class="read-more" href="portfolio/{slug}.html">시작 계기·팀·서비스 화면 보기 →</a></article>')
+                 f'<a class="read-more" href="portfolio/{slug}.html">시작 계기, 팀, 서비스 화면 보기 →</a></article>')
         cards = ''.join(case_item(c, n, f'portfolio/{c["id"]}.html') for n, c in own)
         groups += f'<section class="case-group" id="project-{slug}"><div class="group-head"><h2>{escape(project["name"])}</h2><span>{f"{len(own)} cases" if LANG == "en" else f"사례 {len(own)}개"}</span></div><div class="case-grid">{intro}{cards}</div></section>'
     overview = body[:body.index('<div id="work"')]
@@ -344,7 +344,7 @@ def portfolio():
 def resume():
     fields = {key: value for section in DATA['resume'] for key, value in section['fields'].items()}
     body = re.sub(r'@@(text\d+)@@', lambda match: resume_text(fields[match[1]]), (ROOT / 'templates/resume.html').read_text())
-    (SITE / 'resume.html').write_text(page('이력서', '김재형 · AI Application Developer / Backend Engineer. 프로젝트, 기술, 오픈소스 기여, 수상과 학력.', body, True))
+    (SITE / 'resume.html').write_text(page('이력서', '김재형 | AI Application Developer / Backend Engineer. 프로젝트, 기술, 오픈소스 기여, 수상과 학력.', body, True))
 
 
 
@@ -369,7 +369,7 @@ def home():
         dialogs += f'<dialog class="project-dialog" id="{project_id}-dialog" aria-labelledby="{project_id}-title"><form method="dialog"><button class="button" autofocus>닫기 ×</button></form>{article}</dialog>'
     sections = re.findall(r'<section class="resume-section".*?</section>', resume_body, re.S)
     # Skills become tag pills in the sidebar, one group per resume row.
-    skill_groups = ''.join(f'<div class="skill-group"><p>{m[1]}</p><div class="tags">' + ''.join(f'<span>{x.strip()}</span>' for x in re.split(r'·|<br>', m[2]) if x.strip()) + '</div></div>' for m in re.finditer(r'<strong>(.*?)</strong>\s*<p>(.*?)</p>', sections[2], re.S))
+    skill_groups = ''.join(f'<div class="skill-group"><p>{m[1]}</p><div class="tags">' + ''.join(f'<span>{x.strip()}</span>' for x in re.split(r',|<br>', m[2]) if x.strip()) + '</div></div>' for m in re.finditer(r'<strong>(.*?)</strong>\s*<p>(.*?)</p>', sections[2], re.S))
     skills_title = re.search(r'<h2>(.*?)<span>', sections[2], re.S)[1].strip()
     skills = f'<section class="side-section" id="skills"><p class="eyebrow">{home_text("sections", "skillsEyebrow")}</p><h2 class="visually-hidden">{skills_title}</h2>{skill_groups}</section>'
     core = [c for c in DATA['cases'] if c['id'] in ('fruition-jev-evidence', 'fruition-agent', 'fruition-document', 'pilltip-data', 'pilltip-personalization')]

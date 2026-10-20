@@ -23,7 +23,7 @@ try{
   const html=el=>{el.querySelectorAll('a').forEach(a=>a.href=new URL(a.getAttribute('href'),'https://martinel2.github.io/'+(lang==='en'?'en/':'')).href);el.querySelectorAll('.resume-download,.resume-section>h2>span').forEach(e=>e.remove());return el.outerHTML;};
   const section=(title,body)=>`<section><h2>${title}</h2>${body}</section>`;
   const hero=copy(document.querySelector('.resume-hero'));
-  hero.querySelector('.eyebrow').textContent=name+' · AI Application Developer / Backend Engineer';
+  hero.querySelector('.eyebrow').textContent=name+' | AI Application Developer / Backend Engineer';
   hero.querySelectorAll('p:not(.eyebrow)').forEach(e=>e.remove()); // the eyebrow already carries the title
   hero.querySelectorAll('h1 br').forEach(e=>e.replaceWith(document.createTextNode(' ')));
   const summary=copy(sections[0].querySelector('.resume-content'));summary.querySelectorAll('p').forEach(e=>e.remove());
@@ -50,7 +50,7 @@ try{
  await page.$$eval('img',async imgs=>{for(const img of imgs)img.loading='eager';await Promise.all(imgs.map(img=>img.decode()));});
  await page.emulateMediaType('print');
  await page.pdf({path:dir+'/resume.pdf',format:'A4',printBackground:true,preferCSSPageSize:true,tagged:true,displayHeaderFooter:true,headerTemplate:'<span></span>',
-  footerTemplate:`<div style="width:100%;font-size:8px;color:#7d8da3;padding:0 14mm;display:flex;justify-content:space-between;font-family:Helvetica,Arial,'Noto Sans CJK KR',sans-serif"><span>${name} · AI Application Developer / Backend Engineer</span><span><span class="pageNumber"></span> / <span class="totalPages"></span></span></div>`});
+  footerTemplate:`<div style="width:100%;font-size:8px;color:#7d8da3;padding:0 14mm;display:flex;justify-content:space-between;font-family:Helvetica,Arial,'Noto Sans CJK KR',sans-serif"><span>${name} | AI Application Developer / Backend Engineer</span><span><span class="pageNumber"></span> / <span class="totalPages"></span></span></div>`});
  console.log(`Built ${dir}/resume.pdf as one continuous flow.`);
  await buildResumeDocx(page, lang);
  await page.close();

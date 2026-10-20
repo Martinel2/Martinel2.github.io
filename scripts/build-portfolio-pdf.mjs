@@ -76,12 +76,12 @@ export async function buildPortfolioPdf(browser, lang='ko') {
   const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   const L=en?{contents:'Contents',cases:'Case studies',screens:'Screens and scope',contact:'Contact',portfolio:'Portfolio',continued:'continued'}
     :{contents:'목차',cases:'프로젝트 사례',screens:'담당 기능과 서비스 화면',contact:'Contact',portfolio:'포트폴리오',continued:'계속'};
-  const slide=(cls,section,body,id)=>`<section class="slide ${cls}"${id?` id="${id}"`:''} data-section="${esc(section)}"><div class="body">${body}</div><footer><span>${esc(data.overview.name)} · ${L.portfolio}</span><span class="section">${esc(section)}</span><span class="num"></span></footer></section>`;
+  const slide=(cls,section,body,id)=>`<section class="slide ${cls}"${id?` id="${id}"`:''} data-section="${esc(section)}"><div class="body">${body}</div><footer><span>${esc(data.overview.name)} | ${L.portfolio}</span><span class="section">${esc(section)}</span><span class="num"></span></footer></section>`;
   const links=list=>list.map(l=>`<a href="${esc(l.url)}">${esc(l.label)}</a>`).join('');
   const o=data.overview;
   const slides=[];
   slides.push(slide('dark cover','',`<div class="intro"><p class="eyebrow">${esc(o.eyebrow)}</p><h1>${esc(o.title)}</h1><p>${esc(o.description)}</p>
-    <div class="who"><strong>${esc(o.name)}</strong>${esc(o.role)}<br><span class="muted">${esc(o.email)} · martinel2.github.io</span><p class="muted" style="margin-top:10px;white-space:pre-line">${esc(o.summary)}</p></div></div>
+    <div class="who"><strong>${esc(o.name)}</strong>${esc(o.role)}<br><span class="muted">${esc(o.email)} | martinel2.github.io</span><p class="muted" style="margin-top:10px;white-space:pre-line">${esc(o.summary)}</p></div></div>
     <div class="highlights">${o.highlights.map(h=>`<div><strong>${esc(h.title)}</strong><span>${esc(h.text)}</span></div>`).join('')}</div>`));
   const subList=subs=>subs?.length?`<ul class="toc-subs">${subs.map(s=>`<li>${esc(s)}</li>`).join('')}</ul>`:'';
   const entry=(n,title,id,subs)=>`<li><a href="#${id}"><b>${String(n).padStart(2,'0')}</b><span>${esc(title)}</span><i data-page="${id}"></i></a>${subList(subs)}</li>`;
@@ -116,7 +116,7 @@ export async function buildPortfolioPdf(browser, lang='ko') {
     }
     caseNo++;
     const tag=`CASE ${String(caseNo).padStart(2,'0')}`;
-    const section=`${tag} · ${it.kicker[1]?.split(' / ')[0]??''}`;
+    const section=`${tag} | ${it.kicker[1]?.split(' / ')[0]??''}`;
     const stats=it.metrics.slice(0,3);
     // Every slide of a case repeats its title top left, so readers keep their place.
     const head=extra=>`<p class="case-head"><b>${tag}</b><span>${esc(data.contents[caseNo-1]?.title??it.title)}</span>${extra?`<em>${esc(extra)}</em>`:''}</p>`;
@@ -129,7 +129,7 @@ export async function buildPortfolioPdf(browser, lang='ko') {
     else if(it.processTable)slides.push(slide('process result',section,`${head()}<h2 class="slide-title">${esc(it.processTitle)}</h2>${it.processTable}`));
     const metricCards=it.metrics.map(([l,v,n])=>`<div><small>${esc(l)}</small><strong>${esc(v)}</strong><em>${esc(n)}</em></div>`).join('');
     if(it.svg&&!it.image){
-      slides.push(slide('analysis fit',section,`${head(`${it.diagramTitle} · ${it.resultHeading}`)}
+      slides.push(slide('analysis fit',section,`${head(`${it.diagramTitle} | ${it.resultHeading}`)}
         <div class="row"><div class="chart">${it.svg}</div><div class="summary"><h3>${esc(it.resultTitle)}</h3>
         ${metricCards?`<div class="metrics">${metricCards}</div>`:''}${it.result.map(p=>`<p>${esc(p)}</p>`).join('')}${it.comparison}
         <div class="limits"><strong>${esc(it.limitsTitle)}</strong><p>${esc(it.limits)}</p></div>${it.links.length?`<div class="links">${links(it.links)}</div>`:''}</div></div>`));

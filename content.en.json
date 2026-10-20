@@ -4,7 +4,7 @@
     {
       "id": "fruition-jev-evidence",
       "project": "Fruition",
-      "category": "AI Agent · RAG · Jev",
+      "category": "AI Agent, RAG, Jev",
       "title": "RAG evidence coverage: 66.25% → 91.25%, with 87% less time after tuning",
       "short": "RAG evidence coverage: 66.25% → 91.25%",
       "period": "2026.09",
@@ -42,7 +42,7 @@
       "tradeoff": "Retrieval stays a fixed pipeline (semantic and keyword search plus Wiki graph traversal) that shows the answer, evidence, related pages and search path separately. I held off on a self-planning Query Agent because of cost and hallucination risk, and will add one when a question needs repeated planning and replanning; until then the fixed pipeline uses fewer calls and is easier to debug.\n\nThe time savings compare Jev settings before and after tuning; it is still slower than the original selector, and the 1.137s remains user wait time to reduce. Retrieval gathers candidates and Jev decides, so the selector can be swapped.",
       "links": [
         {
-          "label": "Introducing Jev · TypeSafe AI",
+          "label": "Introducing Jev | TypeSafe AI",
           "url": "https://typesafe.ai/blog/introducing-system-one-models-and-jev"
         }
       ],
@@ -82,7 +82,7 @@
     {
       "id": "fruition-agent",
       "project": "Fruition",
-      "category": "AI Agent · User-defined Skills · HITL · Prompt injection",
+      "category": "AI Agent, User-defined Skills, HITL, Prompt injection",
       "title": "User-defined Agent Skills: designing controlled execution",
       "short": "Agent execution environment: authoring, validation and approval",
       "period": "2026.08 - 2026.09",
@@ -174,7 +174,7 @@
     {
       "id": "fruition-rollback",
       "project": "Fruition",
-      "category": "AI Agent · Compensating recovery · Audit history",
+      "category": "AI Agent, Compensating recovery, Audit history",
       "title": "Cancelling an AI task and undoing what it already saved",
       "short": "Task cancellation - undoing saved changes in reverse",
       "period": "2026.08 — 2026.09",
@@ -188,7 +188,7 @@
       ],
       "problem": "An AI task runs across several stores and cannot be wrapped in one long transaction, so I had to decide what a cancellation should undo and how far it should reach.",
       "expected": "If AI changes remain after a user cancels, their data is damaged, which leads to churn and support requests. Reliable undo lets users hand even large tasks to AI with confidence, which grows credit usage.",
-      "diagram": "flowchart TD\n A[User cancels] --> B[Persist cancellation first · block later writes]\n B --> C[Wait for the running handler to finish]\n C --> D[Derive reverse actions from the run record · no model call]\n D --> E[Undo children first, in reverse]\n E --> F{Current values and references unchanged}\n F -->|Yes| G[Atomic recovery · body saved as a new revision]\n F -->|No| H[Leave as rollback_failed for retry]\n G --> I{Full recovery confirmed}\n I -->|Yes| J[cancelled]\n I -->|No| H",
+      "diagram": "flowchart TD\n A[User cancels] --> B[Persist cancellation first, block later writes]\n B --> C[Wait for the running handler to finish]\n C --> D[Derive reverse actions from the run record, no model call]\n D --> E[Undo children first, in reverse]\n E --> F{Current values and references unchanged}\n F -->|Yes| G[Atomic recovery, body saved as a new revision]\n F -->|No| H[Leave as rollback_failed for retry]\n G --> I{Full recovery confirmed}\n I -->|Yes| J[cancelled]\n I -->|No| H",
       "diagramCaption": "Cancellation is persisted first to block later writes, then reverse actions derived from the run record undo children first. Cancellation is only final once full recovery is confirmed; otherwise it stays retryable.",
       "resultTitle": "A cancelled task’s changes are undone while other tasks’ contributions survive",
       "result": "Content, names, parents and ordering that users see are restored, while version, audit and idempotency records are kept. Recovery runs from the run record alone, with no model settings or calls, and it checks current values and downstream references so it never overwrites another task’s work. Cancellation is final only once full recovery is confirmed; conflicts and unclear outcomes stay retryable. For a feature where AI edits a user’s documents, I settled what could be undone and what had to be recorded before building it.\n\nIn a manual run on real Gemini, Kafka, PostgreSQL and Redis, nothing changed before approval, and cancelling during the last document move restored 2 folders and 6 documents with 8 inverse operations.",
@@ -196,7 +196,7 @@
         [
           "Stores covered by recovery",
           "3",
-          "core DB · AI DB · object storage"
+          "core DB, AI DB, object storage"
         ],
         [
           "Recovery execution",
@@ -238,7 +238,7 @@
     {
       "id": "fruition-document",
       "project": "Fruition",
-      "category": "PDF conversion · Data pipeline",
+      "category": "PDF conversion, Data pipeline",
       "title": "PDF → Markdown: about 90% restoration rate",
       "short": "PDF → Markdown: ~90% restoration rate",
       "period": "2026.07 — 2026.09",
@@ -303,7 +303,7 @@
     {
       "id": "fruition-ingest",
       "project": "Fruition",
-      "category": "Kafka asynchronous processing · AI pipeline",
+      "category": "Kafka asynchronous processing, AI pipeline",
       "title": "Parallel document analysis: 282.11s → 73.89s",
       "short": "Parallel analysis: 73.8% less processing time",
       "period": "2026.09",
@@ -318,7 +318,7 @@
       "expected": "I was concerned that a slow Wiki keeps users from using their uploads, so they may leave before seeing value. A shorter wait lets them search and ask right after upload.",
       "diagram": "flowchart TD\n A[Document processing request] --> K[Kafka distributes document jobs]\n K --> W[Multiple workers with per-worker request limits]\n W --> L[Lock writes within the same workspace]\n V[Embedding generation] --> G[Check contention on a shared GPU]\n L --> D[Check time, memory and content preservation]\n G --> D\n D --> R[Choose scaling policy per stage]",
       "diagramCaption": "Evaluated scaling separately for Wiki generation and embedding generation.",
-      "resultTitle": "73.8% less analysis time for 4 documents · 300 queued jobs with zero loss",
+      "resultTitle": "73.8% less analysis time for 4 documents, 300 queued jobs with zero loss",
       "result": "With 4 workers and 2 concurrent requests each, total processing time for 4 documents fell by about 73.8%. Combined process memory rose from 351.7MiB to 1,401.0MiB, about fourfold. Of 16 facts fixed in advance, 10, 14 and 11 were fully preserved with 1, 2 and 4 workers, so although each condition ran once on a small sample, I did not treat quality as identical.\n\nI excluded raising concurrent requests further and parallelising embedding generation on the same GPU, since both made things slower. External-response waits and device contention are different bottlenecks, so each stage needed its own scaling approach.\n\nReplaying saved AI responses for 100 documents under 3 configurations processed all 300 jobs without omissions or failures.\n\nJudging that the memory increase could be absorbed by distributing AI functions on EKS as MSA, I used at most 4 workers for parallel document processing.",
       "metrics": [
         [
@@ -343,7 +343,7 @@
     {
       "id": "fruition-agent-loop",
       "project": "Fruition",
-      "category": "Coding agent operations · MSA migration",
+      "category": "Coding agent operations, MSA migration",
       "title": "Coding agent loop: 16 MSA migration PRs merged in 5 days",
       "short": "Agent loop: 16 PRs merged in 5 days",
       "period": "2026.08",
@@ -356,9 +356,9 @@
       ],
       "problem": "The MSA migration had to be done within a week so we could deploy on schedule and get feedback on the new structure. The features were already built, so moving them meant too many changes to make by hand in time, and the work was split across several streams. I built a coding-agent loop so the work could keep going while I rested or slept. With about a week left before the MSA migration deadline, moving the AI features into the new service structure had split into several streams. Long single sessions lost track of the plan as context was summarized.",
       "expected": "I judged that a late migration would delay both deployment and feedback, and increase rework on code that drifted from the plan. So the goal was to keep the schedule with the same team.",
-      "diagram": "flowchart TD\n P[Work plan and criteria docs · me] --> C[Coordinator agent · dependencies and priority]\n C --> W1[Branch workspace · implementer + reviewer agents]\n C --> W2[Other branch workspaces · in parallel]\n W1 --> R[PR creation · integration review]\n W2 --> R\n R --> F[Required fixes applied · regression check]\n F --> J[Merge decision · me]",
+      "diagram": "flowchart TD\n P[Work plan and criteria docs, me] --> C[Coordinator agent, dependencies and priority]\n C --> W1[Branch workspace, implementer + reviewer agents]\n C --> W2[Other branch workspaces, in parallel]\n W1 --> R[PR creation, integration review]\n W2 --> R\n R --> F[Required fixes applied, regression check]\n F --> J[Merge decision, me]",
       "diagramCaption": "I set the plan and criteria; agents with separate implementer and reviewer roles worked in parallel per branch.",
-      "resultTitle": "16 PRs merged in 5 days · 13 required fixes applied before merge",
+      "resultTitle": "16 PRs merged in 5 days, 13 required fixes applied before merge",
       "result": "Merged 16 PRs over 5 days, from August 9 to 13. The 13 required fixes raised in pre-merge review were applied and checked for regressions. One defect the review caught: restoring a document returned its previous body.\n\nThe coding agents did the implementation; I designed the loop, wrote the work plan and criteria documents, reviewed results and made merge decisions.",
       "metrics": [
         [
@@ -374,7 +374,7 @@
         [
           "Agents per branch",
           "2",
-          "Implement · review"
+          "Implement, review"
         ]
       ],
       "tradeoff": "I judged merges by criteria documents and review results rather than writing the code myself, so defects outside the review criteria can slip through. Refining the criteria documents remains ongoing work.",
@@ -410,10 +410,10 @@
     {
       "id": "pilltip-data",
       "project": "Pilltip",
-      "category": "Data pipeline · GPT Batch API · PySpark",
+      "category": "Data pipeline, GPT Batch API, PySpark",
       "title": "Drug data pipeline: $200 estimated → $11.18 spent",
       "short": "Drug data conversion: $200 estimated → $11.18 spent",
-      "period": "2025.07 · reproduced 2026.10",
+      "period": "2025.07 | reproduced 2026.10",
       "summary": "Pilltip helps users understand whether they can take a medicine right now, so I thought turning difficult drug information into easy wording was the core. To keep the feature within budget, I reduced the number and cost of model calls and processed 1GB of drug data for an actual $11.18. In 2026 I reproduced the same cleaning in PySpark to measure each step.",
       "tags": [
         "Data pipeline",
@@ -423,9 +423,9 @@
       ],
       "problem": "Rewriting about 44,000 drug records (about 1GB) as-is was estimated to cost about $200 in API calls. I needed a way to explain every drug within budget without cutting the number of drugs covered.",
       "expected": "I judged that if conversion cost exceeded the budget, we would have to cut the drugs we explain and narrow the service. Lowering the cost per conversion, I thought, would let the same budget cover every drug.",
-      "diagram": "flowchart TD\n A[Original drug text: about 1GB] --> B[Split into sentence blocks]\n B --> M[Keep drug ID to block ID mappings]\n B --> C[Merge exact duplicate sentences]\n C --> G[Convert unique sentences with GPT Batch API]\n G --> R[Map converted text back to each drug]\n M --> R\n C -.-> S[2026 PySpark reproduction · measured ending normalization and MinHashLSH]",
+      "diagram": "flowchart TD\n A[Original drug text: about 1GB] --> B[Split into sentence blocks]\n B --> M[Keep drug ID to block ID mappings]\n B --> C[Merge exact duplicate sentences]\n C --> G[Convert unique sentences with GPT Batch API]\n G --> R[Map converted text back to each drug]\n M --> R\n C -.-> S[2026 PySpark reproduction, measured ending normalization and MinHashLSH]",
       "diagramCaption": "Converted each repeated sentence once and kept per-drug mappings to attach results. In 2026 the same process was reproduced in PySpark and measured.",
-      "resultTitle": "Actual API spend $11.18 · PySpark reproduction cut text by 94.1%",
+      "resultTitle": "Actual API spend $11.18, PySpark reproduction cut text by 94.1%",
       "result": "Completed conversion for $11.18 in actual API spending versus about $200 estimated for all original text. Reusing converted unique sentences kept the feature within budget without reducing the set of drugs covered.\n\nPart of the 2025 preparation code no longer existed, so in 2026 I re-collected 42,714 products (960MB of plain text) from the MFDS public API and reproduced the same preparation in PySpark. 3,236,626 blocks reduced to 176,648 unique blocks, cutting text from 744MB to 44.1MB (−94.1%). An ending-normalization dictionary then removed 0.78%, and MinHashLSH similar-sentence merging a further 6.69%.",
       "metrics": [
         [
@@ -441,7 +441,7 @@
         [
           "Exact deduplication",
           "−94.1%",
-          "2026 PySpark reproduction · 744MB → 44.1MB"
+          "2026 PySpark reproduction, 744MB → 44.1MB"
         ]
       ],
       "tradeoff": "About $200 was the upfront estimate; $11.18 was actual spending. Seven days of preprocessing labour are not included. The 2026 figures come from re-collected data, not the 2025 dataset. The reproduction code was written with AI coding tools; I designed the experiment and chose the thresholds.",
@@ -477,7 +477,7 @@
     {
       "id": "pilltip-personalization",
       "project": "Pilltip",
-      "category": "AI Agent · Sensitive data boundaries",
+      "category": "AI Agent, Sensitive data boundaries",
       "title": "Medication chatbot: keeping health profiles out of external AI inputs",
       "short": "Medication chatbot: health profiles kept internal",
       "period": "2025.09",
@@ -559,7 +559,7 @@
       ],
       "links": [
         {
-          "label": "GitHub · AI repository",
+          "label": "GitHub | AI repository",
           "url": "https://github.com/FruitionKR/Fruition-ai"
         }
       ],
@@ -588,7 +588,7 @@
         {
           "src": "assets/projects/fruition-system-architecture.jpg",
           "alt": "Fruition system architecture: the overall system context and communication between frontend, backend, llmPipeline and storage",
-          "caption": "System architecture — the overall system (top) and Fruition’s internal components (bottom). I owned the AI features centred on llmPipeline (FastAPI · Python · LangGraph); teammates owned the frontend, backend and AWS deployment.",
+          "caption": "System architecture — the overall system (top) and Fruition’s internal components (bottom). I owned the AI features centred on llmPipeline (FastAPI, Python, LangGraph); teammates owned the frontend, backend and AWS deployment.",
           "width": 2300,
           "height": 1780
         }
@@ -722,7 +722,7 @@
         "text1": "RESUME / JAEHYEONG KIM",
         "text2": "I build services that use AI",
         "text3": "to make people’s lives better.",
-        "text4": "AI Application Developer · Backend Engineer",
+        "text4": "AI Application Developer | Backend Engineer",
         "text5": "I enjoy taking a deep dive into problems.",
         "text6": "An AI application developer who raised RAG evidence coverage from 66.25% to 91.25% and AI document-editing quality from 82.5% to 91.2%, designing evaluation, approval and rollback so AI does not answer from wrong evidence or change users' documents on its own.",
         "text7": "kkuldangi2@gmail.com",
@@ -752,9 +752,9 @@
         "text20": "02 / PROJECTS",
         "text21": "Fruition",
         "text22": "2026.04 — Present",
-        "text23": "LLM Wiki-based AI workspace · AI SW Maestro, 17th cohort · Deployed on AWS EKS, in QA",
+        "text23": "LLM Wiki-based AI workspace | AI SW Maestro, 17th cohort | Deployed on AWS EKS, in QA",
         "text24": "Team project (3 + designer) / AI lead",
-        "text25": "How it started: a teammate’s pain point with managing documents, refined through design thinking — saved documents could not be found when needed.\nTeam: me (all AI), 1 backend (Spring backend), 1 frontend & DevOps (frontend, MSA deployment on AWS), external designer · 3 mentors",
+        "text25": "How it started: a teammate’s pain point with managing documents, refined through design thinking — saved documents could not be found when needed.\nTeam: me (all AI), 1 backend (Spring backend), 1 frontend & DevOps (frontend, MSA deployment on AWS), external designer, 3 mentors",
         "text114": "PDF → Markdown restoration rate ~90%",
         "text115": "Converted uploaded PDFs into Markdown that keeps tables and equations, so they can be searched and cited in answers.",
         "text26": "PDF → Markdown conversion\nProblem: Broken tables and equations in paper PDFs made the figures behind Wiki pages and answers unusable\nDecision: Repairing only detected damage missed errors, and full AI conversion lacked table/equation accuracy and was costly, so I split processing by content type. Body text uses fast AnyDoc extraction; repair moved from an sLLM to commercial LLM APIs to avoid GPU server costs\nSolution: Extracted body text with AnyDoc and repaired only garbled parts with AI, read table/equation regions separately, and kept original figures\nResult: PDF → Markdown restoration rate rose from about 45% with Docling alone to about 90%",
@@ -776,8 +776,8 @@
         "text43": "RAG evidence selection ↗",
         "text44": "Pilltip",
         "text45": "2025.03 — 2025.12",
-        "text46": "Personalized AI medication service · Pusan National University capstone · 6 users on internal APK builds",
-        "text47": "Team project (3 + designer) / Core backend · data preparation",
+        "text46": "Personalized AI medication service | Pusan National University capstone | 6 users on internal APK builds",
+        "text47": "Team project (3 + designer) / Core backend, data preparation",
         "text112": "How it started: drug information is scattered, making it hard to check whether a medicine is safe for your current health condition.\nTeam: me (backend & AI), 1 Android (Kotlin app), 1 backend & security (user DB, login, questionnaires, AES-GCM), designer. The features below are my work.",
         "text122": "Drug data preparation pipeline",
         "text123": "Rewrote about 44,000 drug records in plain language, converting each repeated sentence once and reusing it per drug.",
@@ -810,17 +810,17 @@
         "text57": "Skills ",
         "text58": "03 / SKILLS",
         "text59": "Backend",
-        "text60": "Java · Spring Boot · Python",
+        "text60": "Java, Spring Boot, Python",
         "text61": "AI ",
         "text62": "&",
         "text63": " Search",
-        "text64": "LangChain · LangGraph · Spring AI · RAG · LLM Evaluation · Prompt injection defense",
-        "text65": "LangSmith · Elasticsearch · Weaviate",
+        "text64": "LangChain, LangGraph, Spring AI, RAG, LLM Evaluation, Prompt injection defense",
+        "text65": "LangSmith, Elasticsearch, Weaviate",
         "text66": "Data ",
         "text67": "&",
         "text68": " Infra",
-        "text69": "MySQL · PostgreSQL · Redis · Kafka",
-        "text70": "Docker · Docker Compose · GitHub Actions"
+        "text69": "MySQL, PostgreSQL, Redis, Kafka",
+        "text70": "Docker, Docker Compose, GitHub Actions"
       }
     },
     {
@@ -831,14 +831,14 @@
         "text73": "2026.06 — 2026.06",
         "text74": "Rhwp open-source contributions",
         "text75": "Gave Claude Code a work plan and contribution rules to automate the flow from issue analysis to PR, including HWP/HWPX save-error fixes; 7 PRs merged. Listed as a contributor.",
-        "text76": "PR #1213 · Merged ↗",
-        "text77": "PR #1351 · Submitted ↗",
+        "text76": "PR #1213 | Merged ↗",
+        "text77": "PR #1351 | Submitted ↗",
         "text78": "2025.03 — 2026.01",
         "text79": "APPTIVE, Pusan National University",
         "text80": "Backend mentee and mentor. Led 6 mentoring and code-review sessions for 12 mentees. Helped revise the curriculum to strengthen HTTP, Servlet, REST API and database foundations.",
-        "text130": "APPTIVE Backend Mentor Merit Award · 2026.01.09",
+        "text130": "APPTIVE Backend Mentor Merit Award | 2026.01.09",
         "text81": "2025.11 / 2025.07",
-        "text82": "SK AI SUMMIT · K-ICT WEEK in Busan",
+        "text82": "SK AI SUMMIT, K-ICT WEEK in Busan",
         "text83": "Represented Pusan National University at the Pilltip booth, demonstrating the service to more than 100 visitors and answering technical questions. Most of the 10 pieces of feedback asked for health supplement coverage.",
         "text132": "2022.02 — 2025.07",
         "text133": "945-day Baekjoon problem-solving streak",
@@ -885,7 +885,7 @@
     }
   ],
   "overview": {
-    "eyebrow": "AI Agents · Execution environment design · Data pipelines",
+    "eyebrow": "AI Agents, Execution environment design, Data pipelines",
     "title": "I build services that use AI\nto make people’s lives better.",
     "description": "For each project, the parts I contributed: the problem, the alternatives I weighed, why I chose one, how I built it and how I verified it.",
     "experience1Title": "RAG evidence selection: coverage 66.25% → 91.25%, evidence attached to unanswerable questions 20 → 0",
@@ -894,7 +894,7 @@
     "experience2Description": "Users repeat different tasks, so I let them define their own Skills. I judged that users can't trust AI that changes documents freely, so code checks permissions and scope, and changes apply only after approval. Code checks missed omitted requests, so drafts get a semantic evaluation and one rewrite at most.",
     "experience3Title": "Data pipelines: PDF → Markdown restoration rate ~90%, drug conversion $200 estimated → $11.18 spent",
     "experience3Description": "Broken tables and equations lose the figures answers rely on, so body text uses fast AnyDoc and table and equation regions are read separately. Converting each repeated sentence once with Batch API kept about 44,000 drug records within budget.",
-    "profileRole": "AI Application Developer · Backend Engineer",
+    "profileRole": "AI Application Developer | Backend Engineer",
     "profileLine1": "An AI application developer who raised RAG evidence coverage from 66.25% to 91.25% and AI document-editing quality from 82.5% to 91.2%, designing evaluation, approval and rollback so AI does not answer from wrong evidence or change users' documents on its own.",
     "profileLine2": "I weigh accuracy, cost and response time against each other, confirm the trade-off with an evaluation, and then choose the implementation that fits the service.",
     "readingOrder": ""
@@ -916,7 +916,7 @@
         "width": 5712,
         "height": 4284,
         "alt": "Busan DATA WEEK 2025 award ceremony",
-        "caption": "2025.09.23 · Top Excellence Award at the Busan DATA WEEK data utilization case competition.",
+        "caption": "2025.09.23 | Top Excellence Award at the Busan DATA WEEK data utilization case competition.",
         "title": "Busan DATA WEEK Top Excellence Award"
       }
     ]
