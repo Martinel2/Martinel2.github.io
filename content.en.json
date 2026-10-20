@@ -885,7 +885,7 @@
     }
   ],
   "overview": {
-    "eyebrow": "AI Agents, Execution environment design, Data pipelines",
+    "eyebrow": "Retrieval, execution and data processing for LLM services",
     "title": "I build services that use AI\nto make people’s lives better.",
     "description": "For each project, the parts I contributed: the problem, the alternatives I weighed, why I chose one, how I built it and how I verified it.",
     "experience1Title": "RAG evidence selection: coverage 66.25% → 91.25%, evidence attached to unanswerable questions 20 → 0",
