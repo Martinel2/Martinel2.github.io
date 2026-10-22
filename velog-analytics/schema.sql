@@ -1,9 +1,10 @@
-CREATE TABLE IF NOT EXISTS daily_regions (
-  day TEXT NOT NULL,
+CREATE TABLE IF NOT EXISTS visits (
+  time TEXT NOT NULL,
   post TEXT NOT NULL,
   country TEXT NOT NULL,
   region TEXT NOT NULL,
   city TEXT NOT NULL,
-  requests INTEGER NOT NULL DEFAULT 1,
-  PRIMARY KEY (day, post, country, region, city)
+  kind TEXT NOT NULL
 );
+CREATE INDEX IF NOT EXISTS visits_time ON visits (time);
+DROP TABLE IF EXISTS daily_regions;

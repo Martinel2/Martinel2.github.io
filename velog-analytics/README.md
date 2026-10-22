@@ -32,12 +32,13 @@ Velog 본문을 통한 수집은 이미지 삽입 후 별도 확인이 필요합
 ![](https://jaehyeong-velog-regions.velog-analytics.workers.dev/p/test.gif)
 ```
 
-Cloudflare Workers의 `request.cf.country/region/city`로 이미지 요청을 지역별 집계합니다.
-IP 헤더·좌표·User-Agent·리퍼러·쿠키·방문자 ID는 저장하지 않습니다. 알려진 봇 User-Agent와 DNT/GPC 요청은 제외합니다.
+Cloudflare Workers의 `request.cf.country/region/city`로 이미지 요청을 한 건씩 `visits` 표에 기록합니다. 저장 항목은 분 단위 한국 시간, 글 ID, 국가·지역·도시, 판정입니다.
+IP 헤더·좌표·User-Agent 원문·리퍼러·쿠키·방문자 ID는 저장하지 않습니다. DNT/GPC 요청은 제외합니다.
+판정은 `human`(사람), `bot`(User-Agent에 bot·crawler 등 포함), `datacenter`(`request.cf.asOrganization`이 AWS·Google Cloud 등 데이터센터)입니다. 무료 플랜에는 Cloudflare 봇 점수가 없어 추정값입니다.
 Cloudflare 인프라 자체의 네트워크 처리는 이 앱의 저장 범위와 별개입니다. Workers 로그 수집은 비활성화합니다.
 
 통계는 `/stats`에서 HTTP Basic 인증으로 보호됩니다. 사용자명은 `admin`, 비밀번호는 Worker secret입니다.
-최근 30일의 글별 국가·지역·도시 요청 횟수를 표시하며, 한국 시간 기준 일별 집계를 90일 보관합니다.
+최근 30일의 사람·봇 요청 수, 사람 요청의 글별 국가·지역·도시 횟수, 최근 방문 100건(시각, 지역, 판정)을 표시합니다. 방문 기록은 90일 보관합니다.
 이 수치는 고유 방문자 수나 Velog 조회수가 아닙니다. 반복 로딩·캐시·차단·미탐지 봇으로 차이가 납니다.
 국가 코드는 ISO 코드이고 Unknown은 Cloudflare가 지역을 제공하지 않은 요청입니다.
 
@@ -86,7 +87,7 @@ node test.mjs
 npx wrangler deploy --dry-run
 ```
 
-Node 22.13 이상 필요. 테스트는 실제 메모리 SQLite에 기록하고 원본 IP 미저장, 인증, 집계, 입력 검증, HTML 이스케이프, 보관기간을 검사합니다.
+Node 22.13 이상 필요. 테스트는 실제 메모리 SQLite에 기록하고 원본 IP 미저장, 인증, 집계, 방문 시각, 봇 판정, 입력 검증, HTML 이스케이프, 보관기간을 검사합니다.
 Cloudflare 지역 메타데이터는 테스트 값으로 주입합니다. 로컬 통과가 실제 Velog 수집 성공을 의미하지 않습니다.
 
 참고: [Cloudflare 요청 지역 정보](https://developers.cloudflare.com/workers/runtime-apis/request/#incomingrequestcfproperties)
