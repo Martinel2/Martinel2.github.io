@@ -776,7 +776,7 @@
         "text43": "RAG evidence selection ↗",
         "text44": "Pilltip",
         "text45": "2025.03 — 2025.12",
-        "text46": "Personalized AI medication service | Pusan National University capstone | 6 users on internal APK builds",
+        "text46": "Personalized AI medication service | Pusan National University capstone",
         "text47": "Team project (3 + designer) / Core backend, data preparation",
         "text112": "How it started: drug information is scattered, making it hard to check whether a medicine is safe for your current health condition.\nTeam: me (backend & AI), 1 Android (Kotlin app), 1 backend & security (user DB, login, questionnaires, AES-GCM), designer. The features below are my work.",
         "text122": "Drug data preparation pipeline",
