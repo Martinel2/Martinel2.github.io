@@ -5,10 +5,10 @@
       "id": "fruition-jev-evidence",
       "project": "Fruition",
       "category": "AI Agent, RAG, Jev",
-      "title": "RAG evidence coverage: 66.25% → 91.25%, with 87% less time after tuning",
-      "short": "RAG evidence coverage: 66.25% → 91.25%",
-      "period": "2026.09",
-      "summary": "Fruition answers from uploaded documents, so I thought wrong evidence would make the whole answer untrustworthy. After seeing Jev improve request routing, I applied it to evidence selection and raised coverage from 66.25% to 91.25%. I cut the added time by tuning candidates and parallelism.",
+      "title": "RAG evidence selection: answer accuracy 71.7% → 93.0%, evidence sufficiency 95.4% on a fixed set",
+      "short": "RAG evidence selection: accuracy 71.7% → 93.0%",
+      "period": "2026.09 ~ 2026.11",
+      "summary": "Fruition answers from uploaded documents, so I thought wrong evidence would make the whole answer untrustworthy. After seeing Jev improve request routing, I applied it to evidence selection. I then re-evaluated on a set I wrote and reviewed with my team, confirmed answer accuracy of 71.7% → 93.0% under identical conditions, and fixed what the evaluation exposed.",
       "tags": [
         "Jev 1.13.0",
         "BGE-M3",
@@ -18,28 +18,28 @@
       ],
       "problem": "Existing retrieval missed needed evidence and attached evidence even to unanswerable questions, leading to wrong answers. I believed accurate information is this project's core, so I checked each step: the correct sources were all in the initial candidates, but limiting checks to the first 8 pages dropped them for 76 of 90 questions. I needed a step that picks the right evidence and says when there is none.",
       "expected": "If evidence is wrong, the whole answer can't be trusted, and users who lose trust don't come back. Since the core of the project is giving users the information they need on accurate evidence, high accuracy is what makes users trust the product, keep using it and pay again.",
-      "diagram": "flowchart TD\n Q[User question] --> S[Collect semantic and keyword search candidates]\n S --> C[Top 300 candidates]\n C --> J[Jev selects evidence in up to 8 parallel batches]\n J --> E{Sufficient evidence?}\n E -->|Yes| A[Pass selected evidence to answer generation]\n E -->|No| N[No evidence]\n",
-      "diagramCaption": "The evaluated evidence-selection design. Reference answers were used only for evaluation, never as retrieval or model inputs.",
-      "resultTitle": "Questions with sufficient evidence: 53/80 → 73/80; total median time 1.137s",
-      "result": "On our own golden set, I raised the share of 80 answerable questions whose needed facts were fully supported from 66.25% to 91.25%. On a separate set of 20 questions, I cut evidence wrongly attached to documents with no answer from 20 to 0. It is still slower than the original selector, but I judged accuracy mattered more to the service and decided to adopt Jev.\n\nI also applied it to grouping expressions with the same meaning. Correct answers on 76 questions stayed similar (71 original, 72 Jev), and I confirmed median decision time could drop from 8.162s to 0.254s.",
+      "diagram": "flowchart TD\n Q[User question] --> S[Collect semantic and keyword search candidates]\n S --> C[Top 200 candidates]\n C --> J[Jev selects evidence in up to 8 parallel batches]\n J --> E{Sufficient evidence?}\n E -->|Yes| A[Pass selected evidence to answer generation]\n E -->|No| N[No evidence]\n",
+      "diagramCaption": "The evidence selection structure in production. Reference answers are not fed into retrieval or the model; they are used only to evaluate selections.",
+      "resultTitle": "Correct answers on a fixed set: 215/300 → 279/300; average end-to-end response 5.5s",
+      "result": "I ran 100 questions that I wrote and reviewed with my team three times each, with Jev off and on. Answer accuracy rose from 71.7% to 93.0%, and the share where the selected evidence alone could produce the answer rose from 70.0% to 95.4%. Against plain RAG on the same questions, unsupported claims fell from 4.9% to 1.9%.\n\nThe earlier adoption experiment (9 papers, coverage 66.25% → 91.25%) used a different set and grading, so it is not compared directly.",
       "metrics": [
         [
-          "Evidence coverage (LLM evaluation on golden set)",
-          "66.25% → 91.25%",
-          "Original selector 53/80 → tuned Jev 73/80"
+          "RAG answer accuracy (Jev off → on)",
+          "71.7% → 93.0%",
+          "215/300 → 279/300, 100 questions × 3 runs"
         ],
         [
-          "Jev evidence-selection time",
-          "Median 9.090s → 1.137s",
-          "500 candidates, sequential → 300 candidates, 8 parallel batches"
+          "Evidence sufficiency (Jev off → on)",
+          "70.0% → 95.4%",
+          "168/240 → 229/240"
         ],
         [
-          "False evidence returns on 20 unanswerable questions",
-          "20 → 0",
-          "Original selector → tuned Jev"
+          "Wrong answers (plain RAG → Wiki RAG)",
+          "7.3% → 1.0%",
+          "22/300 → 3/300, same questions and answer model"
         ]
       ],
-      "tradeoff": "Retrieval stays a fixed pipeline (semantic and keyword search plus Wiki graph traversal) that shows the answer, evidence, related pages and search path separately. I held off on a self-planning Query Agent because of cost and hallucination risk, and will add one when a question needs repeated planning and replanning; until then the fixed pipeline uses fewer calls and is easier to debug.\n\nThe time savings compare Jev settings before and after tuning; it is still slower than the original selector, and the 1.137s remains user wait time to reduce. Retrieval gathers candidates and Jev decides, so the selector can be swapped.",
+      "tradeoff": "Retrieval stays a fixed pipeline (semantic and keyword search plus Wiki graph traversal) that shows the answer, evidence, related pages and search path separately. I held off on a self-planning Query Agent because of cost and hallucination risk, and will add one when a question needs repeated planning and replanning; until then the fixed pipeline uses fewer calls and is easier to debug.\n\nAccuracy came at a cost in time and money. End-to-end responses average 5.5s, slower than plain RAG's 4.3s under the same conditions. Cost is about $2.7 per 1,000 requests against $0.19–0.35 with Jev off, estimated from actual tokens and unit prices. Correctly declining unanswerable questions was 57/60, below plain RAG's 60/60, so that is the next task. Retrieval gathers candidates and Jev decides, so the selector can be swapped.",
       "links": [
         {
           "label": "Introducing Jev | TypeSafe AI",
@@ -69,13 +69,19 @@
           "300 candidates and a parallelism comparison to reduce latency",
           "Answers start only after evidence selection finishes, so processing time is the user's waiting time. A 9.090s median for 500 candidates processed sequentially was far too long against the previous 0.431s to be usable. Still, the higher accuracy was worth keeping, so I set out to cut the time.",
           "Since candidate count drives cost and speed, I cut candidates from the top 500 to 300 and ran up to 4 batches in parallel. Time fell to 2.251s, while questions with all required evidence increased from 70 to 73.\n\nThe parallel count had been set without evidence, so I re-ran the same 100 questions with only parallelism changed to 4, 6, 8 and 10. Median selection time was 2.066, 1.165, 0.945 and 0.886s, and blind grading of the 42 questions whose selections differed gave 37, 38, 36 and 37 fully supported, with no real difference.",
-          "Beyond 8 the gain was only 0.06s, and in production concurrent requests grow as workers × parallelism, so I chose 8. At 1.137s including candidate filtering it is still slower than the original 0.431s; I rejected cutting candidates further because some required evidence ranked below 250.\n\nI adopted Jev despite the added latency because accurate evidence is central to the service."
+          "Beyond 8 the gain was only 0.06s, and in production concurrent requests grow as workers × parallelism, so I chose 8. At 1.137s including candidate filtering it is still slower than the original 0.431s; I rejected cutting candidates further then because, on that set, some required evidence ranked below 250.\n\nI adopted Jev despite the added latency because accurate evidence is central to the service."
         ],
         [
           "Comparing candidate generators to find the limits of the production setting",
           "Jev can only choose from what reaches it, so evidence missing from the candidate pool is unreachable. I needed to know how far the production candidate generator preserved the answer-bearing evidence.",
           "Reusing stored scores, I regenerated rankings for four candidate generators and compared how well each preserved the 97 pre-registered citation groups across the 80 answerable questions: BGE-M3 alone, the production hybrid (0.75 embedding + 0.25 normalized BM25), RRF, and an alternating union.\n\nAt 100 candidates, the questions that preserved every citation were 74/80 for BGE-M3 alone, 63/80 for the production hybrid, 63/80 for RRF and 65/80 for the alternating union. MRR@500 over each citation’s best rank was 0.1811 for BGE-M3 alone against 0.1245 for the production hybrid, with median ranks of 19 and 40. Beyond 300 candidates the four converged to 79/80 and 78/80.",
-          "The production hybrid weighting ranks answer-bearing evidence lower than plain BGE-M3. At the current 300 candidates the gap is small, so I left production unchanged and recorded it as the first condition to fix before cutting candidates further."
+          "The production hybrid weighting ranks answer-bearing evidence lower than plain BGE-M3. At the 300 candidates used then the gap is small, so I left production unchanged and recorded it as the first condition to fix before cutting candidates further."
+        ],
+        [
+          "Re-evaluating on a real-world set and improving evidence selection",
+          "I needed to check whether results from 9 papers held for what users actually upload, such as statutes, statistics and technical documents. Evaluation models also differed by feature, so results could not be stated on one basis.",
+          "I wrote 100 questions from 11 public documents, reviewed them with my team and froze them with sha256. All LLMs were fixed to gpt-6-luna, every case ran three times, and code checks plus blind Claude grading decided the results. With Jev off, answer accuracy was 71.7% and evidence sufficiency 70.0%; with Jev on, 93.0% and 95.4%.\n\nThe evaluation exposed a bug that double-counted request size and split candidates into small batches. After the fix, on 20 questions × 3 runs, Jev calls fell from 460 to 227, input tokens from 7.13M to 5.25M, and evidence sufficiency rose from 94.1% to 100%. Comparing 300, 200, 150 and 100 candidates gave evidence sufficiency of 95.0, 95.4, 95.0 and 95.0% and gold-citation recall of 0.873, 0.868, 0.849 and 0.808.",
+          "I chose 200, where recall held, cutting Jev cost (nearly proportional to candidates) by about a third. This reversed my earlier decision not to cut candidates further, based on the new set. In request routing, with few options, Jev and the LLM were close at 91.8% and 92.2%, so I now describe Jev's benefit there as response time (3.42s → 0.51s) rather than accuracy."
         ]
       ]
     },
@@ -85,7 +91,7 @@
       "category": "AI Agent, User-defined Skills, HITL, Prompt injection",
       "title": "User-defined Agent Skills: designing controlled execution",
       "short": "Agent execution environment: authoring, validation and approval",
-      "period": "2026.08 - 2026.09",
+      "period": "2026.08 - 2026.09 ~ 2026.11",
       "summary": "I built Agent Skills so users can define and reuse repetitive work such as writing meeting notes. I also thought users must be able to trust every document AI changes, so I designed review, publishing and change approval as one flow and implemented it with AI coding tools.",
       "tags": [
         "LangGraph",
@@ -102,23 +108,23 @@
       "expected": "If AI edits vary and users have to ask again, their prepaid credits go to rework, and users who see that as waste hesitate to pay again. Stable results and no changes before approval let them trust recurring tasks to it and keep using it.",
       "diagram": "flowchart TD\n U[User describes a recurring task] --> S[Draft Skill, mask personal data and check prompt injection]\n S --> P[User review and recheck on publication]\n P --> K[Store reusable instructions]\n Q[User requests document work] --> R[Router selects task and conditions]\n K -. Reuse when needed .-> R\n R --> E[Edit while preserving goal and scope]\n R --> F[Plan folder organization and compare with request]\n E --> V[Check format, edit scope, personal data and injection]\n V --> D[Show validated changes and diff]\n F --> D\n D --> A{User approval}\n A -->|Approve| W[Apply edits or organize folders]\n A -->|Cancel| N[Keep originals]",
       "diagramCaption": "User-defined instructions and the document workflow that uses them. Executors do not reclassify the task; they validate proposed changes and apply them after user approval.",
-      "resultTitle": "Reusable tasks and approval workflow; editing passes 82.5% → 91.2% (114 drafts)",
-      "result": "Users can define recurring tasks, publish them as Skills and reuse them. The final instructions are rechecked on publication, and actual document changes require a preview and user approval. A plan–approve–execute check of folder organisation on 6 documents confirmed it worked correctly.\n\nEditing quality was compared on a fixed regression set of 114 drafts from 19 request types. Fixing an incorrect validation rule and the retry input, then evaluating request fulfillment and meaning preservation separately and allowing one rewrite with the failure reasons, raised passes from 94 to 104. A control group with only the code fixes reached 98, isolating the evaluation loop's effect. I separated the generation and evaluation prompts to stop the evaluator rejecting valid drafts, and no edit is returned if a draft fails again.\n\nAI drafts instructions and edits, code checks permissions and execution scope, and users decide publication and final application.",
+      "resultTitle": "Reusable tasks and approval workflow; edit success on a real-world set 85.6% → 88.9%",
+      "result": "Users can define recurring tasks, publish them as Skills and reuse them. The final instructions are rechecked on publication, and actual document changes require a preview and user approval. A plan–approve–execute check of folder organisation on 6 documents confirmed it worked correctly.\n\nIn end-to-end runs of 30 requests I wrote and reviewed with my team, three times each, edit success rose from 77/90 to 80/90.\n\nEarlier in development, editing quality was compared on a fixed regression set of 114 drafts from 19 request types. Fixing a validation rule and the retry input, evaluating fulfillment and meaning separately and allowing one rewrite raised passes from 94 to 104 (98 with code fixes alone). No edit is returned if a draft fails again.\n\nAI drafts instructions and edits, code checks permissions and execution scope, and users decide publication and final application.",
       "metrics": [
         [
-          "Original Agent",
-          "94 / 114",
-          "82.5%"
+          "Real-world set, before evaluator fix",
+          "77 / 90",
+          "85.6%"
         ],
         [
-          "Code changes, without evaluator",
-          "98 / 114",
-          "86.0%"
+          "Real-world set, after evaluator fix",
+          "80 / 90",
+          "88.9%"
         ],
         [
-          "Final implementation with evaluator",
-          "104 / 114",
-          "91.2%"
+          "Development regression set (draft replay)",
+          "94 → 104 / 114",
+          "82.5% → 91.2%"
         ]
       ],
       "tradeoff": "Normalized average editing-evaluation time increased from 11.11s to 18.92s. I accepted the latency but limited the number of rewrites.",
@@ -168,6 +174,13 @@
           "judgment": "I separated what has to be observable from what must not leave the system. Graphs that decide answer quality get node-level tracing; the agent graph that edits a user’s own documents runs with tracing off and keeps raw content out of persisted state.",
           "implementation": "Rebuilt the evaluation loop as a LangGraph graph so answer generation, evaluation and retry each surface as their own node. Even with tracing configured on, a missing key leaves graph execution intact and skips only tracing, which avoids warnings and pointless network retries. The agent graph disables tracing and excludes raw tool lookups from persisted state, and that state is deleted before the run record once retention ends. The prompt log I write myself masks numeric personal data before writing.",
           "verification": "Ran real requests and confirmed that graph nodes and model call spans appear in the trace. Timing experiments run with tracing and prompt logging both disabled, so instrumentation overhead stays out of the measured times."
+        },
+        {
+          "title": "End-to-end evaluation on a real-world set and evaluator improvement",
+          "problem": "The 114-draft regression set rechecks drafts that already exist, so it could not show quality when a request actually runs from start to finish.",
+          "judgment": "I wrote 30 edit requests, reviewed them with my team and froze them. Each ran through the full editing feature and counted as a success only after passing both code checks and blind Claude grading.",
+          "implementation": "Reviewing the results showed the built-in evaluator failing list and table conversions just for dropping connectives and hedges. I extended the criterion used for shortening and summarising to format conversions, while changed figures or article numbers and missing content the user asked to keep still fail.",
+          "verification": "With gpt-6-luna, 30 requests × 3 runs rose from 77/90 (85.6%) to 80/90 (88.9%), and cases that passed the built-in check but failed grading fell from 9 to 6. By scope: selection 18/18, whole document 17/18, append to end 16/18, current section 29/36, so section edits remain the weak spot. Evaluated the same way, folder organisation scored 59/60 and folder lookup 18/18."
         }
       ]
     },
@@ -239,9 +252,9 @@
       "id": "fruition-document",
       "project": "Fruition",
       "category": "PDF conversion, Data pipeline",
-      "title": "PDF → Markdown: about 90% restoration rate",
-      "short": "PDF → Markdown: ~90% restoration rate",
-      "period": "2026.07 — 2026.09",
+      "title": "PDF → Markdown: 96.1% body text and 99.3% table cells restored across 15 PDFs",
+      "short": "PDF → Markdown: 96.1% body text, 99.3% table cells",
+      "period": "2026.07 — 2026.09 ~ 2026.11",
       "summary": "To use papers, which mostly arrive as PDFs, as knowledge, table figures and equations had to survive conversion to Markdown first. So I traced where AI repair dropped content and split processing paths by original layout and content type.",
       "tags": [
         "Open-source PDF conversion: AnyDoc, Docling",
@@ -254,21 +267,26 @@
       "expected": "If PDF restoration is poor and key figures go missing, the document can't fully enter the Wiki and users get a lower-quality service. I thought that could make users leave.",
       "diagram": "flowchart TD\n A[Original PDF] --> B[Separate text, tables, equations and figures]\n B --> C[Preserve text context and position]\n B --> D[AI reads original table and equation regions]\n B --> E[Preserve original figures]\n C --> F[Reassemble in original order]\n D --> F\n E --> F\n F --> G{Check markers and missing content}\n G -->|Pass| H[Converted document]\n G -->|Mismatch| I[Keep original content for that region]",
       "diagramCaption": "A conceptual view of processing by content type and reassembling at the original positions. This is the current design; experiments did not all use the same path.",
-      "resultTitle": "Pass rate against 30 original pages: 45.17% → 89.89%",
-      "result": "I evaluated the existing Docling and the improved pipeline by splitting the same papers into 445 evaluation units covering body text, tables, equations and other content, and comparing them with the originals.\n\nThe practical pass rate rose from 201 (45.17%) to 400 (89.89%), and the strict rate, which requires values and symbols to match exactly, rose from 193 (43.37%) to 393 (88.31%).",
+      "resultTitle": "15 PDFs by type: 96.1% body text, 99.3% table cells restored (adoption experiment 45.17% → 89.89%)",
+      "result": "I converted 15 statutes, policy documents, papers, scans and mixed-layout documents (111 pages) three times each with the production converter and counted every element that survived: headings 97.6%, body text 96.1%, table cells 99.3%, equations 100%, images 91.3%. For the 12 PDFs with a text layer, body text was 98.7% and table cells 99.5%.\n\nIn the earlier adoption experiment, I evaluated the existing Docling and the improved pipeline by splitting the same papers into 445 evaluation units covering body text, tables, equations and other content, and comparing them with the originals.\n\nThe practical pass rate rose from 201 (45.17%) to 400 (89.89%), and the strict rate, which requires values and symbols to match exactly, rose from 193 (43.37%) to 393 (88.31%).",
       "metrics": [
         [
-          "Existing Docling",
-          "45.17%",
-          "30 pages total"
+          "Body text restored (15 PDFs × 3 runs)",
+          "96.1%",
+          "98.7% for PDFs with a text layer"
         ],
         [
-          "Improved pipeline",
-          "89.89%",
+          "Table cells restored (15 PDFs × 3 runs)",
+          "99.3%",
+          "1 misread number among 12,675 cells"
+        ],
+        [
+          "Adoption experiment: Docling → improved pipeline",
+          "45.17% → 89.89%",
           "30 pages total"
         ]
       ],
-      "tradeoff": "Internal LLM evaluation of 4 PDFs (30 pages). Minor differences were allowed for text, headings and figures; tables and equations had to match in values, symbols and structure.",
+      "tradeoff": "Internal LLM evaluation of 4 PDFs (30 pages). Minor differences were allowed for text, headings and figures; tables and equations had to match in values, symbols and structure. In the by-type evaluation, Claude wrote the reference data and judged the results, without human review. The two evaluations differ in documents and metrics, so they are not compared directly.",
       "experiments": [
         [
           "Selective repair and missed errors",
@@ -287,6 +305,12 @@
           "Full-page sLLM processing still left table/equation errors, and sending all body text to the model was a heavy load. To cut that load and improve speed and accuracy, I needed separate repair for the tables and equations that usually break, alongside fast body extraction.",
           "I found AnyDoc on Threads and, after seeing its GitHub comparison with Docling, tested it on the same 4 PDFs (30 pages).\n\nThe recorded Docling run took 134.19s, while AnyDoc text extraction took 1.68s, about 80 times shorter. Docling’s time also included OCR and table analysis. One AnyDoc document had garbled characters because the PDF lacked mappings from character codes to actual characters.",
           "The processing scopes differed, so this was not an 80-fold improvement in complete conversion. Still, AnyDoc was useful for fast text extraction. I kept separate table/equation repair, switched body extraction to AnyDoc, used AI on garbled or misordered pages, and preserved original figures. With no early users yet, running GPU servers for an sLLM would cost more than it saved, so from this point I switched the repair model to commercial LLM APIs."
+        ],
+        [
+          "Finding remaining weaknesses by evaluating real documents by type",
+          "The earlier evaluation used 4 mostly academic PDFs (30 pages), so quality on the statutes, policy documents, scans and mixed-layout documents target users upload was unknown.",
+          "I converted 15 documents (111 pages) across 5 types (text, table, multi-column, scan, mixed) three times each with the production converter, and all 45 runs finished without error. Comparing page images with the results using Claude and counting every element gave headings 97.6%, body text 96.1%, table cells 99.3%, equations 100% and images 91.3%, without human review.",
+          "PDFs with a text layer were stable at 100% headings, 98.7% body text and 99.5% table cells. Scans sometimes lost a whole page (all three runs of the statute reproduction, two runs of the 1978 report), so that page loss became the next improvement."
         ]
       ],
       "links": [
@@ -724,7 +748,7 @@
         "text3": "to make people’s lives better.",
         "text4": "AI Engineer | Backend Engineer",
         "text5": "I enjoy taking a deep dive into problems.",
-        "text6": "An AI engineer who raised RAG evidence coverage from 66.25% to 91.25% and AI document-editing quality from 82.5% to 91.2%, designing evaluation, approval and rollback so AI does not answer from wrong evidence or change users' documents on its own.",
+        "text6": "An AI engineer who raised RAG answer accuracy from 71.7% to 93.0% and AI document-editing success from 85.6% to 88.9%, designing evaluation, approval and rollback so AI does not answer from wrong evidence or change users' documents on its own.",
         "text7": "kkuldangi2@gmail.com",
         "text8": "GitHub ↗",
         "text9": "Blog ↗",
@@ -737,11 +761,11 @@
       "fields": {
         "text11": "Highlights ",
         "text12": "01 / PROFILE",
-        "text13": "Improving RAG evidence selection: coverage 66.25% → 91.25%, evidence attached to unanswerable questions 20 → 0",
-        "text14": "I thought wrong evidence makes the whole answer untrustworthy, so I replaced evidence selection with Jev. GPT cost about 2.5× more, and tuning search weights kept scores flat. Selection got much slower, so I tuned candidates and parallelism to cut median time from 9.090s to 1.137s.",
-        "text15": "Designing the agent execution environment: user-defined skills behind approval, edit quality 82.5% → 91.2% (114 drafts)",
+        "text13": "Improving RAG evidence selection: answer accuracy 71.7% → 93.0%, evidence sufficiency 70.0% → 95.4% (100 questions × 3 runs)",
+        "text14": "I thought wrong evidence makes the whole answer untrustworthy, so I replaced evidence selection with Jev. At adoption, GPT cost about 2.5× more and tuning search weights kept scores flat. I later re-evaluated on a set I wrote and reviewed with my team, fixed a request-batching bug and cut candidates from 300 to 200.",
+        "text15": "Designing the agent execution environment: user-defined skills behind approval, edit success 85.6% → 88.9% (30 requests × 3 runs)",
         "text16": "Users repeat different tasks, so I let them define their own Skills. I judged that users can't trust AI that changes documents freely, so code checks permissions and scope, and changes apply only after approval. Code checks missed omitted requests, so drafts get a semantic evaluation and one rewrite at most.",
-        "text17": "Building data pipelines: PDF restoration rate 45.17% → 89.89%, drug conversion $200 estimated → $11.18 spent",
+        "text17": "Building data pipelines: 96.1% body text and 99.3% table cells restored across 15 PDFs, drug conversion $200 estimated → $11.18 spent",
         "text18": "Broken tables and equations lose the figures answers rely on, so body text uses fast AnyDoc and table and equation regions are read separately.\n\nConverting each repeated sentence once with Batch API kept about 44,000 drug records within budget."
       }
     },
@@ -755,16 +779,16 @@
         "text23": "LLM Wiki-based AI workspace | AI SW Maestro, 17th cohort | Deployed on AWS EKS, in QA",
         "text24": "Team project (3 + designer) / AI lead",
         "text25": "How it started: a teammate’s pain point with managing documents, refined through design thinking — saved documents could not be found when needed.\nTeam: me (all AI), 1 backend (Spring backend), 1 frontend & DevOps (frontend, MSA deployment on AWS), external designer, 3 mentors",
-        "text114": "PDF → Markdown restoration rate ~90%",
+        "text114": "PDF → Markdown: 96.1% body text, 99.3% table cells restored",
         "text115": "Converted uploaded PDFs into Markdown that keeps tables and equations, so they can be searched and cited in answers.",
-        "text26": "PDF → Markdown conversion\nProblem: Broken tables and equations in paper PDFs made the figures behind Wiki pages and answers unusable\nDecision: Repairing only detected damage missed errors, and full AI conversion lacked table/equation accuracy and was costly, so I split processing by content type. Body text uses fast AnyDoc extraction; repair moved from an sLLM to commercial LLM APIs to avoid GPU server costs\nSolution: Extracted body text with AnyDoc and repaired only garbled parts with AI, read table/equation regions separately, and kept original figures\nResult: PDF → Markdown restoration rate rose from about 45% with Docling alone to about 90%",
+        "text26": "PDF → Markdown conversion\nProblem: Broken tables and equations in paper PDFs made the figures behind Wiki pages and answers unusable\nDecision: Repairing only detected damage missed errors, and full AI conversion lacked table/equation accuracy and was costly, so I split processing by content type. Body text uses fast AnyDoc extraction; repair moved from an sLLM to commercial LLM APIs to avoid GPU server costs\nSolution: Extracted body text with AnyDoc and repaired only garbled parts with AI, read table/equation regions separately, and kept original figures\nResult: In the adoption experiment (4 PDFs), restoration rose from about 45% with Docling alone to about 90%. Across 15 PDFs by type × 3 runs: headings 97.6%, body text 96.1%, table cells 99.3%, equations 100%, images 91.3% (AI-judged)",
         "text28": "Parallel Wiki generation\nProblem: Documents were processed one at a time, so large uploads waited long for their Wiki.\nDecision: Compared worker count, concurrent requests and GPU parallelism. More workers helped while waiting on external AI; more concurrent requests and GPU parallelism were slower, so I dropped them. Accepted about 4x memory, since EKS can spread services.\nSolution: Distributed per-document jobs over Kafka with up to 4 workers.\nResult: Analysis of 4 documents fell from 282.11s to 73.89s (about 74% faster).",
         "text116": "Improving retrieval for grounded AI answers",
         "text117": "Finds the document evidence AI answers need, and attaches none to questions the documents cannot answer.",
-        "text27": "Evidence selection for RAG\nProblem: In a service that answers from documents, retrieval missed evidence and attached evidence to unanswerable questions, undermining trust.\nDecision: GPT selection cost about 2.5x and took longer; tuning weights and RRF gave similar scores across settings, so I adopted Jev, which picks only from fixed options and had first been validated on request routing (77 → 81 of 98 correct).\nSolution: Two stages: BGE-M3, the best Korean semantic model in benchmarks, and BM25 for exact terms gather candidates and Jev picks the final evidence. Compared on identical candidates with blind cross-grading, then cut candidates to 300 and compared 4, 6, 8 and 10 parallel batches, choosing 8 with no accuracy difference.\nResult: Coverage on 80 answerable questions rose from 66.25% to 91.25%. Median selection time 9.090s → 1.137s (still slower than the original 0.431s).",
+        "text27": "Evidence selection for RAG\nProblem: In a service that answers from documents, retrieval missed evidence and attached evidence to unanswerable questions, undermining trust.\nDecision: At adoption, GPT selection cost about 2.5x and took longer; tuning weights and RRF gave similar scores across settings, so I adopted Jev, which picks only from fixed options and had first been validated on request routing (77 → 81 of 98 correct).\nSolution: Two stages: BGE-M3, the best Korean semantic model in benchmarks, and BM25 for exact terms gather candidates and Jev picks the final evidence. Compared on identical candidates with blind cross-grading, then cut candidates to 300 and compared 4, 6, 8 and 10 parallel batches, choosing 8 with no accuracy difference. Later cut candidates to 200 after re-comparing on the real-world set.\nResult: On 100 questions × 3 runs that I wrote and reviewed with my team, answer accuracy 71.7% → 93.0% and evidence sufficiency 70.0% → 95.4%. Wrong answers 7.3% → 1.0% against plain RAG. Average end-to-end response 5.5s (plain RAG 4.3s).",
         "text118": "User-defined agent Skills with approval-based execution",
         "text119": "Recurring tasks are saved and reused as Skills, and AI-made changes apply only after the user approves them.",
-        "text29": "User-defined task instructions (Skills)\nProblem: Recurring tasks differ by user, so they cannot all be built as features, and AI edits arrived with parts of the request missing, leaving repeatable work to chance\nDecision: AI drafts instructions, code checks permissions and scope, and the user decides publishing and applying. Code format checks missed omitted requests, so I added LLM semantic evaluation\nSolution: Authoring, review and publishing of natural-language instructions with checks against bypassing permission or approval; preview and separate approval before changes; semantic evaluation with at most one rewrite. Generation, evaluation and rewrite run as LangGraph nodes for step-level tracing, and published Skills are stored as immutable versions in PostgreSQL\nResult: Edit quality 94 → 104 of 114 drafts (82.5% → 91.2%); documents stayed unchanged before approval. Failed drafts 20 → 10",
+        "text29": "User-defined task instructions (Skills)\nProblem: Recurring tasks differ by user, so they cannot all be built as features, and AI edits arrived with parts of the request missing, leaving repeatable work to chance\nDecision: AI drafts instructions, code checks permissions and scope, and the user decides publishing and applying. Code format checks missed omitted requests, so I added LLM semantic evaluation\nSolution: Authoring, review and publishing of natural-language instructions with checks against bypassing permission or approval; preview and separate approval before changes; semantic evaluation with at most one rewrite. Generation, evaluation and rewrite run as LangGraph nodes for step-level tracing, and published Skills are stored as immutable versions in PostgreSQL\nResult: On 30 requests × 3 runs that I wrote and reviewed with my team, edit success 77 → 80 of 90 (85.6% → 88.9%); documents stayed unchanged before approval",
         "text30": "Jev-based request routing\nProblem: Misrouting a question as an edit led to the wrong action, directly hurting the service's reliability.\nDecision: Jev picks only from fixed options, which fits routing; as a newly released model it was validated first on low-risk routing.\nSolution: Applied Jev to choose task type and conditions, and compared it with the existing approach and GPT-5-nano on the same 98 requests.\nResult: Fully correct decisions rose from 77 to 81 (GPT-5-nano 63); median decision time fell from 8.967s to 0.658s.",
         "text143": "Conversation memory and edit input scope\nProblem: Sending whole conversations and documents to the model raises cost and latency, adding to users' prepaid cost and waiting time.\nDecision: Recent turns need full text while older ones need only the gist; edits need only the target and its surroundings.\nSolution: Keep the last six messages verbatim with a rolling summary for older ones, and send only the target lines plus context for edits.\nResult: Edit input for a 1,000-line document cut to 5.58% of the source.",
         "text144": "Bounding the edit input\nProblem: sending a whole document to the model drives up cost and latency.\nSolution: send only the target line range plus surrounding context, and reject ranges that straddle a table or code-block boundary. A benchmark tracks input size against the source and average and p95 time.",
@@ -888,14 +912,14 @@
     "eyebrow": "Retrieval, execution and data processing for LLM services",
     "title": "I build services that use AI\nto make people’s lives better.",
     "description": "For each project, the parts I contributed: the problem, the alternatives I weighed, why I chose one, how I built it and how I verified it.",
-    "experience1Title": "RAG evidence selection: coverage 66.25% → 91.25%, evidence attached to unanswerable questions 20 → 0",
-    "experience1Description": "I thought wrong evidence makes the whole answer untrustworthy, so I replaced evidence selection with Jev. GPT cost about 2.5× more, and tuning search weights kept scores flat. Selection got much slower, so I tuned candidates and parallelism to cut median time from 9.090s to 1.137s.",
-    "experience2Title": "Agent execution environment: user-defined skills behind approval, edit quality 82.5% → 91.2% (114 drafts)",
+    "experience1Title": "RAG evidence selection: answer accuracy 71.7% → 93.0%, evidence sufficiency 70.0% → 95.4%",
+    "experience1Description": "I thought wrong evidence makes the whole answer untrustworthy, so I replaced evidence selection with Jev. At adoption, GPT cost about 2.5× more and tuning search weights kept scores flat. I later re-evaluated on a set I wrote and reviewed with my team, fixed a request-batching bug and cut candidates from 300 to 200.",
+    "experience2Title": "Agent execution environment: user-defined skills behind approval, edit success 85.6% → 88.9%",
     "experience2Description": "Users repeat different tasks, so I let them define their own Skills. I judged that users can't trust AI that changes documents freely, so code checks permissions and scope, and changes apply only after approval. Code checks missed omitted requests, so drafts get a semantic evaluation and one rewrite at most.",
-    "experience3Title": "Data pipelines: PDF → Markdown restoration rate ~90%, drug conversion $200 estimated → $11.18 spent",
+    "experience3Title": "Data pipelines: 96.1% body text and 99.3% table cells restored across 15 PDFs, drug conversion $200 estimated → $11.18 spent",
     "experience3Description": "Broken tables and equations lose the figures answers rely on, so body text uses fast AnyDoc and table and equation regions are read separately. Converting each repeated sentence once with Batch API kept about 44,000 drug records within budget.",
     "profileRole": "AI Engineer | Backend Engineer",
-    "profileLine1": "An AI engineer who raised RAG evidence coverage from 66.25% to 91.25% and AI document-editing quality from 82.5% to 91.2%, designing evaluation, approval and rollback so AI does not answer from wrong evidence or change users' documents on its own.",
+    "profileLine1": "An AI engineer who raised RAG answer accuracy from 71.7% to 93.0% and AI document-editing success from 85.6% to 88.9%, designing evaluation, approval and rollback so AI does not answer from wrong evidence or change users' documents on its own.",
     "profileLine2": "I weigh accuracy, cost and response time against each other, confirm the trade-off with an evaluation, and then choose the implementation that fits the service.",
     "readingOrder": ""
   },
@@ -930,7 +954,7 @@
     "about": {
       "eyebrow": "ABOUT ME",
       "title": "About me",
-      "description": "An AI engineer who raised RAG evidence coverage from 66.25% to 91.25% and AI document-editing quality from 82.5% to 91.2%, designing evaluation, approval and rollback so AI does not answer from wrong evidence or change users' documents on its own. I owned the entire AI side of Fruition, an AI workspace that turns documents into knowledge, and the backend and AI of Pilltip, a medication service that explains drug information in plain language. Both handle sensitive personal data, so I drew an explicit line between what the model sees and what application code decides. Outside of code, I have kept up weight training for two and a half years."
+      "description": "An AI engineer who raised RAG answer accuracy from 71.7% to 93.0% and AI document-editing success from 85.6% to 88.9%, designing evaluation, approval and rollback so AI does not answer from wrong evidence or change users' documents on its own. I owned the entire AI side of Fruition, an AI workspace that turns documents into knowledge, and the backend and AI of Pilltip, a medication service that explains drug information in plain language. Both handle sensitive personal data, so I drew an explicit line between what the model sees and what application code decides. Outside of code, I have kept up weight training for two and a half years."
     },
     "sections": {
       "skillsEyebrow": "SKILLS",
