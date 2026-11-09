@@ -6,7 +6,7 @@
       "project": "Fruition",
       "category": "AI Agent, RAG, Jev",
       "title": "RAG evidence selection: answer accuracy 71.7% → 93.0%, evidence sufficiency 95.4% on a fixed set",
-      "short": "RAG evidence selection: accuracy 71.7% → 93.0%",
+      "short": "RAG evidence selection",
       "period": "2026.09 ~ 2026.11",
       "summary": "Fruition answers from uploaded documents, so I thought wrong evidence would make the whole answer untrustworthy. After seeing Jev improve request routing, I applied it to evidence selection. I then re-evaluated on a set I wrote and reviewed with my team, confirmed answer accuracy of 71.7% → 93.0% under identical conditions, and fixed what the evaluation exposed.",
       "tags": [
@@ -90,7 +90,7 @@
       "project": "Fruition",
       "category": "AI Agent, User-defined Skills, HITL, Prompt injection",
       "title": "User-defined Agent Skills: designing controlled execution",
-      "short": "Agent execution environment: authoring, validation and approval",
+      "short": "Agent Skills and approval",
       "period": "2026.08 - 2026.09 ~ 2026.11",
       "summary": "I built Agent Skills so users can define and reuse repetitive work such as writing meeting notes. I also thought users must be able to trust every document AI changes, so I designed review, publishing and change approval as one flow and implemented it with AI coding tools.",
       "tags": [
@@ -185,11 +185,89 @@
       ]
     },
     {
+      "id": "fruition-mcp",
+      "project": "Fruition",
+      "category": "MCP, OAuth, Human-in-the-loop",
+      "title": "MCP integration: connecting external AI proposals to web approval and storage",
+      "short": "MCP integration",
+      "period": "2026.11",
+      "summary": "I built MCP integration so users can work with Fruition documents and Wiki pages through their own Codex or Claude Code and model. External AI handles retrieval and change proposals; Fruition keeps its existing authorization, web approval, storage and billing paths.",
+      "tags": [
+        "MCP",
+        "OAuth",
+        "Codex",
+        "Claude Code",
+        "Human-in-the-loop",
+        "Idempotency"
+      ],
+      "problem": "Using Fruition knowledge from an external AI tool required connecting both retrieval and document changes. Giving AI direct write and approval authority could save changes users had never reviewed. Revoked connections and stale document versions also needed explicit handling.",
+      "expected": "Users can work with their existing AI tools and models while reusing Fruition documents and Wiki pages, reviewing and approving actual changes in the web app.",
+      "processTitle": "Separating responsibilities and verifying real clients",
+      "designSteps": [
+        {
+          "title": "Separating external model work from service authority",
+          "problem": "A separate integration path could drift from existing authorization, storage and approval rules.",
+          "judgment": "Let the user’s model understand documents and draft changes while Fruition retains authority over access and execution.",
+          "implementation": "Bound OAuth connections to a user, workspace, client and scope, checking current permissions on each request. Connected document and Wiki retrieval, ingestion and edit proposals, plus PDF, Skill and meeting tools.",
+          "verification": "Confirmed discovery of 21 tools in a real Claude Code connection. Tool discovery was kept separate from successful execution of every tool."
+        },
+        {
+          "title": "Separating proposals from web approval and storage",
+          "problem": "AI approving its own changes, or a document changing after review, could save something the user never approved.",
+          "judgment": "Expose no MCP approval tool. Require a person to review the preview and quote in the web app.",
+          "implementation": "Fixed the approved version, hash, scope and price, and rechecked permissions and conflicts immediately before writes. Used receipts stored with changes for billing and returned the same result for duplicate submissions.",
+          "verification": "With synthetic documents, verified ingestion → web approval → Wiki search and page retrieval → edit proposal → web approval and storage → source reread in both Codex and Claude Code. Claude changed only Monday to Wednesday, preserving the owner and line breaks."
+        },
+        {
+          "title": "Verifying connection revocation and version boundaries",
+          "problem": "Retained tokens and confusion between metadata versions and body revisions could break access revocation or reject valid edits.",
+          "judgment": "Authorize against current connection state and detect body conflicts using the body revision.",
+          "implementation": "Fixed missing gateway routes, edit-range calculation and body/metadata version confusion found during real-client checks. Disconnecting one user connection blocks new access without disabling other active connections.",
+          "verification": "Confirmed natural OAuth token refresh in both clients. After disconnecting Codex, its next real access was blocked with HTTP 403 while Claude’s connection stayed active. An edit proposal using an older body revision was rejected with SOURCE_CHANGED."
+        }
+      ],
+      "diagram": "flowchart TD\n C[Codex or Claude Code] --> O[OAuth connection and current permissions]\n O --> R[Search and read documents and Wiki]\n R --> P[External AI submits a proposal]\n P --> V[Validate scope and source version]\n V --> W[Review changes and quote in web app]\n W --> A{User approval}\n A -->|Approve| X[Recheck permissions and conflicts]\n A -->|Reject| N[Keep existing data]\n X --> S[Save through existing services with receipt]\n S --> Q[Reread changed source through MCP]",
+      "diagramCaption": "MCP submits proposals; the user approves in Fruition’s web app. Existing services apply the change, and a subsequent read confirms the stored result.",
+      "resultTitle": "Verified ingestion, retrieval, approval, editing and rereading in Codex and Claude Code",
+      "result": "Verified the core flow in two real clients using synthetic test accounts and documents. Codex changed body revision 1 → 2 and Claude Code 3 → 4; each reread the final source and hash through MCP. Also verified that disconnecting one connection blocks its access while another remains active. Additional feature checks passed 33 PostgreSQL integration tests and 6 unit/contract tests.",
+      "metrics": [
+        [
+          "Real clients",
+          "2",
+          "Core flow verified in Codex and Claude Code"
+        ],
+        [
+          "Discovered tools",
+          "21",
+          "Tool listing confirmed in Claude Code"
+        ],
+        [
+          "Additional feature tests",
+          "39 passed",
+          "33 PostgreSQL integration + 6 unit/contract"
+        ]
+      ],
+      "tradeoff": "These are dev-merged changes and isolated-environment results recorded on November 9, 2026, not a production release or execution proof for all 21 tools. Full native execution of the expanded PDF, Skill and meeting flows remains unverified. Automatic Wiki updates after source edits were not verified. Test quotes are not production prices.",
+      "image": {
+        "src": "assets/projects/fruition-mcp-claude-tools.png",
+        "alt": "The 21 Fruition MCP tools discovered in Claude Code",
+        "caption": "Actual Claude Code tool listing. It confirms discovery, not successful execution of every tool.",
+        "width": 1952,
+        "height": 1248
+      },
+      "links": [
+        {
+          "label": "Actual Codex Wiki search screenshot",
+          "url": "https://martinel2.github.io/assets/projects/fruition-mcp-codex-search.png"
+        }
+      ]
+    },
+    {
       "id": "fruition-rollback",
       "project": "Fruition",
       "category": "AI Agent, Compensating recovery, Audit history",
       "title": "Cancelling an AI task and undoing what it already saved",
-      "short": "Task cancellation - undoing saved changes in reverse",
+      "short": "Task cancellation and rollback",
       "period": "2026.08 — 2026.09",
       "summary": "In a service where AI changes documents, I thought users can't hand work to AI unless cancelling is reliable. Stopping execution leaves saved document, folder, Wiki and Skill changes behind, so I built a path that reverses even committed changes in reverse order. To keep contributions other jobs made correctly, I restored pages without only the cancelled contribution.",
       "tags": [
@@ -253,7 +331,7 @@
       "project": "Fruition",
       "category": "PDF conversion, Data pipeline",
       "title": "PDF → Markdown: 96.1% body text and 99.3% table cells restored across 15 PDFs",
-      "short": "PDF → Markdown: 96.1% body text, 99.3% table cells",
+      "short": "PDF conversion",
       "period": "2026.07 — 2026.09 ~ 2026.11",
       "summary": "To use papers, which mostly arrive as PDFs, as knowledge, table figures and equations had to survive conversion to Markdown first. So I traced where AI repair dropped content and split processing paths by original layout and content type.",
       "tags": [
@@ -329,7 +407,7 @@
       "project": "Fruition",
       "category": "Kafka asynchronous processing, AI pipeline",
       "title": "Parallel document analysis: 282.11s → 73.89s",
-      "short": "Parallel analysis: 73.8% less processing time",
+      "short": "Parallel document analysis",
       "period": "2026.09",
       "summary": "Wiki generation ran sequentially, and I was concerned slow processing of large documents would hurt the user experience. I measured the effect and resource cost of more Workers and set separate scaling rules for analysis and embedding.",
       "tags": [
@@ -367,68 +445,75 @@
     {
       "id": "fruition-agent-loop",
       "project": "Fruition",
-      "category": "Coding agent operations, MSA migration",
-      "title": "Coding agent loop: 16 MSA migration PRs merged in 5 days",
-      "short": "Agent loop: 16 PRs merged in 5 days",
-      "period": "2026.08",
-      "summary": "The MSA migration had to finish within a week to deploy and get feedback on schedule. I judged there wasn't enough time to do it by hand, so I gave the porting to coding agents while I set the work plan and review criteria and decided on merges. I set up the loop so a coordinating agent managed order and priorities.",
+      "category": "Coding agent orchestration, Cross-service changes",
+      "title": "Coding agents across 5 repositories: 78 PRs created, decisions and review owned by a human",
+      "short": "Coding agent orchestration",
+      "period": "2026.08 / 2026.10",
+      "summary": "After running an agent loop for an August MSA migration, I extended it to changes across five repositories in October. Agents investigated, implemented and reviewed; I chose trade-offs, set scope and acceptance criteria, and challenged unsupported findings. The two-day effort produced 78 PRs and 43 issues.",
       "tags": [
         "Coding agents",
         "Claude Code",
-        "MSA",
-        "Code review"
+        "Code review",
+        "Decision records",
+        "MSA"
       ],
-      "problem": "The MSA migration had to be done within a week so we could deploy on schedule and get feedback on the new structure. The features were already built, so moving them meant too many changes to make by hand in time, and the work was split across several streams. I built a coding-agent loop so the work could keep going while I rested or slept. With about a week left before the MSA migration deadline, moving the AI features into the new service structure had split into several streams. Long single sessions lost track of the plan as context was summarized.",
-      "expected": "I judged that a late migration would delay both deployment and feedback, and increase rework on code that drifted from the plan. So the goal was to keep the schedule with the same team.",
-      "diagram": "flowchart TD\n P[Work plan and criteria docs, me] --> C[Coordinator agent, dependencies and priority]\n C --> W1[Branch workspace, implementer + reviewer agents]\n C --> W2[Other branch workspaces, in parallel]\n W1 --> R[PR creation, integration review]\n W2 --> R\n R --> F[Required fixes applied, regression check]\n F --> J[Merge decision, me]",
-      "diagramCaption": "I set the plan and criteria; agents with separate implementer and reviewer roles worked in parallel per branch.",
-      "resultTitle": "16 PRs merged in 5 days, 13 required fixes applied before merge",
-      "result": "Merged 16 PRs over 5 days, from August 9 to 13. The 13 required fixes raised in pre-merge review were applied and checked for regressions. One defect the review caught: restoring a document returned its previous body.\n\nThe coding agents did the implementation; I designed the loop, wrote the work plan and criteria documents, reviewed results and made merge decisions.",
+      "problem": "A model-deprecation issue led to discovery that some features ignored the user-selected model and used hardcoded models. Changes spread across five repositories. Agents could invent issues, implement only part of a plan or review against decisions that had never reached the issue tracker.",
+      "expected": "Keep cross-service changes aligned with agreed behavior, while preventing incomplete work and false review findings from turning into further rework.",
+      "diagram": "flowchart TD\n H[Human defines scope and chooses trade-offs] --> D[Record decisions in plans and issues]\n D --> I[Agents implement per repository]\n I --> R[Fresh session reviews against decisions]\n R --> E{Finding supported by code evidence}\n E -->|Yes| F[Fix within agreed scope and recheck]\n E -->|No| Q[Recheck or withdraw finding]\n F --> M[Review and repository-owner merge decision]\n Q --> R",
+      "diagramCaption": "October workflow: a fresh review session checks decisions, and findings need file and line evidence before changes are made.",
+      "resultTitle": "78 PRs created in 2 days; incomplete closure found in 7 of 31 issues",
+      "result": "From the night of October 10 through October 12, agents created 78 PRs and 43 issues across five repositories. Plan-alignment reviews recorded 21 matches among 42 PRs initially and 43 among 45 later; three PRs entered the review set, so the denominator changed. Reviewing 31 recently closed issues found 7 with unfinished requirements, which were reopened with remaining-work checklists.\n\nThis is separate from the August migration: 16 PRs merged over five days, with 13 required fixes before merge. Agents wrote the code; I set plans and criteria, chose design trade-offs and controlled scope. In October, AI-repository changes merged to dev after review; other repository owners retained merge decisions.",
       "metrics": [
         [
-          "PRs merged",
-          "16",
-          "2026.08.09 – 08.13"
+          "PRs created",
+          "78",
+          "5 repositories, Oct 10–12"
         ],
         [
-          "Required fixes before merge",
-          "13",
-          "From review"
+          "Plan alignment",
+          "43 / 45",
+          "Final review snapshot; initially 21 / 42"
         ],
         [
-          "Agents per branch",
-          "2",
-          "Implement, review"
+          "Incomplete closed issues",
+          "7 / 31",
+          "Reopened with remaining-work checklists"
         ]
       ],
-      "tradeoff": "I judged merges by criteria documents and review results rather than writing the code myself, so defects outside the review criteria can slip through. Refining the criteria documents remains ongoing work.",
+      "tradeoff": "October figures come from my published retrospective. PR creation counts are not merged or deployed feature counts, and review alignment is not a defect-free guarantee. The review population changed, so the two snapshots are not a controlled before/after rate. Broader desktop OAuth work was deferred to keep focus on the agreed changes.",
       "image": {
         "src": "assets/projects/fruition-agent-loop.png",
         "alt": "A dev-msa coordinator agent with branch workspaces (PRs #167, #169, #170), each running two agents",
-        "caption": "Agents working in parallel in branch workspaces under a coordinator agent (2026.08.11).",
+        "caption": "Earlier agent-loop setup during the August MSA migration (2026-08-11). This is not a screenshot of the October 78-PR effort.",
         "width": 946,
         "height": 1040
       },
-      "processTitle": "Loop design and decisions",
+      "processTitle": "Decisions and review practices",
       "experiments": [
         [
-          "Building an agent loop with separate roles",
-          "Giving one session all the work blurred the plan and criteria as context was summarized. Agents then drifted from the plan, leaving commits missing or producing code that differed from it. Fixing that cost more time, so I set out to cut that waste.",
-          "Fixed the work plan and criteria in documents and split roles into implementation, review and integration review. Each branch had its own workspace with two agents running in parallel, and a coordinator agent judged dependencies and priority between tasks.",
-          "Sessions could change and still continue from the same documents, so splitting long work across agents did not scatter its direction."
+          "Grouping changes and retaining human decisions",
+          "One model issue expanded into cross-service work; deciding every fix separately would duplicate policy decisions.",
+          "Grouped related issues by scope. Agents presented options and trade-offs, while I chose policies and required plans and verification records before implementation.",
+          "Use agents for exploration and implementation while retaining decisions about product behavior and scope."
         ],
         [
-          "PR timeline: 8/9 → 8/13",
-          "Tasks depended on each other, so opening everything at once risked conflicts and rework.",
-          "Opened #156–#159 on 8/9 and merged them on 8/10, ran #167, #169, #170 and others in parallel on 8/11, then fixed integration defects in #175 on 8/13. 16 PRs merged over 5 days.",
-          "Opening the next batch only after prerequisite work merged kept conflicts down while still running in parallel."
+          "Reviewing in a fresh session against recorded decisions",
+          "The implementation session was also reviewing its own work, and issues still contained superseded decisions.",
+          "Started reviews in a new session, required match/mismatch judgments and compared against the plan. Added decision records to the original issues to reconcile the review basis.",
+          "A decision is incomplete until it is recorded where future reviewers can find it."
         ],
         [
-          "Pre-merge review and merge decisions",
-          "Merging agent-made changes as-is risked bringing defects in with them.",
-          "Merged only after the 13 required fixes from review were applied and regressions checked. For example, a defect where restoring a document returned its previous body was fixed before merge.",
-          "Instead of writing the code myself, I made my role defining the pass criteria and deciding merges by them."
+          "Checking reviewers and reopening unfinished work",
+          "A reviewer claimed roughly 60 days of log retention and proposed new issues for work that should already have been complete.",
+          "Rechecking found a log-specific S3 version rule giving roughly 31 days, not 60. Required file and line evidence. Reviewed 31 closed issues, found 7 unfinished and reopened the originals.",
+          "Verify findings before changing code. Finish agreed requirements rather than continuously expanding the backlog."
         ]
+      ],
+      "links": [
+        {
+          "label": "AI agents and 78 PRs in 2 days (Korean)",
+          "url": "https://velog.io/@kkuldangi3/AI-에이전트로-2일간-PR-78개-쏘기"
+        }
       ]
     },
     {
@@ -579,6 +664,10 @@
         [
           "MSA design contribution",
           "My first draft split services by feature, but that would leave the database load unchanged while adding hops between services, so distribution would gain nothing. I proposed splitting by data ownership instead, then worked with teammates and mentors on service boundaries and communication to finish the structure together."
+        ],
+        [
+          "MCP integration",
+          "I built MCP integration so users can work with Fruition documents and Wiki pages through their own Codex or Claude Code and model. External AI handles retrieval and change proposals; Fruition keeps its existing authorization, web approval, storage and billing paths."
         ]
       ],
       "links": [
@@ -737,6 +826,12 @@
       "url": "https://velog.io/@kkuldangi3/디자인-싱킹-회고",
       "label": "PLANNING / Defining user problems",
       "description": "Revisited feature-first planning and brought together the team’s difficulties finding documents to define the problem we would solve together."
+    },
+    {
+      "title": "AI agents and 78 PRs in 2 days",
+      "url": "https://velog.io/@kkuldangi3/AI-에이전트로-2일간-PR-78개-쏘기",
+      "label": "AGENT ENGINEERING / Decisions & review",
+      "description": "Human decisions, independent review and unfinished issues across five repositories."
     }
   ],
   "resume": [
@@ -825,7 +920,15 @@
         "text146": "Execution reliability and LLM tracing",
         "text147": "Undoing changes an AI task already saved, and making each stage of a run inspectable. Execution spans several stores and cannot be one transaction, so recovery runs as reverse actions.",
         "text148": "AI job cancellation and rollback\nProblem: AI jobs save documents, folders and Wiki pages several times between model calls; if cancelling leaves partial changes, users cannot trust AI with work.\nDecision: Asking the model to undo cannot guarantee original values and a global lock cannot handle failures, so I chose reverse rollback from execution records.\nSolution: Save the cancel state first to block later writes, then restore children first in reverse order; rebuild merged Wiki pages without the cancelled contribution.\nResult: Cancelling a two-folder, six-document task at each of 9 points restored the original state, with no model calls during rollback.",
-        "text149": "Recovering without erasing other tasks’ contributions\nProblem: a concept page merges contributions from several documents, so an older snapshot would erase valid contributions from other documents.\nSolution: record operations, revisions and per-document contributions append-only, then reassemble with only the target contribution excluded. Soft delete instead of removal keeps the audit trail."
+        "text149": "Recovering without erasing other tasks’ contributions\nProblem: a concept page merges contributions from several documents, so an older snapshot would erase valid contributions from other documents.\nSolution: record operations, revisions and per-document contributions append-only, then reassemble with only the target contribution excluded. Soft delete instead of removal keeps the audit trail.",
+        "text150": "MCP integration with external AI tools",
+        "text151": "Connected users’ Codex and Claude Code to Fruition retrieval and change proposals, preserving web approval and existing storage paths.",
+        "text152": "Problem: External AI needed access to documents and Wiki pages without authority to approve its own changes.\nDecision: External models draft proposals; Fruition controls authorization, approval, storage and billing.\nSolution: OAuth connections scoped to users and workspaces, source-version and permission checks before writes, explicit web approval and receipts for duplicate-safe billing.\nResult: Verified ingestion, search, edit proposals, web approval, storage and rereading in both real clients using synthetic documents. Confirmed 21 tools in Claude Code and blocked Codex access after disconnection. Expanded PDF, Skill and meeting flows still require full native verification.",
+        "text153": "MCP integration case study ↗",
+        "text154": "Coding agent orchestration across five repositories",
+        "text155": "Agents investigated and implemented; I chose trade-offs, set scope and verified review findings.",
+        "text156": "Problem: Cross-service changes risked partial implementation and reviews against outdated decisions.\nSolution: Grouped work by scope, recorded decisions and reviewed from a fresh session; required file and line evidence for findings.\nResult: Created 78 PRs across five repositories over two days. The final plan-alignment snapshot was 43/45; found 7 unfinished issues among 31 closed and reopened them. Figures are from my retrospective; created PRs are not merged or deployed features.",
+        "text157": "Coding agent case study ↗"
       }
     },
     {
@@ -838,7 +941,7 @@
         "text61": "AI ",
         "text62": "&",
         "text63": " Search",
-        "text64": "LangChain, LangGraph, Spring AI, RAG, LLM Evaluation, Prompt injection defense",
+        "text64": "LangChain, LangGraph, Spring AI, RAG, LLM Evaluation, Prompt injection defense, MCP, OAuth",
         "text65": "LangSmith, Elasticsearch, Weaviate",
         "text66": "Data ",
         "text67": "&",

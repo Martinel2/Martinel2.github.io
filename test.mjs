@@ -108,7 +108,7 @@ try {
         assert.ok(items.every(i => i.href === `portfolio/${i.id}.html`));
         assert.ok(await page.$('#project-fruition') && await page.$('#project-pilltip'));
         assert.equal(await page.$eval('h1', el => el.textContent), content.overview.title.replace(/\n/g, ''));
-        assert.equal(await page.$$eval('.writings a[href*="velog.io"]', els => els.length), 3);
+        assert.equal(await page.$$eval('.writings a[href*="velog.io"]', els => els.length), content.writings.length + 1);
         assert.equal(await page.$$eval('.experience-index li', els => els.length), 3);
         assert.equal(await page.$$eval('.highlights, .hero', els => els.length), 0);
         assert.ok(!(await page.$eval('body', el => el.textContent)).includes('edit_goal'));
