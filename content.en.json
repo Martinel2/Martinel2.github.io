@@ -450,7 +450,7 @@
       "diagram": "flowchart TD\n A[Original drug text: about 1GB] --> B[Split into sentence blocks]\n B --> M[Keep drug ID to block ID mappings]\n B --> C[Merge exact duplicate sentences]\n C --> G[Convert unique sentences with GPT Batch API]\n G --> R[Map converted text back to each drug]\n M --> R\n C -.-> S[2026 PySpark reproduction, measured ending normalization and MinHashLSH]",
       "diagramCaption": "Converted each repeated sentence once and kept per-drug mappings to attach results. In 2026 the same process was reproduced in PySpark and measured.",
       "resultTitle": "Actual API spend $11.18, PySpark reproduction cut text by 94.1%",
-      "result": "Completed conversion for $11.18 in actual API spending versus about $200 estimated for all original text. Reusing converted unique sentences kept the feature within budget without reducing the set of drugs covered.\n\nPart of the 2025 preparation code no longer existed, so in 2026 I re-collected 42,714 products (960MB of plain text) from the MFDS public API and reproduced the same preparation in PySpark. 3,236,626 blocks reduced to 176,648 unique blocks, cutting text from 744MB to 44.1MB (−94.1%). An ending-normalization dictionary then removed 0.78%, and MinHashLSH similar-sentence merging a further 6.69%.",
+      "result": "In 2025, sentence-block deduplication reduced about 1GB of drug data to 326MB. I completed conversion for $11.18 in actual API spending versus about $200 estimated for all original text. Reusing converted unique sentences kept the feature within budget without reducing the set of drugs covered.\n\nPart of the 2025 preparation code no longer existed, so in 2026 I re-collected 42,714 products (960MB of plain text) from the MFDS public API and reproduced the same preparation in PySpark. 3,236,626 blocks reduced to 176,648 unique blocks, cutting text from 744MB to 44.1MB (−94.1%). An ending-normalization dictionary then removed 0.78%, and MinHashLSH similar-sentence merging a further 6.69%.",
       "metrics": [
         [
           "Estimated cost for original text",
@@ -468,7 +468,7 @@
           "2026 PySpark reproduction, 744MB → 44.1MB"
         ]
       ],
-      "tradeoff": "About $200 was the upfront estimate; $11.18 was actual spending. Seven days of preprocessing labour are not included. The 2026 figures come from re-collected data, not the 2025 dataset. The reproduction code was written with AI coding tools; I designed the experiment and chose the thresholds.",
+      "tradeoff": "About $200 was the upfront estimate; $11.18 was actual spending. Seven days of preprocessing labour are not included. The 2026 figures come from re-collected data, not the 2025 dataset. The reproduction code was written with AI coding tools; I designed the experiment and chose the thresholds. The 1GB → 326MB figures describe the original 2025 work; 744MB → 44.1MB describes the separate 2026 reproduction.",
       "image": {
         "src": "assets/projects/pilltip-blocks.png",
         "alt": "Output showing drug text split into indexed blocks with drug ID to block ID mappings",
@@ -544,7 +544,7 @@
       "name": "Fruition",
       "affiliation": "AI SW Maestro, 17th cohort",
       "label": "01 / AI KNOWLEDGE WORKSPACE",
-      "description": "An AI workspace that organizes uploaded documents into an LLM-generated Wiki, answers questions using source evidence through RAG, and edits documents in natural language. It is currently deployed on AWS EKS and undergoing QA.",
+      "description": "An AI workspace that organizes uploaded documents into an LLM-generated Wiki, answers questions using source evidence through RAG, and edits documents in natural language. It is deployed on AWS EKS and is now in alpha testing. Software copyright registration completed; patent application filed with a provisional specification.",
       "origin": "Started when a teammate raised a pain point with managing documents, which we refined through design thinking.",
       "goal": "The goal was to fix the frustration of saving many documents but failing to find them when needed.",
       "myRole": "AI lead",
@@ -748,7 +748,7 @@
         "text3": "to make people’s lives better.",
         "text4": "AI Engineer | Backend Engineer",
         "text5": "I enjoy taking a deep dive into problems.",
-        "text6": "An AI engineer who raised RAG answer accuracy from 71.7% to 93.0% and AI document-editing success from 85.6% to 88.9%, designing evaluation, approval and rollback so AI does not answer from wrong evidence or change users' documents on its own.",
+        "text6": "I lead the AI work on Fruition, a team-built, LLM Wiki-based knowledge workspace. On evaluation sets I wrote and reviewed with my team, I raised RAG answer accuracy from 71.7% to 93.0% and AI document-editing success from 85.6% to 88.9%, designing evaluation, approval and rollback so AI does not answer from wrong evidence or change users' documents on its own.",
         "text7": "kkuldangi2@gmail.com",
         "text8": "GitHub ↗",
         "text9": "Blog ↗",
@@ -765,8 +765,8 @@
         "text14": "I thought wrong evidence makes the whole answer untrustworthy, so I replaced evidence selection with Jev. At adoption, GPT cost about 2.5× more and tuning search weights kept scores flat. I later re-evaluated on a set I wrote and reviewed with my team, fixed a request-batching bug and cut candidates from 300 to 200.",
         "text15": "Designing the agent execution environment: user-defined skills behind approval, edit success 85.6% → 88.9% (30 requests × 3 runs)",
         "text16": "Users repeat different tasks, so I let them define their own Skills. I judged that users can't trust AI that changes documents freely, so code checks permissions and scope, and changes apply only after approval. Code checks missed omitted requests, so drafts get a semantic evaluation and one rewrite at most.",
-        "text17": "Building data pipelines: 96.1% body text and 99.3% table cells restored across 15 PDFs, drug conversion $200 estimated → $11.18 spent",
-        "text18": "Broken tables and equations lose the figures answers rely on, so body text uses fast AnyDoc and table and equation regions are read separately.\n\nConverting each repeated sentence once with Batch API kept about 44,000 drug records within budget."
+        "text17": "Building data pipelines: 96.1% body text and 99.3% table cells restored across 15 PDFs; drug conversion cost about 94% below the $200 estimate ($11.18 spent)",
+        "text18": "Broken tables and equations lose the figures answers rely on, so I used AnyDoc for body text and read table and equation regions separately. I split drug information into sentence blocks and consolidated duplicates, reducing the 2025 dataset from about 1GB to 326MB. Since conversion did not need real-time responses, Batch API, priced 50% below the standard API at the time, kept about 44,000 records within budget."
       }
     },
     {
@@ -776,9 +776,9 @@
         "text20": "02 / PROJECTS",
         "text21": "Fruition",
         "text22": "2026.04 — Present",
-        "text23": "LLM Wiki-based AI workspace | AI SW Maestro, 17th cohort | Deployed on AWS EKS, in QA",
+        "text23": "LLM Wiki-based AI workspace | AI SW Maestro, 17th cohort | Deployed on AWS EKS, alpha testing",
         "text24": "Team project (3 + designer) / AI lead",
-        "text25": "How it started: a teammate’s pain point with managing documents, refined through design thinking — saved documents could not be found when needed.\nTeam: me (all AI), 1 backend (Spring backend), 1 frontend & DevOps (frontend, MSA deployment on AWS), external designer, 3 mentors",
+        "text25": "How it started: a teammate’s pain point with managing documents, refined through design thinking — saved documents could not be found when needed.\nTeam: me (all AI), 1 backend (Spring backend), 1 frontend & DevOps (frontend, MSA deployment on AWS), external designer, 3 mentors\nIntellectual property: Software copyright registration completed; patent application filed with a provisional specification.",
         "text114": "PDF → Markdown: 96.1% body text, 99.3% table cells restored",
         "text115": "Converted uploaded PDFs into Markdown that keeps tables and equations, so they can be searched and cited in answers.",
         "text26": "PDF → Markdown conversion\nProblem: Broken tables and equations in paper PDFs made the figures behind Wiki pages and answers unusable\nDecision: Repairing only detected damage missed errors, and full AI conversion lacked table/equation accuracy and was costly, so I split processing by content type. Body text uses fast AnyDoc extraction; repair moved from an sLLM to commercial LLM APIs to avoid GPU server costs\nSolution: Extracted body text with AnyDoc and repaired only garbled parts with AI, read table/equation regions separately, and kept original figures\nResult: In the adoption experiment (4 PDFs), restoration rose from about 45% with Docling alone to about 90%. Across 15 PDFs by type × 3 runs: headings 97.6%, body text 96.1%, table cells 99.3%, equations 100%, images 91.3% (AI-judged)",
@@ -806,7 +806,7 @@
         "text122": "Drug data preparation pipeline",
         "text123": "Rewrote about 44,000 drug records in plain language, converting each repeated sentence once and reusing it per drug.",
         "text50": "Problem: Rewriting about 44,000 drug records as-is was estimated at about $200 in API costs, more than the budget allowed for covering every drug.\nDecision: Instead of covering fewer drugs, convert each repeated sentence once. The job needed no real-time response, so Batch API traded waiting time for lower cost.\nSolution: Split text into sentence blocks, merged exact duplicates, converted via GPT Batch API and mapped results back to each drug. Reproduced in 2026 with PySpark, which parallelizes across cores and scales out, to measure each step.",
-        "text51": "Result: Actual API spending was $11.18 versus about $200 estimated for all original text. In the reproduction, exact deduplication cut text from 744MB to 44.1MB (−94.1%).",
+        "text51": "Result: Actual API spending was $11.18 versus about $200 estimated (about 94% below the estimate); the 2025 dataset was reduced from about 1GB to 326MB. In the reproduction, exact deduplication cut text from 744MB to 44.1MB (−94.1%).",
         "text54": "Estimated cost versus actual spending; preprocessing labor is excluded.",
         "text124": "AI medication chatbot using health profiles",
         "text125": "Found drug and medication information from natural-language symptoms. Evaluated health profiles internally, separately from information sent to external AI.",
@@ -916,10 +916,10 @@
     "experience1Description": "I thought wrong evidence makes the whole answer untrustworthy, so I replaced evidence selection with Jev. At adoption, GPT cost about 2.5× more and tuning search weights kept scores flat. I later re-evaluated on a set I wrote and reviewed with my team, fixed a request-batching bug and cut candidates from 300 to 200.",
     "experience2Title": "Agent execution environment: user-defined skills behind approval, edit success 85.6% → 88.9%",
     "experience2Description": "Users repeat different tasks, so I let them define their own Skills. I judged that users can't trust AI that changes documents freely, so code checks permissions and scope, and changes apply only after approval. Code checks missed omitted requests, so drafts get a semantic evaluation and one rewrite at most.",
-    "experience3Title": "Data pipelines: 96.1% body text and 99.3% table cells restored across 15 PDFs, drug conversion $200 estimated → $11.18 spent",
-    "experience3Description": "Broken tables and equations lose the figures answers rely on, so body text uses fast AnyDoc and table and equation regions are read separately. Converting each repeated sentence once with Batch API kept about 44,000 drug records within budget.",
+    "experience3Title": "Data pipelines: PDF body text 96.1%, table cells 99.3%; drug conversion $200 estimated → $11.18 spent (about 94% lower)",
+    "experience3Description": "AnyDoc extracts body text; tables and equations are read separately. Sentence-block deduplication reduced the 2025 drug dataset from 1GB to 326MB, and Batch API kept about 44,000 records within budget.",
     "profileRole": "AI Engineer | Backend Engineer",
-    "profileLine1": "An AI engineer who raised RAG answer accuracy from 71.7% to 93.0% and AI document-editing success from 85.6% to 88.9%, designing evaluation, approval and rollback so AI does not answer from wrong evidence or change users' documents on its own.",
+    "profileLine1": "I lead the AI work on Fruition, a team-built, LLM Wiki-based knowledge workspace. On evaluation sets I wrote and reviewed with my team, I raised RAG answer accuracy from 71.7% to 93.0% and AI document-editing success from 85.6% to 88.9%, designing evaluation, approval and rollback so AI does not answer from wrong evidence or change users' documents on its own.",
     "profileLine2": "I weigh accuracy, cost and response time against each other, confirm the trade-off with an evaluation, and then choose the implementation that fits the service.",
     "readingOrder": ""
   },
@@ -954,7 +954,7 @@
     "about": {
       "eyebrow": "ABOUT ME",
       "title": "About me",
-      "description": "An AI engineer who raised RAG answer accuracy from 71.7% to 93.0% and AI document-editing success from 85.6% to 88.9%, designing evaluation, approval and rollback so AI does not answer from wrong evidence or change users' documents on its own. I owned the entire AI side of Fruition, an AI workspace that turns documents into knowledge, and the backend and AI of Pilltip, a medication service that explains drug information in plain language. Both handle sensitive personal data, so I drew an explicit line between what the model sees and what application code decides. Outside of code, I have kept up weight training for two and a half years."
+      "description": "I lead the AI work on Fruition, a team-built, LLM Wiki-based knowledge workspace now in alpha testing. On evaluation sets I wrote and reviewed with my team, RAG answer accuracy rose from 71.7% to 93.0% and AI document-editing success from 85.6% to 88.9%. I also built the backend and AI for Pilltip, a medication service that explains drug information in plain language. Outside of code, I have kept up weight training for two and a half years."
     },
     "sections": {
       "skillsEyebrow": "SKILLS",
