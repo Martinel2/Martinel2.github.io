@@ -1057,7 +1057,7 @@
     "about": {
       "eyebrow": "ABOUT ME",
       "title": "About me",
-      "description": "I lead the AI work on Fruition, a team-built, LLM Wiki-based knowledge workspace now in alpha testing. On evaluation sets I wrote and reviewed with my team, RAG answer accuracy rose from 71.7% to 93.0% and AI document-editing success from 85.6% to 88.9%. I also built the backend and AI for Pilltip, a medication service that explains drug information in plain language. Outside of code, I have kept up weight training for two and a half years."
+      "description": "I lead the AI work on Fruition, a team-built, LLM Wiki-based knowledge workspace now in alpha testing. On evaluation sets I wrote and reviewed with my team, RAG answer accuracy rose from 71.7% to 93.0% and AI document-editing success from 85.6% to 88.9%. I also built the backend and AI for Pilltip, a medication service that explains drug information in plain language. Outside of code, I have kept up weight training for three years."
     },
     "sections": {
       "skillsEyebrow": "SKILLS",
