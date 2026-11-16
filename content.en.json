@@ -579,15 +579,15 @@
       "category": "AI Agent, Sensitive data boundaries",
       "title": "Medication chatbot: keeping health profiles out of external AI inputs",
       "short": "Medication chatbot: health profiles kept internal",
-      "period": "2025.09",
-      "summary": "Pilltip has to guide medication by health condition, but I thought that health information is the most sensitive personal data. So I built a chatbot that guides medication through RAG-based AI orchestration while separating symptom-based drug search from profile-based decisions. It uses the model's language understanding, while code controls how far the sensitive profile is used.",
+      "period": "2025.07 ~ 2025.11",
+      "summary": "After a visitor at our first exhibition asked whether the app could also check supplements taken alongside medication, I extended the chatbot, which had covered only drugs, to health supplements. Pilltip has to guide medication by health condition, but I thought that health information is the most sensitive personal data. So I built a chatbot that guides medication through RAG-based AI orchestration while separating symptom-based drug search from profile-based decisions. It uses the model's language understanding, while code controls how far the sensitive profile is used.",
       "tags": [
         "Spring AI",
         "Weaviate",
         "RAG",
         "AI Orchestration"
       ],
-      "problem": "Users describe symptoms in different words from drug indications, so keyword search could not match symptoms to drugs. Personalization also needed pregnancy status, current medications and underlying conditions, but sending that health profile to an external LLM as-is would make it hard to control where sensitive data goes.",
+      "problem": "The first chatbot covered only drugs. While running our booth at K-ICT WEEK in Busan 2025, a visitor asked whether it could also check conflicts with supplements taken alongside medication. Public supplement data, however, centred on raw ingredients, was fragmented, and named the same ingredient in different ways.\n\nUsers describe symptoms in different words from drug indications, so keyword search could not match symptoms to drugs. Personalization also needed pregnancy status, current medications and underlying conditions, but sending that health profile to an external LLM as-is would make it hard to control where sensitive data goes.",
       "expected": "I judged that sending health information to external AI brings leak risk and regulatory burden, while not sending it loses personalisation, the core feature. Handling the decision internally, I thought, could protect both.",
       "diagram": "flowchart TD\n S[Natural-language symptoms] --> V[Weaviate: semantic search of indications]\n P[Pregnancy, medications and underlying conditions] --> T[Internal tool: profile decisions]\n V --> R[Personalized information]\n T --> R\n B[External LLM input boundary] -.-> X[Exclude these profile fields]\n classDef accent fill:#e5edff,stroke:#4164c8,color:#142b60;\n class T,B,X accent;",
       "diagramCaption": "A conceptual view of responsibilities and data boundaries, not the exact call sequence or a guarantee against every form of data leakage.",
@@ -597,6 +597,13 @@
       "tradeoff": "Internal code has to change when profile conditions change, but keeping sensitive health information from reaching external models came first, so I handled this decision in code instead of AI. This removes specific profile fields from external input; it is not a measurement of leak prevention on every path. As users grow, I think AI processing should move to a separate service.",
       "processTitle": "Design and implementation",
       "designSteps": [
+        {
+          "title": "Extending to health supplements after exhibition feedback",
+          "problem": "Supplements had been left out at first because usable data was scarce, and the data I found named ingredients differently across products, so it could not be linked to per-ingredient cautions directly.",
+          "judgment": "Since users take medication and supplements together, I judged the feature essential, shared it with the team and started looking for data myself.",
+          "implementation": "I used AI to build a mapping that unifies every supplement ingredient name in the data, fixed it in code and normalized the data against it. I also had AI rephrase each benefit in many everyday expressions and embedded them, so supplements could be found by symptom.",
+          "verification": "About 20,000 supplements were linked to cautions for some 20 ingredient groups, and search, dosing cautions, medication reminders and the chatbot were extended to cover them; I demonstrated this at the next exhibition, SK AI SUMMIT 2025. A request for overseas products could not be met because no data was available, and I told the team so."
+        },
         {
           "title": "Semantic search connecting symptoms to drug indications",
           "problem": "Everyday symptom descriptions and drug indications use different words for the same meaning. Related information needed to be found without exact keyword matches.",
