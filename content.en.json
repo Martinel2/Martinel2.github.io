@@ -16,8 +16,8 @@
         "RAG",
         "Quality evaluation"
       ],
-      "problem": "Existing retrieval missed needed evidence and attached evidence even to unanswerable questions, leading to wrong answers. I believed accurate information is this project's core, so I checked each step: the correct sources were all in the initial candidates, but limiting checks to the first 8 pages dropped them for 76 of 90 questions. I needed a step that picks the right evidence and says when there is none.",
-      "expected": "If evidence is wrong, the whole answer can't be trusted, and users who lose trust don't come back. Since the core of the project is giving users the information they need on accurate evidence, high accuracy is what makes users trust the product, keep using it and pay again.",
+      "problem": "Existing retrieval missed evidence that answers needed and attached evidence even to questions with no answer. Wrong evidence could carry straight into wrong answers. Finding accurate information in documents and delivering it is the core of this project, so I analyzed the results of each step. The correct evidence was all in the initial candidates, but the step that limited checks to the first 8 pages dropped it for 76 of 90 questions. I needed a step that picks the needed evidence from the candidates and says so when there is none.",
+      "expected": "If evidence is wrong, the whole answer can't be trusted, and users who lose trust don't come back. The product's core is giving people the information they need with accurate evidence, so accuracy has to be high for users to trust it, keep using it and pay again.",
       "diagram": "flowchart TD\n Q[User question] --> S[Collect semantic and keyword search candidates]\n S --> C[Top 200 candidates]\n C --> J[Jev selects evidence in up to 8 parallel batches]\n J --> E{Sufficient evidence?}\n E -->|Yes| A[Pass selected evidence to answer generation]\n E -->|No| N[No evidence]\n",
       "diagramCaption": "The evidence selection structure in production. Reference answers are not fed into retrieval or the model; they are used only to evaluate selections.",
       "resultTitle": "Correct answers on a fixed set: 215/300 → 279/300; average end-to-end response 5.5s",
@@ -39,7 +39,7 @@
           "22/300 → 3/300, same questions and answer model"
         ]
       ],
-      "tradeoff": "Retrieval stays a fixed pipeline (semantic and keyword search plus Wiki graph traversal) that shows the answer, evidence, related pages and search path separately. I held off on a self-planning Query Agent because of cost and hallucination risk, and will add one when a question needs repeated planning and replanning; until then the fixed pipeline uses fewer calls and is easier to debug.\n\nAccuracy came at a cost in time and money. End-to-end responses average 5.5s, slower than plain RAG's 4.3s under the same conditions. Cost is about $2.7 per 1,000 requests against $0.19–0.35 with Jev off, estimated from actual tokens and unit prices. Correctly declining unanswerable questions was 57/60, below plain RAG's 60/60, so that is the next task. Retrieval gathers candidates and Jev decides, so the selector can be swapped.",
+      "tradeoff": "Retrieval stays a fixed pipeline (semantic and keyword search plus Wiki graph traversal) that shows the answer, evidence, related pages and search path separately. I held off on a self-planning Query Agent because of cost and hallucination risk, and will add one when a question needs repeated planning and replanning; until then the fixed pipeline uses fewer calls and is easier to debug.\n\nAccuracy came at a cost in time and money. End-to-end responses average 5.5s, slower than plain RAG's 4.3s under the same conditions. Cost is about $2.7 per 1,000 requests against $0.19 to $0.35 with Jev off, estimated from actual tokens and unit prices. Correctly declining unanswerable questions was 57/60, below plain RAG's 60/60, so that is the next task. Retrieval gathers candidates and Jev decides, so the selector can be swapped.",
       "links": [
         {
           "label": "Introducing Jev | TypeSafe AI",
@@ -51,7 +51,7 @@
           "Routing comparison and the decision to try RAG",
           "Some questions were misclassified as document edits, leading to the wrong action. Task types and additional conditions needed to be selected more accurately and quickly.",
           "Applied Jev, a choice-based decision model released on September 14, to routing questions, document edits, document creation and folder organization.\n\nAcross 98 requests, correct task types and additional conditions totaled 77 for the existing JSON approach, 63 for GPT-5-nano given the same options, and 81 for Jev. Median decision time improved from 8.967s to 0.658s.\n\nI measured API cost on the same 100 questions: about $0.0408 for Jev against about $0.1027 for the GPT approach given the same options.",
-          "Jev showed promise on accuracy, speed and cost alike, so I decided to apply it to evidence selection, which the existing retrieval had not solved.\n\nI chose Jev for two reasons. First, having GPT pick the evidence cost about 2.5 times as much even with the same options and took longer, too heavy for a step that checks hundreds of candidates per question; re-ranking by tuning retrieval scores did not help either, as scores stayed similar across many hybrid weights and RRF settings. Second, embeddings sometimes failed to separate differences in Korean phrasing, so fitting one weight to questions from different fields would bring only small gains. Rather than polishing the ranking further, I had a model judge the needed evidence directly from the collected candidates."
+          "Jev showed promise on accuracy, speed and cost alike, so I decided to apply it to evidence selection, which the existing retrieval had not solved.\n\nI chose Jev for two reasons. First, having GPT pick the evidence cost about 2.5 times as much even with the same options, and it took longer to decide. That was too heavy for a step that checks hundreds of candidates per question. Second, re-ranking by tuning retrieval scores kept scores at a similar level across many hybrid weights and RRF settings. Embeddings sometimes failed to separate differences in Korean phrasing, so fitting a single weight to questions from different fields would bring only small gains. Rather than polishing the ranking further, I had Jev judge the needed evidence directly from the collected candidates."
         ],
         [
           "Full-corpus inspection: evidence coverage on all 90 answerable questions",
@@ -104,12 +104,12 @@
         "LangSmith",
         "LLM observability"
       ],
-      "problem": "Each user repeats different tasks, such as organising meeting notes, so developers couldn't build them all in advance. AI edit drafts also reached users with parts of the request missing or sentences awkwardly changed, and code checks on format and scope couldn't catch it. That made a stable service impossible: leaving tasks that need the same output every time to luck frustrates users. Since users prepay for API usage, it could also become a reason not to pay again.",
+      "problem": "Each user repeats different tasks, such as organising meeting notes, so developers couldn't build them all in advance. AI edit drafts also reached users with parts of the request missing or sentences awkwardly changed, and code checks on format and scope couldn't catch it. The service was not stable, and tasks that need the same result every time were left to luck, which frustrates users. Since users prepay for API usage, that experience could also make them not want to pay again.",
       "expected": "If AI edits vary and users have to ask again, their prepaid credits go to rework, and users who see that as waste hesitate to pay again. Stable results and no changes before approval let them trust recurring tasks to it and keep using it.",
       "diagram": "flowchart TD\n U[User describes a recurring task] --> S[Draft Skill, mask personal data and check prompt injection]\n S --> P[User review and recheck on publication]\n P --> K[Store reusable instructions]\n Q[User requests document work] --> R[Router selects task and conditions]\n K -. Reuse when needed .-> R\n R --> E[Edit while preserving goal and scope]\n R --> F[Plan folder organization and compare with request]\n E --> V[Check format, edit scope, personal data and injection]\n V --> D[Show validated changes and diff]\n F --> D\n D --> A{User approval}\n A -->|Approve| W[Apply edits or organize folders]\n A -->|Cancel| N[Keep originals]",
       "diagramCaption": "User-defined instructions and the document workflow that uses them. Executors do not reclassify the task; they validate proposed changes and apply them after user approval.",
       "resultTitle": "Reusable tasks and approval workflow; edit success on a real-world set 85.6% → 88.9%",
-      "result": "Users can define recurring tasks, publish them as Skills and reuse them. The final instructions are rechecked on publication, and actual document changes require a preview and user approval. A plan–approve–execute check of folder organisation on 6 documents confirmed it worked correctly.\n\nIn end-to-end runs of 30 requests I wrote and reviewed with my team, three times each, edit success rose from 77/90 to 80/90.\n\nEarlier in development, editing quality was compared on a fixed regression set of 114 drafts from 19 request types. Fixing a validation rule and the retry input, evaluating fulfillment and meaning separately and allowing one rewrite raised passes from 94 to 104 (98 with code fixes alone). No edit is returned if a draft fails again.\n\nAI drafts instructions and edits, code checks permissions and execution scope, and users decide publication and final application.",
+      "result": "Users can define recurring tasks, publish them as Skills and reuse them. The final instructions are rechecked on publication, and actual document changes require a preview and user approval. Planning, approving and executing a folder cleanup on 6 documents confirmed it worked correctly.\n\nIn end-to-end runs of 30 requests I wrote and reviewed with my team, three times each, edit success rose from 77/90 to 80/90.\n\nEarlier in development, editing quality was compared on a fixed regression set of 114 drafts from 19 request types. Fixing a validation rule and the retry input, evaluating fulfillment and meaning separately and allowing one rewrite raised passes from 94 to 104 (98 with code fixes alone). No edit is returned if a draft fails again.\n\nAI drafts instructions and edits, code checks permissions and execution scope, and users decide publication and final application.",
       "metrics": [
         [
           "Real-world set, before evaluator fix",
@@ -159,7 +159,7 @@
           "problem": "Even with a published Skill, hallucination can create, edit or organise documents in ways the user did not want, and having to go roll them back each time frustrates users. So the documents and content to be changed had to be confirmed separately at execution.",
           "judgment": "Separate instruction publication from approval of actual changes. Keep task classification in the router and execution in the executor, while letting users inspect what will change.",
           "implementation": "Displayed before/after diffs for edits and a folder-and-document move plan for organization. Code checked output format and edit scope; only approved changes were executed.",
-          "verification": "With 6 documents, the plan–approve–execute check made no changes before approval. After approval, it created 3 topic folders and moved the documents."
+          "verification": "With 6 documents, the plan, approve and execute flow made no changes before approval. After approval, it created 3 topic folders and moved the documents."
         },
         {
           "title": "Deciding the scope of conversation context and edit input",
@@ -188,10 +188,10 @@
       "id": "fruition-mcp",
       "project": "Fruition",
       "category": "MCP, OAuth, Human-in-the-loop",
-      "title": "MCP integration: connecting external AI proposals to web approval and storage",
+      "title": "MCP integration: a pricing change that lets users run Fruition with the AI they already subscribe to",
       "short": "MCP integration",
       "period": "2026.11",
-      "summary": "I built MCP integration so users can work with Fruition documents and Wiki pages through their own Codex or Claude Code and model. External AI handles retrieval and change proposals; Fruition keeps its existing authorization, web approval, storage and billing paths.",
+      "summary": "During the alpha test we designed token-based pay-per-use pricing, but API costs were too high to get users to pay. In a survey, 11 of 16 respondents used AI almost daily, and 8 of 16 paid 30,000 KRW or more a month for AI services. So I built MCP integration that lets users work with Fruition documents and Wiki pages through the Codex or Claude Code and model they already subscribe to. The user's subscription covers model costs; Fruition provides the documents, Wiki and storage path and takes a fee. External AI handles retrieval and change proposals, while authorization checks, web approval, storage and billing go through Fruition's existing paths.",
       "tags": [
         "MCP",
         "OAuth",
@@ -200,8 +200,8 @@
         "Human-in-the-loop",
         "Idempotency"
       ],
-      "problem": "Using Fruition knowledge from an external AI tool required connecting both retrieval and document changes. Giving AI direct write and approval authority could save changes users had never reviewed. Revoked connections and stale document versions also needed explicit handling.",
-      "expected": "Users can work with their existing AI tools and models while reusing Fruition documents and Wiki pages, reviewing and approving actual changes in the web app.",
+      "problem": "For external AI to edit as well, we had to connect the change flow, not just retrieval, and hand over write and approval rights. If external AI wrote and approved directly, changes the user never reviewed could be saved. Revoked connections and stale document versions also had to be handled.",
+      "expected": "Users keep the AI tools and models they already pay for and use them with the documents and Wiki pages stored in Fruition. They approve actual changes in the Fruition web app after checking the content and the quote.",
       "processTitle": "Separating responsibilities and verifying real clients",
       "designSteps": [
         {
@@ -216,7 +216,7 @@
           "problem": "AI approving its own changes, or a document changing after review, could save something the user never approved.",
           "judgment": "Expose no MCP approval tool. Require a person to review the preview and quote in the web app.",
           "implementation": "Fixed the approved version, hash, scope and price, and rechecked permissions and conflicts immediately before writes. Used receipts stored with changes for billing and returned the same result for duplicate submissions.",
-          "verification": "With synthetic documents, verified ingestion → web approval → Wiki search and page retrieval → edit proposal → web approval and storage → source reread in both Codex and Claude Code. Claude changed only Monday to Wednesday, preserving the owner and line breaks."
+          "verification": "With synthetic documents, I verified the full sequence in both Codex and Claude Code: ingestion, web approval, Wiki search and page retrieval, edit proposal, web approval and storage, and rereading the source. In Claude Code only the release day changed, Monday → Wednesday, and the owner and line breaks stayed as they were."
         },
         {
           "title": "Verifying connection revocation and version boundaries",
@@ -268,7 +268,7 @@
       "category": "AI Agent, Compensating recovery, Audit history",
       "title": "Cancelling an AI task and undoing what it already saved",
       "short": "Task cancellation and rollback",
-      "period": "2026.08 — 2026.09",
+      "period": "2026.08 ~ 2026.09",
       "summary": "In a service where AI changes documents, I thought users can't hand work to AI unless cancelling is reliable. Stopping execution leaves saved document, folder, Wiki and Skill changes behind, so I built a path that reverses even committed changes in reverse order. To keep contributions other jobs made correctly, I restored pages without only the cancelled contribution.",
       "tags": [
         "Compensating recovery",
@@ -332,7 +332,7 @@
       "category": "PDF conversion, Data pipeline",
       "title": "PDF → Markdown: 96.1% body text and 99.3% table cells restored across 15 PDFs",
       "short": "PDF conversion",
-      "period": "2026.07 — 2026.09 ~ 2026.11",
+      "period": "2026.07 - 2026.09 ~ 2026.11",
       "summary": "To use papers, which mostly arrive as PDFs, as knowledge, table figures and equations had to survive conversion to Markdown first. So I traced where AI repair dropped content and split processing paths by original layout and content type.",
       "tags": [
         "Open-source PDF conversion: AnyDoc, Docling",
@@ -416,7 +416,7 @@
         "PostgreSQL",
         "Concurrency and memory"
       ],
-      "problem": "Sequential processing made later documents wait for external AI responses, and more workers also mean more API calls and memory, so I had to find how far to scale. I used Kafka because it can replay messages and keeps order within a key, so long AI jobs run asynchronously while IDs prevent duplicates.\n\n1 → 4 Workers cut analysis from 282.11s to 73.89s. Raising concurrent requests per Worker from 2 to 4 slowed it to 95.92s, and two embedding jobs on one GPU stretched each from about 9.5s to 19–21s, so the two stages got separate scaling rules.",
+      "problem": "Sequential processing made later documents wait for external AI responses, and more workers also mean more API calls and memory, so I had to find how far to scale. I used Kafka because it can replay messages and keeps order within a key, so long AI jobs run asynchronously while IDs prevent duplicates.\n\n1 → 4 Workers cut analysis from 282.11s to 73.89s. Raising concurrent requests per Worker from 2 to 4 slowed it to 95.92s, and two embedding jobs on one GPU stretched each from about 9.5s to 19-21s, so the two stages got separate scaling rules.",
       "expected": "I was concerned that a slow Wiki keeps users from using their uploads, so they may leave before seeing value. A shorter wait lets them search and ask right after upload.",
       "diagram": "flowchart TD\n A[Document processing request] --> K[Kafka distributes document jobs]\n K --> W[Multiple workers with per-worker request limits]\n W --> L[Lock writes within the same workspace]\n V[Embedding generation] --> G[Check contention on a shared GPU]\n L --> D[Check time, memory and content preservation]\n G --> D\n D --> R[Choose scaling policy per stage]",
       "diagramCaption": "Evaluated scaling separately for Wiki generation and embedding generation.",
@@ -467,7 +467,7 @@
         [
           "PRs created",
           "78",
-          "5 repositories, Oct 10–12"
+          "5 repositories, night of Oct 10 to Oct 12"
         ],
         [
           "Plan alignment",
@@ -667,7 +667,7 @@
         ],
         [
           "MCP integration",
-          "I built MCP integration so users can work with Fruition documents and Wiki pages through their own Codex or Claude Code and model. External AI handles retrieval and change proposals; Fruition keeps its existing authorization, web approval, storage and billing paths."
+          "In the alpha test, charging by token usage was too expensive for users, and 8 of 16 survey respondents were paying 30,000 KRW or more a month for AI services. So I built MCP integration that lets users work with Fruition documents and Wiki pages through the Codex or Claude Code and model they already subscribe to, with Fruition taking a fee. External AI handles retrieval and change proposals; Fruition keeps its existing authorization, web approval, storage and billing paths."
         ]
       ],
       "links": [
@@ -680,28 +680,28 @@
         {
           "src": "assets/projects/fruition-workspace.jpg",
           "alt": "Fruition document editor and AI assistant panel",
-          "caption": "Document editing and AI assistant — I led the AI features that interpret requests and generate and validate edits. Teammates implemented the editor and assistant UI.",
+          "caption": "Document editing and AI assistant: I led the AI features that interpret requests and generate and validate edits. Teammates implemented the editor and assistant UI.",
           "width": 2000,
           "height": 1125
         },
         {
           "src": "assets/projects/fruition-wiki.jpg",
           "alt": "Fruition document relationship graph and source evidence search",
-          "caption": "Wiki generation and queries — documents are organized into the structure I designed, with concepts linked. I built evidence lookup for questions over the resulting Wiki. Teammates implemented the graph and search UI.",
+          "caption": "Wiki generation and queries: documents are organized into the structure I designed, with concepts linked. I built evidence lookup for questions over the resulting Wiki. Teammates implemented the graph and search UI.",
           "width": 2000,
           "height": 1125
         },
         {
           "src": "assets/projects/fruition-architecture.jpg",
           "alt": "Fruition frontend, backend and AI service architecture",
-          "caption": "Service responsibilities — I led all AI features; teammates owned frontend and backend. We finalized MSA with mentors based on my initial design.",
+          "caption": "Service responsibilities: I led all AI features; teammates owned frontend and backend. We finalized MSA with mentors based on my initial design.",
           "width": 2000,
           "height": 1125
         },
         {
           "src": "assets/projects/fruition-system-architecture.jpg",
           "alt": "Fruition system architecture: the overall system context and communication between frontend, backend, llmPipeline and storage",
-          "caption": "System architecture — the overall system (top) and Fruition’s internal components (bottom). I owned the AI features centred on llmPipeline (FastAPI, Python, LangGraph); teammates owned the frontend, backend and AWS deployment.",
+          "caption": "System architecture: the overall system (top) and Fruition’s internal components (bottom). I owned the AI features centred on llmPipeline (FastAPI, Python, LangGraph); teammates owned the frontend, backend and AWS deployment.",
           "width": 2300,
           "height": 1780
         }
@@ -747,7 +747,7 @@
         ],
         [
           "Drug and supplement modeling, search, autocomplete and risk information",
-          "Designed the drug and health-supplement DB and implemented search autocomplete with Elasticsearch and Redis, plus Drug Utilization Review (DUR) risk and caution information. Cut search responses that took 5–7s because of LIKE queries and multiple JOINs to 0.8s on average."
+          "Designed the drug and health-supplement DB and implemented search autocomplete with Elasticsearch and Redis, plus Drug Utilization Review (DUR) risk and caution information. Cut search responses that took 5 to 7s because of LIKE queries and multiple JOINs to 0.8s on average."
         ],
         [
           "Medication reminders and logs",
@@ -774,28 +774,28 @@
         {
           "src": "assets/projects/pilltip-search.jpg",
           "alt": "Pilltip drug search results and personalized caution tags",
-          "caption": "Drug search and DUR — I owned the drug DB, search, autocomplete and risk information. My data pipeline rewrote descriptions in plain language. The image shows search results and caution tags.",
+          "caption": "Drug search and DUR: I owned the drug DB, search, autocomplete and risk information. My data pipeline rewrote descriptions in plain language. The image shows search results and caution tags.",
           "width": 2000,
           "height": 1125
         },
         {
           "src": "assets/projects/pilltip-reminders.jpg",
           "alt": "Pilltip medication schedules and taken/postponed logs",
-          "caption": "Medication reminders and logs — I implemented FCM notifications and medication records.",
+          "caption": "Medication reminders and logs: I implemented FCM notifications and medication records.",
           "width": 2000,
           "height": 1125
         },
         {
           "src": "assets/projects/pilltip-family.jpg",
           "alt": "Pilltip family profile switching and medication information",
-          "caption": "Family profiles — I implemented switching between family members to view their medication information, as well as deep-link friend invitations. This screen shows profile switching.",
+          "caption": "Family profiles: I implemented switching between family members to view their medication information, as well as deep-link friend invitations. This screen shows profile switching.",
           "width": 2000,
           "height": 1125
         },
         {
           "src": "assets/projects/pilltip-chatbot.jpg",
           "alt": "Pilltip chatbot architecture and conversation connecting question analysis, RAG and DUR tools",
-          "caption": "AI chatbot — I implemented orchestration between RAG search and DUR checks. This presentation example is not an evaluation of medical accuracy.",
+          "caption": "AI chatbot: I implemented orchestration between RAG search and DUR checks. This presentation example is not an evaluation of medical accuracy.",
           "width": 2000,
           "height": 1125
         }
@@ -843,7 +843,7 @@
         "text3": "to make people’s lives better.",
         "text4": "AI Engineer | Backend Engineer",
         "text5": "I enjoy taking a deep dive into problems.",
-        "text6": "I lead the AI work on Fruition, a team-built, LLM Wiki-based knowledge workspace. On evaluation sets I wrote and reviewed with my team, I raised RAG answer accuracy from 71.7% to 93.0% and AI document-editing success from 85.6% to 88.9%, designing evaluation, approval and rollback so AI does not answer from wrong evidence or change users' documents on its own.",
+        "text6": "I lead the AI work on Fruition, a team-built, LLM Wiki-based knowledge workspace. I have designed evaluation, approval and rollback so AI does not answer from wrong evidence or change users' documents on its own. On evaluation sets I wrote and reviewed with my team, I raised RAG answer accuracy from 71.7% to 93.0% and AI document-editing success from 85.6% to 88.9%.",
         "text7": "kkuldangi2@gmail.com",
         "text8": "GitHub ↗",
         "text9": "Blog ↗",
@@ -870,10 +870,10 @@
         "text19": "Projects ",
         "text20": "02 / PROJECTS",
         "text21": "Fruition",
-        "text22": "2026.04 — Present",
+        "text22": "2026.04 ~ Present",
         "text23": "LLM Wiki-based AI workspace | AI SW Maestro, 17th cohort | Deployed on AWS EKS, alpha testing",
         "text24": "Team project (3 + designer) / AI lead",
-        "text25": "How it started: a teammate’s pain point with managing documents, refined through design thinking — saved documents could not be found when needed.\nTeam: me (all AI), 1 backend (Spring backend), 1 frontend & DevOps (frontend, MSA deployment on AWS), external designer, 3 mentors\nIntellectual property: Software copyright registration completed; patent application filed with a provisional specification.",
+        "text25": "How it started: a teammate’s pain point with managing documents, refined through design thinking. Saved documents could not be found when needed.\nTeam: me (all AI), 1 backend (Spring backend), 1 frontend & DevOps (frontend, MSA deployment on AWS), external designer, 3 mentors\nIntellectual property: Software copyright registration completed; patent application filed with a provisional specification.",
         "text114": "PDF → Markdown: 96.1% body text, 99.3% table cells restored",
         "text115": "Converted uploaded PDFs into Markdown that keeps tables and equations, so they can be searched and cited in answers.",
         "text26": "PDF → Markdown conversion\nProblem: Broken tables and equations in paper PDFs made the figures behind Wiki pages and answers unusable\nDecision: Repairing only detected damage missed errors, and full AI conversion lacked table/equation accuracy and was costly, so I split processing by content type. Body text uses fast AnyDoc extraction; repair moved from an sLLM to commercial LLM APIs to avoid GPU server costs\nSolution: Extracted body text with AnyDoc and repaired only garbled parts with AI, read table/equation regions separately, and kept original figures\nResult: In the adoption experiment (4 PDFs), restoration rose from about 45% with Docling alone to about 90%. Across 15 PDFs by type × 3 runs: headings 97.6%, body text 96.1%, table cells 99.3%, equations 100%, images 91.3% (AI-judged)",
@@ -894,7 +894,7 @@
         "text40": "Agent execution environment ↗",
         "text43": "RAG evidence selection ↗",
         "text44": "Pilltip",
-        "text45": "2025.03 — 2025.12",
+        "text45": "2025.03 ~ 2025.12",
         "text46": "Personalized AI medication service | Pusan National University capstone",
         "text47": "Team project (3 + designer) / Core backend, data preparation",
         "text112": "How it started: drug information is scattered, making it hard to check whether a medicine is safe for your current health condition.\nTeam: me (backend & AI), 1 Android (Kotlin app), 1 backend & security (user DB, login, questionnaires, AES-GCM), designer. The features below are my work.",
@@ -908,7 +908,7 @@
         "text52": "Problem: Users checking whether a drug is safe describe symptoms in different words from drug indications, and the health data needed for personalization could not go to external AI.\nDecision: A synonym dictionary had too many overlapping symptoms, so I used semantic search; filtering the profile had too many cases, so profile decisions stay internal. Weaviate was chosen as lighter than Milvus, and Spring AI ran orchestration on the Spring backend to avoid a separate Python container.\nSolution: Weaviate semantic search and AI orchestration route to drug search, medication risk and dosage paths; pregnancy, current medications and underlying conditions are judged in internal code.\nResult: Personalized symptom-based search with those profile fields excluded from external LLM inputs.",
         "text126": "Backend feature implementation",
         "text127": "Built server features for drug search, risk information, medication reminders and logs, and family profiles. Integrated with teammates responsible for the mobile app, users and security.",
-        "text48": "Designed the drug database on Java and Spring Boot with search, autocomplete and DUR risk display. Elasticsearch handles partial matching and autocomplete and Redis caches repeated risk lookups, cutting search responses from 5–7s to 0.8s on average.",
+        "text48": "Designed the drug database on Java and Spring Boot with search, autocomplete and DUR risk display. Elasticsearch handles partial matching and autocomplete and Redis caches repeated risk lookups, cutting search responses from 5-7s to 0.8s on average.",
         "text49": "Built FCM medication reminders and logs, deep-link friend invites and family profile switching, and kept API docs, meeting notes and ADRs in Notion to share decisions.",
         "text137": "Feature work driven by feedback from live exhibitions",
         "text138": "We ran the booth twice as Pusan National University’s representative exhibition team, demonstrating to more than 100 visitors and collecting 10 pieces of feedback. Most asked for health supplements, so I built that within the data we already had.",
@@ -922,7 +922,7 @@
         "text148": "AI job cancellation and rollback\nProblem: AI jobs save documents, folders and Wiki pages several times between model calls; if cancelling leaves partial changes, users cannot trust AI with work.\nDecision: Asking the model to undo cannot guarantee original values and a global lock cannot handle failures, so I chose reverse rollback from execution records.\nSolution: Save the cancel state first to block later writes, then restore children first in reverse order; rebuild merged Wiki pages without the cancelled contribution.\nResult: Cancelling a two-folder, six-document task at each of 9 points restored the original state, with no model calls during rollback.",
         "text149": "Recovering without erasing other tasks’ contributions\nProblem: a concept page merges contributions from several documents, so an older snapshot would erase valid contributions from other documents.\nSolution: record operations, revisions and per-document contributions append-only, then reassemble with only the target contribution excluded. Soft delete instead of removal keeps the audit trail.",
         "text150": "MCP integration with external AI tools",
-        "text151": "Connected users’ Codex and Claude Code to Fruition retrieval and change proposals, preserving web approval and existing storage paths.",
+        "text151": "In the alpha test, token-usage pricing was too expensive for users, and 8 of 16 survey respondents were paying 30,000 KRW or more a month for AI services. So I connected the Codex and Claude Code that users already subscribe to with Fruition retrieval and change proposals, and Fruition takes a fee. Web approval and the existing storage paths stay as they were.",
         "text152": "Problem: External AI needed access to documents and Wiki pages without authority to approve its own changes.\nDecision: External models draft proposals; Fruition controls authorization, approval, storage and billing.\nSolution: OAuth connections scoped to users and workspaces, source-version and permission checks before writes, explicit web approval and receipts for duplicate-safe billing.\nResult: Verified ingestion, search, edit proposals, web approval, storage and rereading in both real clients using synthetic documents. Confirmed 21 tools in Claude Code and blocked Codex access after disconnection. Expanded PDF, Skill and meeting flows still require full native verification.",
         "text153": "MCP integration case study ↗",
         "text154": "Coding agent orchestration across five repositories",
@@ -955,19 +955,19 @@
       "fields": {
         "text71": "Activities & contributions ",
         "text72": "04 / EXPERIENCE",
-        "text73": "2026.06 — 2026.06",
+        "text73": "2026.06 ~ 2026.06",
         "text74": "Rhwp open-source contributions",
         "text75": "Gave Claude Code a work plan and contribution rules to automate the flow from issue analysis to PR, including HWP/HWPX save-error fixes; 7 PRs merged. Listed as a contributor.",
         "text76": "PR #1213 | Merged ↗",
         "text77": "PR #1351 | Submitted ↗",
-        "text78": "2025.03 — 2026.01",
+        "text78": "2025.03 ~ 2026.01",
         "text79": "APPTIVE, Pusan National University",
         "text80": "Backend mentee and mentor. Led 6 mentoring and code-review sessions for 12 mentees. Helped revise the curriculum to strengthen HTTP, Servlet, REST API and database foundations.",
         "text130": "APPTIVE Backend Mentor Merit Award | 2026.01.09",
         "text81": "2025.11 / 2025.07",
         "text82": "SK AI SUMMIT, K-ICT WEEK in Busan",
         "text83": "Represented Pusan National University at the Pilltip booth, demonstrating the service to more than 100 visitors and answering technical questions. Most of the 10 pieces of feedback asked for health supplement coverage.",
-        "text132": "2022.02 — 2025.07",
+        "text132": "2022.02 ~ 2025.07",
         "text133": "945-day Baekjoon problem-solving streak",
         "text134": "Aiming for one problem a day, I reached a longest streak of 945 consecutive days on solved.ac. 1,659 problems solved, solved.ac Platinum IV. Solutions are recorded in a GitHub repository.",
         "text136": "Baekjoon solutions repository ↗"
@@ -997,10 +997,10 @@
       "fields": {
         "text98": "Education & certification ",
         "text99": "06 / EDUCATION",
-        "text100": "2022.02 — 2026.02 (Transfer)",
+        "text100": "2022.02 ~ 2026.02 (Transfer)",
         "text101": "Pusan National University",
         "text102": "GPA 4.12 / 4.5",
-        "text103": "2019.03 — 2022.02 (Withdrew)",
+        "text103": "2019.03 ~ 2022.02 (Withdrew)",
         "text104": "Daegu University",
         "text105": "GPA 4.2 / 4.5",
         "text106": "2025.09",
@@ -1022,7 +1022,7 @@
     "experience3Title": "Data pipelines: PDF body text 96.1%, table cells 99.3%; drug conversion $200 estimated → $11.18 spent (about 94% lower)",
     "experience3Description": "AnyDoc extracts body text; tables and equations are read separately. Sentence-block deduplication reduced the 2025 drug dataset from 1GB to 326MB, and Batch API kept about 44,000 records within budget.",
     "profileRole": "AI Engineer | Backend Engineer",
-    "profileLine1": "I lead the AI work on Fruition, a team-built, LLM Wiki-based knowledge workspace. On evaluation sets I wrote and reviewed with my team, I raised RAG answer accuracy from 71.7% to 93.0% and AI document-editing success from 85.6% to 88.9%, designing evaluation, approval and rollback so AI does not answer from wrong evidence or change users' documents on its own.",
+    "profileLine1": "I lead the AI work on Fruition, a team-built, LLM Wiki-based knowledge workspace. I have designed evaluation, approval and rollback so AI does not answer from wrong evidence or change users' documents on its own. On evaluation sets I wrote and reviewed with my team, I raised RAG answer accuracy from 71.7% to 93.0% and AI document-editing success from 85.6% to 88.9%.",
     "profileLine2": "I weigh accuracy, cost and response time against each other, confirm the trade-off with an evaluation, and then choose the implementation that fits the service.",
     "readingOrder": ""
   },
