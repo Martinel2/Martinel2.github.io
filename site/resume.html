@@ -24,8 +24,8 @@
 <a href="https://www.linkedin.com/in/%EC%9E%AC%ED%98%95-%EA%B9%80-b75920345/">LinkedIn ↗</a>
 </div>
 </div>
-<a class="button resume-download" href="resume.pdf?v=7d2a8caab1" download="김재형_이력서.pdf">이력서 PDF 저장 ↓</a>
-<a class="button resume-download" href="resume.docx?v=7d2a8caab1" download="김재형_이력서.docx">이력서 Word 저장 ↓</a>
+<a class="button resume-download" href="resume.pdf?v=7a98acafb8" download="김재형_이력서.pdf">이력서 PDF 저장 ↓</a>
+<a class="button resume-download" href="resume.docx?v=7a98acafb8" download="김재형_이력서.docx">이력서 Word 저장 ↓</a>
 </section>
 <section class="resume-section">
 <h2>핵심 경험 <span>01 / PROFILE</span>
@@ -37,7 +37,7 @@
 <p>답변 근거가 틀리면 답변 전체를 믿을 수 없게 된다고 생각해, 근거를 고르는 단계를 판단 전용 모델 Jev로 바꿨습니다. 도입 당시 비교에서 GPT는 비용이 약 2.5배였고, 검색 가중치를 여러 값으로 바꿔 봐도 점수가 비슷한 수준에 머물렀기 때문입니다. 이후 직접 작성하고 팀원과 검수한 평가셋으로 다시 평가해, 요청 묶음 오류를 고치고 후보를 300개에서 200개로 줄였습니다.</p>
 </li>
 <li>
-<strong>에이전트 실행 환경 설계: 사용자 정의 Skill과 승인 기반 실행, 편집 성공률 85.6% → 88.9%(30건 × 3회)</strong>
+<strong>에이전트 실행 환경 설계: 사용자 정의 Skill과 승인 기반 실행</strong>
 <p>회의록 정리처럼 사용자마다 반복하는 작업이 달라, 사용자가 직접 Skill로 정의해 다시 쓸 수 있게 했습니다. 그런데 AI가 문서를 함부로 바꾸면 사용자가 서비스를 믿고 맡길 수 없다고 판단해, 권한과 실행 범위는 코드가 검사하고 실제 반영은 사용자가 승인한 뒤에만 하도록 나눴습니다. 코드 검사만으로는 요청 누락을 잡지 못해, 의미 평가 후 한 번만 다시 쓰게 했습니다.</p>
 </li>
 <li>
@@ -78,7 +78,7 @@
 <strong class="field-label" data-label="문제">문제:</strong> 사용자마다 반복 작업이 달라 모두 기능으로 만들 수 없고, AI 편집안이 요청을 빠뜨린 채 전달돼 같은 결과를 원하는 작업을 운에 맡기게 됨
 <strong class="field-label" data-label="판단">판단:</strong> 지침은 AI, 권한과 실행 범위 검사는 코드, 게시와 실제 반영은 사용자가 맡도록 책임 분리. 코드의 형식 검사만으로는 요청 누락을 못 잡아 LLM 의미 평가를 추가
 <strong class="field-label" data-label="해결">해결:</strong> 자연어 지침 작성, 검토, 게시와 권한 및 승인 우회 검사, 미리보기 후 별도 승인. 편집 결과는 의미 평가 후 최대 1회 재작성. 생성, 평가, 재작성은 단계별로 추적하도록 LangGraph 노드로 나누고, 게시한 Skill은 PostgreSQL에 불변 버전으로 저장
-<strong class="field-label" data-label="성과">성과:</strong> 직접 작성하고 팀원과 검수한 요청 30건 × 3회에서 편집 성공 77 → 80/90건(85.6% → 88.9%). 승인 전에는 문서가 바뀌지 않음을 확인</li></ul>
+<strong class="field-label" data-label="성과">성과:</strong> 승인 전에는 문서가 바뀌지 않음을 확인</li></ul>
 </div>
 <div class="resume-topic">
 <h4>외부 AI 도구와 연결하는 MCP 구현</h4>

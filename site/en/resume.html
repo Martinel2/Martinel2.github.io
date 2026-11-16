@@ -24,8 +24,8 @@
 <a href="https://www.linkedin.com/in/%EC%9E%AC%ED%98%95-%EA%B9%80-b75920345/">LinkedIn ↗</a>
 </div>
 </div>
-<a class="button resume-download" href="resume.pdf?v=5d06bc52a9" download="Jaehyeong_Kim_Resume.pdf">Download resume PDF ↓</a>
-<a class="button resume-download" href="resume.docx?v=5d06bc52a9" download="Jaehyeong_Kim_Resume.docx">Download resume Word ↓</a>
+<a class="button resume-download" href="resume.pdf?v=a812c3a07b" download="Jaehyeong_Kim_Resume.pdf">Download resume PDF ↓</a>
+<a class="button resume-download" href="resume.docx?v=a812c3a07b" download="Jaehyeong_Kim_Resume.docx">Download resume Word ↓</a>
 </section>
 <section class="resume-section">
 <h2>Highlights <span>01 / PROFILE</span>
@@ -37,7 +37,7 @@
 <p>I thought wrong evidence makes the whole answer untrustworthy, so I replaced evidence selection with Jev. At adoption, GPT cost about 2.5× more and tuning search weights kept scores flat. I later re-evaluated on a set I wrote and reviewed with my team, fixed a request-batching bug and cut candidates from 300 to 200.</p>
 </li>
 <li>
-<strong>Designing the agent execution environment: user-defined skills behind approval, edit success 85.6% → 88.9% (30 requests × 3 runs)</strong>
+<strong>Designing the agent execution environment: user-defined skills behind approval</strong>
 <p>Users repeat different tasks, so I let them define their own Skills. I judged that users can&#x27;t trust AI that changes documents freely, so code checks permissions and scope, and changes apply only after approval. Code checks missed omitted requests, so drafts get a semantic evaluation and one rewrite at most.</p>
 </li>
 <li>
@@ -77,7 +77,7 @@ Intellectual property: Software copyright registration completed; patent applica
 <strong class="field-label" data-label="Problem">Problem:</strong> Recurring tasks differ by user, so they cannot all be built as features, and AI edits arrived with parts of the request missing, leaving repeatable work to chance
 <strong class="field-label" data-label="Decision">Decision:</strong> AI drafts instructions, code checks permissions and scope, and the user decides publishing and applying. Code format checks missed omitted requests, so I added LLM semantic evaluation
 <strong class="field-label" data-label="Solution">Solution:</strong> Authoring, review and publishing of natural-language instructions with checks against bypassing permission or approval; preview and separate approval before changes; semantic evaluation with at most one rewrite. Generation, evaluation and rewrite run as LangGraph nodes for step-level tracing, and published Skills are stored as immutable versions in PostgreSQL
-<strong class="field-label" data-label="Result">Result:</strong> On 30 requests × 3 runs that I wrote and reviewed with my team, edit success 77 → 80 of 90 (85.6% → 88.9%); documents stayed unchanged before approval</li></ul>
+<strong class="field-label" data-label="Result">Result:</strong> Documents stayed unchanged before approval</li></ul>
 </div>
 <div class="resume-topic">
 <h4>MCP integration with external AI tools</h4>
