@@ -16,11 +16,11 @@
         "RAG",
         "Quality evaluation"
       ],
-      "problem": "Existing retrieval missed evidence that answers needed and attached evidence even to questions with no answer. Wrong evidence could carry straight into wrong answers. Finding accurate information in documents and delivering it is the core of this project, so I analyzed the results of each step. The correct evidence was all in the initial candidates, but the step that limited checks to the first 8 pages dropped it for 76 of 90 questions. I needed a step that picks the needed evidence from the candidates and says so when there is none.",
-      "expected": "If evidence is wrong, the whole answer can't be trusted, and users who lose trust don't come back. The product's core is giving people the information they need with accurate evidence, so accuracy has to be high for users to trust it, keep using it and pay again.",
+      "problem": "The existing hybrid search missed evidence the answer needed, or attached evidence to questions that had no answer. Since finding and delivering accurate information from documents is the core of this project, I analyzed results at each step of the pipeline. The right evidence was always among the candidates but did not make the top 8, so evidence for 76 of 90 questions was never selected. We needed a step that picks the needed evidence from candidates and says so when there is none.",
+      "expected": "If the evidence is wrong, the whole answer cannot be trusted, and users who lose trust do not come back. Giving the needed information with accurate evidence is the core of this product, so accuracy has to be high for users to trust it, keep using it and pay again.",
       "diagram": "flowchart TD\n Q[User question] --> S[Collect semantic and keyword search candidates]\n S --> C[Top 200 candidates]\n C --> J[Jev selects evidence in up to 8 parallel batches]\n J --> E{Sufficient evidence?}\n E -->|Yes| A[Pass selected evidence to answer generation]\n E -->|No| N[No evidence]\n",
       "diagramCaption": "The evidence selection structure in production. Reference answers are not fed into retrieval or the model; they are used only to evaluate selections.",
-      "resultTitle": "Correct answers on a fixed set: 215/300 → 279/300; average end-to-end response 5.5s",
+      "resultTitle": "Fixed evaluation set: 215/300 → 279/300 correct, 5.5 s average end-to-end response",
       "result": "I ran 100 questions that I wrote and reviewed with my team three times each, with Jev off and on. Answer accuracy rose from 71.7% to 93.0%, and the share where the selected evidence alone could produce the answer rose from 70.0% to 95.4%. Against plain RAG on the same questions, unsupported claims fell from 4.9% to 1.9%.\n\nThe earlier adoption experiment (9 papers, coverage 66.25% → 91.25%) used a different set and grading, so it is not compared directly.",
       "metrics": [
         [
@@ -51,36 +51,36 @@
           "Routing comparison and the decision to try RAG",
           "Some questions were misclassified as document edits, leading to the wrong action. Task types and additional conditions needed to be selected more accurately and quickly.",
           "Applied Jev, a choice-based decision model released on September 14, to routing questions, document edits, document creation and folder organization.\n\nAcross 98 requests, correct task types and additional conditions totaled 77 for the existing JSON approach, 63 for GPT-5-nano given the same options, and 81 for Jev. The existing approach is the original service setup, where GPT-5-nano wrote the task type and conditions itself as JSON; Jev and the GPT-5-nano comparison instead picked one of the valid combinations given as options. Against it, median decision time fell from 8.967s to 0.658s and API cost on the same 100 questions fell from about $0.0891 to $0.0408. GPT-5-nano given the same options cost about $0.1027.",
-          "Jev showed promise on accuracy, speed and cost alike, so I decided to apply it to evidence selection, which the existing retrieval had not solved.\n\nI chose Jev for two reasons. First, having GPT pick the evidence cost about 2.5 times as much even with the same options, and it took longer to decide. That was too heavy for a step that checks hundreds of candidates per question. Second, re-ranking by tuning retrieval scores kept scores at a similar level across many hybrid weights and RRF settings. Embeddings sometimes failed to separate differences in Korean phrasing, so fitting a single weight to questions from different fields would bring only small gains. Rather than polishing the ranking further, I had Jev judge the needed evidence directly from the collected candidates."
+          "It showed promise on accuracy, speed and cost. Since choosing evidence is also picking one out of many, I wondered whether it could handle the evidence selection hybrid search could not, so I built an evaluation set first and ran experiments.\n\nI chose Jev for two reasons. First, having GPT pick evidence cost about 2.5× more with the same options, and took longer to decide. That was a heavy burden for a step that checks hundreds of candidates per question. Second, re-ranking by adjusted search scores stayed at similar scores no matter which hybrid weights and RRF values I tried. Embeddings sometimes failed to separate differences in Korean phrasing, so I judged that fitting one weight to questions from different fields would gain little. Instead of polishing the ranking further, I had Jev judge the needed evidence directly from the gathered candidates."
         ],
         [
           "Full-corpus inspection: evidence coverage on all 90 answerable questions",
-          "Using the original question for retrieval and increasing semantic-score weight raised top-1 correct retrieval from 50 to 57 out of 110 questions. However, the experiment had some bias, and reliable evidence selection on new questions remained unsolved. Delivering reliable answers to general questions is the core of the project, so this quality had to improve.",
-          "Tested whether Jev could find evidence missed by retrieval. It inspected all 2,020 evidence units in a test Wiki without retrieval filtering and returned at most 8, matching the existing return limit.\n\nIn a semantic evaluation allowing paraphrases, coverage on 90 answerable questions rose from 24/90 (26.7%) to 90/90 (100%). It returned no evidence for all 10 unanswerable questions. Median processing time was 1.511s for the original approach and 5.338s for Jev. Jev processed 26 batches of 80, with up to 4 in parallel.\n\nFull-corpus inspection took 2,600 calls for 100 questions, and the API reported roughly 124.5M input and 6.47M output tokens. I did not confirm the billed amount.\n\nTo understand the size of the gap I traced where the existing retrieval dropped the answer. The page holding the reference sentence was in the initial candidate pool for all 90 questions, but 76 fell out at the step that limits inspection to the top 8 pages, 8 at the threshold of 85% of the best in-page score, and the remaining 2 at the final 8-evidence cap and the related-page lookup.",
-          "The existing retrieval was discarding the answer before selection even began, so the gap cannot be read as a difference in selection ability over the same candidates. Full-corpus access found the evidence, but inspecting everything per question would grow calls as documents grew. Rather than set the deployment scope from this 90-question wiki alone, I decided to narrow candidates through retrieval first and let Jev pick the final evidence."
+          "Searching with the original question and weighting semantic scores more raised the number of questions, out of 110, whose right evidence ranked first from 50 to 57. But the experiment was biased, and reliably picking the needed evidence for new questions was still unsolved. Answering general questions reliably is the core of the project, so this part's quality had to improve.",
+          "To see whether Jev could find evidence that search missed, I had Jev check all 2,020 evidence items in the test Wiki without filtering. Evidence sufficiency rose from 26.7% to 100%, but median processing time grew from 1.511 s to 5.338 s, and every question required checking every item.",
+          "The existing search was discarding the right answer before any selection happened, so the gap could not be read only as a difference in selection ability on the same candidates. Checking every item per question also made call costs grow with the number of documents, which did not fit a service where users prepay for costs. So I decided to narrow candidates with search first and have Jev choose the evidence."
         ],
         [
           "Controlled comparison on 500 candidates: 87.50% coverage",
-          "Checking every piece of evidence was too costly to use in the service as-is. The evaluation questions were also concentrated in certain documents and included document titles. The original search judged from only some pages while Jev saw all evidence, so it was hard to tell whether the accuracy gap came from judgment or from access scope. I had to cut candidates and match the comparison conditions.",
-          "Created 100 new questions from 9 papers (80 answerable, 20 unanswerable) and fixed them before the runs. Both methods received the same 500 candidates with returns capped at 8, reference answers were excluded from inputs, and GPT and Gemini graded without seeing method names.\n\nCoverage rose from 66.25% to 87.50%, but sequential candidate processing raised median time from the original 0.431s to 9.090s.",
-          "Jev selected better evidence under the same conditions, so I kept retrieval for candidate collection and Jev for final selection. Results on public papers and self-authored questions were not treated as general accuracy, and reducing the waiting added by sequential processing became the next task."
+          "Checking all evidence was too expensive to use in the service as is, the evaluation questions were concentrated on certain documents, and the questions even contained document titles. The existing search explored only some pages while Jev judged with all the evidence, so it was hard to tell whether the accuracy gap came from judgment or from how much each could see. I had to reduce candidates and also match the comparison conditions.",
+          "I wrote 100 new questions from 9 papers (80 with answers, 20 without) and froze them before running. Both methods got the same 500 candidates and returned 8 results each for scoring.\n\nEvidence sufficiency came out at a sound 66.25% → 87.50%, but because candidates were processed sequentially, median processing time grew from 0.431 s to 9.090 s.",
+          "Even under the same conditions Jev picked evidence better, so I kept the structure where search gathers candidates and Jev makes the final evidence decision. Since these results came from public papers and questions I wrote, I did not treat them as general accuracy, and set reducing the wait added by sequential processing as the next task."
         ],
         [
           "300 candidates and a parallelism comparison to reduce latency",
           "Answers start only after evidence selection finishes, so processing time is the user's waiting time. A 9.090s median for 500 candidates processed sequentially was far too long against the previous 0.431s to be usable. Still, the higher accuracy was worth keeping, so I set out to cut the time.",
-          "Since candidate count drives cost and speed, I cut candidates from the top 500 to 300 and ran up to 4 batches in parallel. Time fell to 2.251s, while questions with all required evidence increased from 70 to 73.\n\nThe parallel count had been set without evidence, so I re-ran the same 100 questions with only parallelism changed to 4, 6, 8 and 10. Median selection time was 2.066, 1.165, 0.945 and 0.886s, and blind grading of the 42 questions whose selections differed gave 37, 38, 36 and 37 fully supported, with no real difference.",
-          "Beyond 8 the gain was only 0.06s, and in production concurrent requests grow as workers × parallelism, so I chose 8. At 1.137s including candidate filtering it is still slower than the original 0.431s; I rejected cutting candidates further then because, on that set, some required evidence ranked below 250.\n\nI adopted Jev despite the added latency because accurate evidence is central to the service."
+          "Candidate count affects cost and speed, so I cut candidates from the top 500 to 300 and processed up to 4 batches in parallel. Time dropped to 2.251 s, and questions where all needed evidence was picked rose from 70 to 73.\n\nThe parallelism had been chosen without evidence, so I re-measured on the same 100 questions with only parallelism changed to 4, 6, 8 and 10. Median selection times were 2.066, 1.165, 0.945 and 0.886 s, and on the 42 questions whose selections changed, evidence sufficiency was 37, 38, 36 and 37, with no large difference.",
+          "Beyond 8-way parallelism the gain was only 0.06 s, and in production concurrent requests multiply as workers × parallelism, so I chose 8. At 1.137 s including candidate narrowing it is still slower than the old 0.431 s, but I held off on cutting candidates further because in that evaluation set some needed evidence ranked below 250.\n\nI accepted the longer processing time and adopted Jev, judging that delivering accurate evidence is the core of this service."
         ],
         [
           "Comparing candidate generators to find the limits of the production setting",
-          "Jev can only choose from what reaches it, so evidence missing from the candidate pool is unreachable. I needed to know how far the production candidate generator preserved the answer-bearing evidence.",
+          "However well Jev selects, it cannot use evidence that is not among the candidates. I needed to check how much of the right evidence the current candidate generation keeps.",
           "Reusing stored scores, I regenerated rankings for four candidate generators and compared how well each preserved the 97 pre-registered citation groups across the 80 answerable questions: BGE-M3 alone, the production hybrid (0.75 embedding + 0.25 normalized BM25), RRF, and an alternating union.\n\nAt 100 candidates, the questions that preserved every citation were 74/80 for BGE-M3 alone, 63/80 for the production hybrid, 63/80 for RRF and 65/80 for the alternating union. MRR@500 over each citation’s best rank was 0.1811 for BGE-M3 alone against 0.1245 for the production hybrid, with median ranks of 19 and 40. Beyond 300 candidates the four converged to 79/80 and 78/80.",
           "The production hybrid weighting ranks answer-bearing evidence lower than plain BGE-M3. At the 300 candidates used then the gap is small, so I left production unchanged and recorded it as the first condition to fix before cutting candidates further."
         ],
         [
           "Re-evaluating on a real-world set and improving evidence selection",
           "I needed to check whether results from 9 papers held for what users actually upload, such as statutes, statistics and technical documents. Evaluation models also differed by feature, so results could not be stated on one basis.",
-          "I wrote 100 questions from 11 public documents, reviewed them with my team and froze them with sha256. All LLMs were fixed to gpt-6-luna, every case ran three times, and code checks plus blind Claude grading decided the results. With Jev off, answer accuracy was 71.7% and evidence sufficiency 70.0%; with Jev on, 93.0% and 95.4%.\n\nThe evaluation exposed a bug that double-counted request size and split candidates into small batches. After the fix, on 20 questions × 3 runs, Jev calls fell from 460 to 227, input tokens from 7.13M to 5.25M, and evidence sufficiency rose from 94.1% to 100%. Comparing 300, 200, 150 and 100 candidates gave evidence sufficiency of 95.0, 95.4, 95.0 and 95.0% and gold-citation recall of 0.873, 0.868, 0.849 and 0.808.",
+          "I wrote 100 questions from 11 public documents and reviewed them with my team. Every evaluation used gpt-6-luna, ran 3 times and was scored. With Jev off, answer accuracy was 71.7% and evidence relevance 70.0%; with it on, 93.0% and 95.4%.\n\nDuring evaluation I found a bug that double-counted request size and split candidate batches too finely. After the fix, on 20 questions × 3 runs, Jev calls dropped from 460 to 227 and input tokens from 7.13M to 5.25M, while evidence sufficiency rose from 94.1% to 100%. Comparing 300, 200, 150 and 100 candidates, evidence relevance was 95.0, 95.4, 95.0 and 95.0%, and recall of answer quotes was 0.873, 0.868, 0.849 and 0.808.",
           "I chose 200, where recall held, cutting Jev cost (nearly proportional to candidates) by about a third. This reversed my earlier decision not to cut candidates further, based on the new set. In request routing, with few options, Jev and the LLM were close at 91.8% and 92.2%, so I now describe Jev's benefit there as response time (3.42s → 0.51s) rather than accuracy."
         ]
       ]
@@ -92,7 +92,7 @@
       "title": "User-defined Agent Skills: designing controlled execution",
       "short": "Agent Skills and approval",
       "period": "2026.08 - 2026.09 ~ 2026.11",
-      "summary": "I built Agent Skills so users can define and reuse repetitive work such as writing meeting notes. I also thought users must be able to trust every document AI changes, so I designed review, publishing and change approval as one flow and implemented it with AI coding tools.",
+      "summary": "I built Agent Skills so users can define and reuse repeated tasks such as generating meeting-notes templates. I believed users must be able to trust documents the AI changes, so I designed checking, publishing and change approval as one flow, and implemented it with AI coding tools.",
       "tags": [
         "LangGraph",
         "Agent Skill",
@@ -104,8 +104,8 @@
         "LangSmith",
         "LLM observability"
       ],
-      "problem": "Each user repeats different tasks, such as organising meeting notes, so developers couldn't build them all in advance. AI edit drafts also reached users with parts of the request missing or sentences awkwardly changed, and code checks on format and scope couldn't catch it. The service was not stable, and tasks that need the same result every time were left to luck, which frustrates users. Since users prepay for API usage, that experience could also make them not want to pay again.",
-      "expected": "If AI edits vary and users have to ask again, their prepaid credits go to rework, and users who see that as waste hesitate to pay again. Stable results and no changes before approval let them trust recurring tasks to it and keep using it.",
+      "problem": "Every user repeats different tasks, so building them all in advance was impossible. AI edit drafts also reached users with parts of the request missing or sentences changed awkwardly, and code checks on format and scope could not catch this. That makes the service unstable and leaves tasks that should give the same result each time to luck, which frustrates users. Because users prepaid API costs, this experience could keep them from paying again.",
+      "expected": "Users who feel their prepaid costs are wasted on rework from unstable AI edits hesitate to pay again. Results must be stable and documents must not change before approval for users to trust repeated tasks to the service and keep using it.",
       "diagram": "flowchart TD\n U[User describes a recurring task] --> S[Draft Skill, mask personal data and check prompt injection]\n S --> P[User review and recheck on publication]\n P --> K[Store reusable instructions]\n Q[User requests document work] --> R[Router selects task and conditions]\n K -. Reuse when needed .-> R\n R --> E[Edit while preserving goal and scope]\n R --> F[Plan folder organization and compare with request]\n E --> V[Check format, edit scope, personal data and injection]\n V --> D[Show validated changes and diff]\n F --> D\n D --> A{User approval}\n A -->|Approve| W[Apply edits or organize folders]\n A -->|Cancel| N[Keep originals]",
       "diagramCaption": "User-defined instructions and the document workflow that uses them. Executors do not reclassify the task; they validate proposed changes and apply them after user approval.",
       "resultTitle": "Reusable tasks and approval workflow; documents stay unchanged before approval",
@@ -132,16 +132,16 @@
       "designSteps": [
         {
           "title": "Authoring and publishing user-defined instructions",
-          "problem": "Recurring tasks such as meeting notes vary by user, so developers cannot prebuild every workflow. Yet making users repeat the same request process for a recurring task each time is inconvenient.",
-          "judgment": "Let users define and reuse natural-language instructions instead of adding each workflow as a feature. Treat AI-generated instructions as proposals until users review them.",
-          "implementation": "Turned natural-language requests into reusable Markdown Skills. Users review and edit drafts; the Skill and version are stored on final publication. A published skill is appended as an immutable version rather than overwritten, with a separate pointer to the version that runs. Which run used which version of the instructions stays traceable, so an earlier definition survives a problematic new version.",
-          "verification": "Skill module unit tests confirm that authoring returns only a proposal and stores nothing, that publishing creates a new version and points the active version at it, and that published Skills load from other workspaces and via slash commands. When the feature was finished, 74 Skill module tests and all 546 pipeline tests passed."
+          "problem": "Every user repeats different tasks, so building them all in advance was impossible. But I thought it would be inconvenient if users had to set up the same request from scratch every time they did the same task.",
+          "judgment": "Users define task instructions in natural language, save them as a Skill, and reuse the Skill when needed. Instructions the AI writes stay as suggestions until the user reviews them, and are never saved as Skills on their own.",
+          "implementation": "The AI turns a natural-language request into a reusable Skill written in Markdown. When the user reviews, edits and publishes the draft, the Skill and its version are saved. Published Skills are never overwritten; each is appended as an immutable version, with a separate pointer to the version to run. This makes it traceable which run used which version, and the previous definition remains if a new version breaks.",
+          "verification": "Unit tests confirm that nothing is saved while drafting, that publishing creates a new version and moves the run pointer to it, and that published Skills load from other workspaces and through / commands. All 74 Skill module tests and 546 pipeline tests passed."
         },
         {
           "title": "Checking instructions for permission and approval bypasses",
           "problem": "User instructions and reference documents could contain personal data or directions to bypass permissions and approval. Such intent can be phrased many ways, and users can edit drafts after review.",
-          "judgment": "Use code for explicit risk and permission checks, and an LLM to detect rephrased bypass intent. Do not allow publication based only on an earlier check after users edit the content.",
-          "implementation": "Applied rule checks to input and reference documents. The server verified that risky phrases reported by the LLM existed in the source. After checking access and original documents, it sent only necessary structure to the model. Publication reran checks on the final content. Risky phrases were not silently deleted; only user-requested regeneration removed them and rechecked the result.",
+          "judgment": "Code handles clear risks and permission checks, and an LLM detects bypass intent hidden in reworded phrasing. Because a person can still change the content maliciously after review, publishing triggers a re-check.",
+          "implementation": "Rule checks run on input and reference documents, and the server verifies that risky phrases the LLM flags actually appear in the source. Reference documents pass only the needed structure to the model after permission and source checks. Content is checked again at final publish. Risky phrases are never removed automatically; they are removed only when the user chooses to regenerate, and the result is checked again.",
           "verification": "Rule checks cover 25 phrases in six categories (approval bypass, permission escalation, forbidden tools, policy weakening, hidden-prompt requests, role override), plus emails, phone, resident registration, card and account numbers, and seven kinds of credentials. Tests confirm that instructions such as 'move the documents without approval' or 'ignore previous instructions and run shell' in a reference are blocked before any model call, that the position of a phrase flagged by the LLM matches where the server finds it in the source, and that an email added at final publish is blocked without being stored. Blocked input is shown with its location so users can fix it or regenerate."
         },
         {
@@ -156,13 +156,13 @@
           "problem": "Long conversations or large documents to edit inflate model input, raising the cost and waiting time users bear. I had to decide what to keep and what to cut.",
           "judgment": "Keep the last six messages (about three exchanges) verbatim and compress everything older into a rolling summary. For edits, send only the target line range plus surrounding context, and refuse a range that straddles the boundary of a table or code block.",
           "implementation": "Once recent messages reach six, the rolling summary is regenerated from the previous summary plus those messages; if the summarization call fails the summary is left unchanged so the conversation does not break. The router receives the summary and recent messages along with the routing decisions from earlier turns, so it can resolve what a referring expression points back to. Edit input is cut to the target line range with context lines above and below, and ranges crossing a structural boundary are rejected.",
-          "verification": "For a 1,000-line document the model received 1,786 of 31,999 characters (5.58%), and 1.12% for 5,000 lines; p95 time to build the input was 7.7ms and 34.4ms. Tests confirm that every range partly crossing a table, code block or math block is refused, and in 3 real HTTP requests a partial code-block selection was blocked with 422."
+          "verification": "For a 1,000-line document the model received 5.58% of the source, and 1.12% for 5,000 lines; p95 time to build the input was 7.7 ms and 34.4 ms. Tests also confirmed that ranges covering only part of a table, code block or formula are rejected, and a real HTTP request selecting part of a code block was blocked with 422."
         },
         {
           "title": "Tracing LLM runs while bounding sensitive data",
           "problem": "The evaluation loop ran as plain Python, so extraction, evaluation, correction and retry could not be inspected stage by stage. Turning tracing on, however, would send raw tool lookups and personal data to an external tracing tool, weakening security.",
           "judgment": "I separated what has to be observable from what must not leave the system. Graphs that decide answer quality get node-level tracing; the agent graph that edits a user’s own documents runs with tracing off and keeps raw content out of persisted state.",
-          "implementation": "Rebuilt the evaluation loop as a LangGraph graph so answer generation, evaluation and retry each surface as their own node. Even with tracing configured on, a missing key leaves graph execution intact and skips only tracing, which avoids warnings and pointless network retries. The agent graph disables tracing and excludes raw tool lookups from persisted state, and that state is deleted before the run record once retention ends. The prompt log I write myself masks numeric personal data before writing.",
+          "implementation": "I rebuilt the evaluation loop as a LangGraph graph so response generation, evaluation and retry each show as nodes. If LangSmith tracing is enabled but no key is set, the run continues and only tracing is skipped, removing warnings and needless network retries. The Agent graph runs with tracing off and keeps raw tool lookups out of saved state, and when retention ends, saved state is deleted before run records. Prompt logs we write ourselves mask numeric personal data before recording.",
           "verification": "Ran real requests and confirmed that graph nodes and model call spans appear in the trace. Timing experiments run with tracing and prompt logging both disabled, so instrumentation overhead stays out of the measured times."
         },
         {
@@ -178,10 +178,10 @@
       "id": "fruition-mcp",
       "project": "Fruition",
       "category": "MCP, OAuth, Human-in-the-loop",
-      "title": "MCP integration: a pricing change that lets users run Fruition with the AI they already subscribe to",
-      "short": "MCP integration",
+      "title": "Using Fruition from external Agents through MCP",
+      "short": "Using Fruition from external Agents through MCP",
       "period": "2026.11",
-      "summary": "During the alpha test we designed token-based pay-per-use pricing, but API costs were too high to get users to pay. In a survey, 11 of 16 respondents used AI almost daily, and 8 of 16 paid 30,000 KRW or more a month for AI services. So I built MCP integration that lets users work with Fruition documents and Wiki pages through the Codex or Claude Code and model they already subscribe to. The user's subscription covers model costs; Fruition provides the documents, Wiki and storage path and takes a fee. External AI handles retrieval and change proposals, while authorization checks, web approval, storage and billing go through Fruition's existing paths.",
+      "summary": "I designed MCP so external Agents such as Codex and Claude Code can search the documents and Wiki stored in Fruition and even propose edits. In the alpha test, per-token pricing struggled to win payments because of API costs, and 8 of 16 survey respondents were paying ₩30,000 or more a month for AI services, so I judged that letting users use Fruition's knowledge from Agents they already subscribe to would put less cost on them. But we could not hand write access to an external Agent, so each connection binds the user, workspace, client and allowed scope, and changes apply only after the user approves them on the web.",
       "tags": [
         "MCP",
         "OAuth",
@@ -196,8 +196,8 @@
       "designSteps": [
         {
           "title": "Separating external model work from service authority",
-          "problem": "A separate integration path could drift from existing authorization, storage and approval rules.",
-          "judgment": "Let the user’s model understand documents and draft changes while Fruition retains authority over access and execution.",
+          "problem": "Building separate permission, storage and approval flows to connect external AI would blur the existing service boundaries. Authentication and authorization run in the Java Spring Boot backend, and implementing MCP in Python because it is an AI feature would leave the code outside the AI Worker and force requests out of the VPC for authentication and authorization.",
+          "judgment": "Understanding documents and drafting changes is left to the user's model, while Fruition's backend keeps permission checks and execution. In other words, I exposed MCP from Spring through the SDK so it reuses the existing authentication and authorization logic.",
           "implementation": "Bound OAuth connections to a user, workspace, client and scope, checking current permissions on each request. Connected document and Wiki retrieval, ingestion and edit proposals, plus PDF, Skill and meeting tools.",
           "verification": "Confirmed discovery of 21 tools in a real Claude Code connection. Tool discovery was kept separate from successful execution of every tool."
         },
@@ -206,7 +206,7 @@
           "problem": "AI approving its own changes, or a document changing after review, could save something the user never approved.",
           "judgment": "Expose no MCP approval tool. Require a person to review the preview and quote in the web app.",
           "implementation": "Fixed the approved version, hash, scope and price, and rechecked permissions and conflicts immediately before writes. Used receipts stored with changes for billing and returned the same result for duplicate submissions.",
-          "verification": "With synthetic documents, I verified the full sequence in both Codex and Claude Code: ingestion, web approval, Wiki search and page retrieval, edit proposal, web approval and storage, and rereading the source. In Claude Code only the release day changed, Monday → Wednesday, and the owner and line breaks stayed as they were."
+          "verification": "With synthetic documents, I confirmed in both Codex and Claude Code, in order, ingestion, web approval, Wiki search and page reads, edit proposals, web approval and saving, and re-reading the source, and everything worked."
         },
         {
           "title": "Verifying connection revocation and version boundaries",
@@ -259,7 +259,7 @@
       "title": "Cancelling an AI task and undoing what it already saved",
       "short": "Task cancellation and rollback",
       "period": "2026.08 ~ 2026.09",
-      "summary": "In a service where AI changes documents, I thought users can't hand work to AI unless cancelling is reliable. Stopping execution leaves saved document, folder, Wiki and Skill changes behind, so I built a path that reverses even committed changes in reverse order. To keep contributions other jobs made correctly, I restored pages without only the cancelled contribution.",
+      "summary": "In a service where AI changes documents, I believed users cannot hand work to AI unless cancellation is certain. Stopping execution alone leaves saved document, folder, Wiki and Skill changes in place, so I built a path that reverts even committed changes in reverse order. It restores only the rolled-back parts, without erasing contributions other tasks left normally.",
       "tags": [
         "Compensating recovery",
         "Idempotency keys",
@@ -296,7 +296,7 @@
         {
           "title": "Deciding that stopping execution was not enough",
           "problem": "An AI task saves documents, folders, wiki pages and skills several times between model calls, so stopping execution left part of a cancelled task in place. Yet execution spanning the core DB, the AI DB and object storage could not be wrapped in one long transaction either.",
-          "judgment": "I chose to undo already-committed changes too. Asking the model to perform the inverse cannot guarantee original values, approval scope or idempotency, and locking the whole service in one transaction cannot absorb long-running model, HTTP and object-storage work or its failures, so both were rejected.",
+          "judgment": "I decided to revert even committed changes. Asking the model to do it cannot guarantee original values, approval scope or idempotency, and locking the whole service in one transaction cannot survive long runs and failures across the model, HTTP and object storage, so I rejected both.",
           "implementation": "The AI side derives reverse actions from the run record while the backend performs atomic recovery of business data. Agent tools store a pre-change snapshot with reverse-action arguments and an idempotency key tied to the original approval, and ordinary tasks record before and after values through each database’s triggers inside the same transaction. Object storage persists the original and the intended result before writing.",
           "verification": "A test that runs the real worker makes model creation fail during recovery and confirms the cancellation finishes without any model or gateway call. Cancelling a two-folder, six-document organisation task at each of 9 points returned the workspace to its original state, and after a lost response a new worker resumed recovery with the same idempotency key."
         },
@@ -406,8 +406,8 @@
         "PostgreSQL",
         "Concurrency and memory"
       ],
-      "problem": "Sequential processing made later documents wait for external AI responses, and more workers also mean more API calls and memory, so I had to find how far to scale. I used Kafka because it can replay messages and keeps order within a key, so long AI jobs run asynchronously while IDs prevent duplicates.\n\n1 → 4 Workers cut analysis from 282.11s to 73.89s. Raising concurrent requests per Worker from 2 to 4 slowed it to 95.92s, and two embedding jobs on one GPU stretched each from about 9.5s to 19-21s, so the two stages got separate scaling rules.",
-      "expected": "I was concerned that a slow Wiki keeps users from using their uploads, so they may leave before seeing value. A shorter wait lets them search and ask right after upload.",
+      "problem": "Running the Wiki-generation AI pipeline sequentially left later documents waiting on external AI responses. More workers also mean more API calls and memory, so I had to decide how far to scale each step. Kafka, which can re-read messages and keeps order per key, distributes long AI jobs asynchronously and blocks duplicates by ID.\n\n1 → 4 workers cut analysis from 282.11 s to 73.89 s. But 2 → 4 concurrent AI requests per worker slowed it to 95.92 s, and two embedding jobs on one GPU took 19–21 s each instead of about 9.5 s. The two steps scale differently, so I set separate criteria.",
+      "expected": "There was concern that if Wiki generation is slow, users cannot use uploaded documents right away and may leave before seeing value on first use. I thought that cutting the wait would let documents be used for search and questions right after upload.",
       "diagram": "flowchart TD\n A[Document processing request] --> K[Kafka distributes document jobs]\n K --> W[Multiple workers with per-worker request limits]\n W --> L[Lock writes within the same workspace]\n V[Embedding generation] --> G[Check contention on a shared GPU]\n L --> D[Check time, memory and content preservation]\n G --> D\n D --> R[Choose scaling policy per stage]",
       "diagramCaption": "Evaluated scaling separately for Wiki generation and embedding generation.",
       "resultTitle": "73.8% less analysis time for 4 documents, 300 queued jobs with zero loss",
@@ -436,8 +436,8 @@
       "id": "fruition-agent-loop",
       "project": "Fruition",
       "category": "Coding agent orchestration, Cross-service changes",
-      "title": "Coding agents across 5 repositories: 78 PRs created, decisions and review owned by a human",
-      "short": "Coding agent orchestration",
+      "title": "Running coding agents: 78 PRs, decisions and verification criteria",
+      "short": "Running coding agents: 78 PRs, decisions and verification criteria",
       "period": "2026.08 / 2026.10",
       "summary": "After running an agent loop for an August MSA migration, I extended it to changes across five repositories in October. Agents investigated, implemented and reviewed; I chose trade-offs, set scope and acceptance criteria, and challenged unsupported findings. The two-day effort produced 78 PRs and 43 issues.",
       "tags": [
@@ -447,7 +447,7 @@
         "Decision records",
         "MSA"
       ],
-      "problem": "A model-deprecation issue led to discovery that some features ignored the user-selected model and used hardcoded models. Changes spread across five repositories. Agents could invent issues, implement only part of a plan or review against decisions that had never reached the issue tracker.",
+      "problem": "While checking model deprecations, I found some features ran on hardcoded models instead of the user's choice. When I had the agent search for similar problems, the change grew to 5 repositories. Agents could report problems that did not exist or implement only part of a plan, and decisions changed in conversation were not recorded in the original issue, so review criteria drifted.",
       "expected": "Keep cross-service changes aligned with agreed behavior, while preventing incomplete work and false review findings from turning into further rework.",
       "diagram": "flowchart TD\n H[Human defines scope and chooses trade-offs] --> D[Record decisions in plans and issues]\n D --> I[Agents implement per repository]\n I --> R[Fresh session reviews against decisions]\n R --> E{Finding supported by code evidence}\n E -->|Yes| F[Fix within agreed scope and recheck]\n E -->|No| Q[Recheck or withdraw finding]\n F --> M[Review and repository-owner merge decision]\n Q --> R",
       "diagramCaption": "October workflow: a fresh review session checks decisions, and findings need file and line evidence before changes are made.",
@@ -543,7 +543,7 @@
           "2026 PySpark reproduction, 744MB → 44.1MB"
         ]
       ],
-      "tradeoff": "About $200 was the upfront estimate; $11.18 was actual spending. Seven days of preprocessing labour are not included. The 2026 figures come from re-collected data, not the 2025 dataset. The reproduction code was written with AI coding tools; I designed the experiment and chose the thresholds. The 1GB → 326MB figures describe the original 2025 work; 744MB → 44.1MB describes the separate 2026 reproduction.",
+      "tradeoff": "About $200 is a prior estimate and $11.18 is the actual LLM API spend. The 2026 figures were measured on re-collected data and differ from the data processed in 2025. The reproduction code was written with AI coding tools; I owned the experiment design and threshold decisions. 1 GB → 326 MB is the original 2025 work, and 744 MB → 44.1 MB is a 2026 reproduction on separate data.",
       "image": {
         "src": "assets/projects/pilltip-blocks.png",
         "alt": "Output showing drug text split into indexed blocks with drug ID to block ID mappings",
@@ -626,7 +626,7 @@
       "name": "Fruition",
       "affiliation": "AI SW Maestro, 17th cohort",
       "label": "01 / AI KNOWLEDGE WORKSPACE",
-      "description": "An AI workspace that organizes uploaded documents into an LLM-generated Wiki, answers questions using source evidence through RAG, and edits documents in natural language. It is deployed on AWS EKS and is now in alpha testing. Software copyright registration completed; patent application filed with a provisional specification.",
+      "description": "An AI workspace where an LLM organizes uploaded documents into a Wiki, answers with source evidence found through RAG, and edits documents from natural-language requests. It is deployed on AWS EKS and in alpha testing, and we keep improving it from feedback. The software is registered as a program work, and we filed a patent with a provisional specification.",
       "origin": "Started when a teammate raised a pain point with managing documents, which we refined through design thinking.",
       "goal": "The goal was to fix the frustration of saving many documents but failing to find them when needed.",
       "myRole": "AI lead",
@@ -660,11 +660,11 @@
         ],
         [
           "MSA design contribution",
-          "My first draft split services by feature, but that would leave the database load unchanged while adding hops between services, so distribution would gain nothing. I proposed splitting by data ownership instead, then worked with teammates and mentors on service boundaries and communication to finish the structure together."
+          "We first split services by feature. But that left the database load unchanged and only added calls between services, so the split did not distribute anything. I proposed splitting by data ownership instead, and we settled the final service boundaries and communication with the team and our mentor."
         ],
         [
           "MCP integration",
-          "In the alpha test, charging by token usage was too expensive for users, and 8 of 16 survey respondents were paying 30,000 KRW or more a month for AI services. So I built MCP integration that lets users work with Fruition documents and Wiki pages through the Codex or Claude Code and model they already subscribe to, with Fruition taking a fee. External AI handles retrieval and change proposals; Fruition keeps its existing authorization, web approval, storage and billing paths."
+          "In the alpha test, per-token pricing was too expensive for users, and 8 of 16 survey respondents were already paying ₩30,000 or more a month for AI services. So I built MCP so users can work with Fruition's documents and Wiki from the Codex, Claude Code and models they already subscribe to, with Fruition charging a fee. The external AI handles search and drafting changes, while Fruition keeps its existing permission, web approval, storage and billing paths."
         ]
       ],
       "links": [
@@ -714,9 +714,9 @@
       "name": "Pilltip",
       "affiliation": "Pusan National University capstone",
       "label": "02 / PERSONALIZED MEDICATION",
-      "description": "A personalized AI medication service that explains drug information in plain language and helps users manage their own and their family’s medications and schedules.",
+      "description": "A personalized AI medication-safety service that explains drug information in plain, friendly language and helps users and their families manage medication risks and schedules.",
       "origin": "Started as a Pusan National University capstone project.",
-      "goal": "Drug information is scattered, so it is hard to check whether a given medicine is safe for your current health condition. We set out to make that easy.",
+      "goal": "We wanted to solve how hard it is to check right away whether you can take a drug in your current health condition, and if so, how much.",
       "myRole": "Core backend features and data preparation",
       "team": [
         [
@@ -739,32 +739,24 @@
       "href": "#pilltip-data",
       "contributions": [
         [
-          "Backend and AI development",
-          "Implemented drug-related backend features, reminders and logs, friend invitations, family profile switching, the data preparation pipeline and AI chatbot."
+          "Drug and dietary supplement data modeling",
+          "Using public data, I linked records by drug name and ingredient and designed the drug and dietary supplement database."
         ],
         [
-          "Drug and supplement modeling, search, autocomplete and risk information",
-          "Designed the drug and health-supplement DB and implemented search autocomplete with Elasticsearch and Redis, plus Drug Utilization Review (DUR) risk and caution information. Cut search responses that took 5 to 7s because of LIKE queries and multiple JOINs to 0.8s on average."
+          "Java Spring Boot backend",
+          "I built the backend, including search autocomplete with Elasticsearch and Redis, medication risk information, medication reminders and logs, and friend invites with family profile switching."
         ],
         [
-          "Medication reminders and logs",
-          "Implemented reminders and medication logs using FCM."
-        ],
-        [
-          "Friends and family",
-          "Implemented deep-link friend invitations and family profile switching."
-        ],
-        [
-          "Data pipeline: about $200 estimated, $11.18 actually spent",
-          "Built a data preparation pipeline to rewrite all drug information covered by the service into friendly, everyday language."
+          "Data cleaning pipeline: about $200 estimated, $11.18 actual",
+          "I built a data cleaning pipeline that turned every drug record the service covers into friendly, conversational explanations within the budget."
         ],
         [
           "RAG-based AI chatbot",
-          "Built an AI-orchestrated chatbot that retrieves relevant information and connects search and DUR checks according to each question."
+          "I built an AI-orchestrated chatbot that finds relevant information with RAG and, depending on the question, uses the features it needs, such as search and medication risk checks."
         ],
         [
-          "Extended support to health functional foods after exhibition feedback",
-          "The first service covered only drugs, and most first-exhibition feedback asked to check health supplements too. Within the supplement data obtained from public datasets, I extended search and autocomplete, caution and interaction info, medication reminders and logs, and chatbot answers, turning the requests into shipped features."
+          "Expanding to dietary supplements after exhibition feedback",
+          "The service first covered only drugs, but most feedback at our first exhibition asked to check dietary supplements too. Within the supplement data we had from public sources, I extended search and autocomplete, precautions and combination information, medication reminders and logs, and chatbot answers, turning the exhibition requests into working features."
         ]
       ],
       "gallery": [
@@ -1011,16 +1003,16 @@
   "overview": {
     "eyebrow": "Retrieval, execution and data processing for LLM services",
     "title": "I build services that use AI\nto make people’s lives better.",
-    "description": "For each project, the parts I contributed: the problem, the alternatives I weighed, why I chose one, how I built it and how I verified it.",
-    "experience1Title": "RAG evidence selection: answer accuracy 71.7% → 93.0%, evidence sufficiency 70.0% → 95.4%",
-    "experience1Description": "I thought wrong evidence makes the whole answer untrustworthy, so I replaced evidence selection with Jev. At adoption, GPT cost about 2.5× more and tuning search weights kept scores flat. I later re-evaluated on a set I wrote and reviewed with my team, fixed a request-batching bug and cut candidates from 300 to 200.",
-    "experience2Title": "Agent execution environment: user-defined skills behind approval",
-    "experience2Description": "Users repeat different tasks, so I let them define their own Skills. I judged that users can't trust AI that changes documents freely, so code checks permissions and scope, and changes apply only after approval. Code checks missed omitted requests, so drafts get a semantic evaluation and one rewrite at most.",
+    "description": "For each part I owned in each project: what the problem was, which alternatives I considered, why I chose the approach I did, and how I built and verified it.",
+    "experience1Title": "Improving RAG with Jev: answer accuracy 71.7% → 93.0%, evidence sufficiency 70.0% → 95.4% (100 questions × 3 runs)",
+    "experience1Description": "",
+    "experience2Title": "User-defined Skills and human-in-the-loop document editing",
+    "experience2Description": "",
     "experience3Title": "Data pipelines: PDF body text 96.1%, table cells 99.3%; drug conversion $200 estimated → $11.18 spent (about 94% lower)",
     "experience3Description": "AnyDoc extracts body text; tables and equations are read separately. Sentence-block deduplication reduced the 2025 drug dataset from 1GB to 326MB, and Batch API kept about 44,000 records within budget.",
     "profileRole": "AI Engineer | Backend Engineer",
     "profileLine1": "I lead the AI work on Fruition, a team-built, LLM Wiki-based knowledge workspace. I have designed evaluation, approval and rollback so AI does not answer from wrong evidence or change users' documents on its own. On evaluation sets I wrote and reviewed with my team, I raised RAG answer accuracy from 71.7% to 93.0% and AI document-editing success from 85.6% to 88.9%.",
-    "profileLine2": "I weigh accuracy, cost and response time against each other, confirm the trade-off with an evaluation, and then choose the implementation that fits the service.",
+    "profileLine2": "I check accuracy, cost and response time through evaluation, then choose the approach that fits the service and the team.",
     "readingOrder": ""
   },
   "activities": {

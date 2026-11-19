@@ -174,12 +174,13 @@ export async function buildPortfolioPdf(browser, lang='ko') {
         if(!fits(cur))cur.classList.add('denser');
       }
     }
-    for(const s of document.querySelectorAll('.slide.fit')){
+    // Page numbers go in first: they take width in the contents entries.
+    const slides=[...document.querySelectorAll('.slide')];
+    document.querySelectorAll('[data-page]').forEach(el=>{const t=document.getElementById(el.dataset.page);el.textContent=t?`p.${slides.indexOf(t)+1}`:'';});
+    for(const s of document.querySelectorAll('.slide.fit,.slide.cover,.slide.contents')){
       if(!fits(s))s.classList.add('dense');
       if(!fits(s))s.classList.add('denser');
     }
-    const slides=[...document.querySelectorAll('.slide')];
-    document.querySelectorAll('[data-page]').forEach(el=>{const t=document.getElementById(el.dataset.page);el.textContent=t?`p.${slides.indexOf(t)+1}`:'';});
     slides.forEach((s,i)=>s.querySelector('.num').textContent=`${i+1} / ${slides.length}`);
     return slides.map((s,i)=>fits(s)?null:`${i+1}:${s.dataset.section}`).filter(Boolean);
   },L.continued);
