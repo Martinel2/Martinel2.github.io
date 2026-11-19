@@ -44,6 +44,11 @@ export async function buildResumeDocx(page, lang = 'ko') {
     body.push(h2(l.title));
     for(const x of l.items)body.push(P([run(x.text,{size:21})],{spacing:{after:60},...(x.li?{bullet:{level:0}}:{})}));
   }
+  body.push(h2(R.highlightsTitle));
+  for(const x of R.highlights){
+    body.push(P([run(x.title,{bold:true,size:22,color:NAVY})],{keepNext:true}));
+    body.push(P([run(x.desc,{size:21})],{spacing:{after:100}}));
+  }
   body.push(h2(R.projectsTitle));
   for(const g of R.groups){
     body.push(right([run(g.org,{bold:true,size:26,color:'1D2230'})],g.dates,{spacing:{before:160},keepNext:true}));
@@ -57,7 +62,8 @@ export async function buildResumeDocx(page, lang = 'ko') {
   body.push(h2(R.extrasTitle));
   for(const x of R.extras){
     body.push(right([run(x.title,{bold:true,size:22,color:NAVY})],x.badge,{keepNext:true}));
-    body.push(P([run(x.desc,{size:21})],{spacing:{after:100}}));
+    body.push(P([run(x.desc,{size:21})],{spacing:{after:x.links?20:100}}));
+    if(x.links)body.push(P(x.links.flatMap((l,i)=>[...(i?[run('   ')]:[]),link(l.label+' ↗',l.url,{underline:undefined,size:19})]),{spacing:{after:100}}));
   }
   body.push(h2(R.skillsTitle));
   for(const s of R.skills)body.push(P([run(s.category+'  ',{bold:true,size:21,color:NAVY}),run(s.items,{size:21})]));

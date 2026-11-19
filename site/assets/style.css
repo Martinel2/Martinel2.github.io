@@ -558,3 +558,4 @@ summary{cursor:pointer}
 .egg-whisper.on{animation:whisper 3.2s ease forwards}
 @keyframes whisper{0%{opacity:0;transform:translateY(12px)}18%,70%{opacity:1;transform:none}100%{opacity:0;transform:translateY(-10px)}}
 @media(prefers-reduced-motion:reduce){.egg-whisper.on{animation:none;opacity:1;transform:none;transition:opacity .2s}}
+.cv-links{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:14px}.cv-links a{color:var(--cv-navy)}

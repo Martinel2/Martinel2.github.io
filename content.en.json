@@ -842,6 +842,21 @@
     },
     "pdfLabel": "Download resume PDF ↓",
     "docxLabel": "Download resume Word ↓",
+    "highlightsTitle": "Highlights",
+    "highlights": [
+      {
+        "title": "Improving RAG evidence selection: answer accuracy 71.7% → 93.0%, evidence sufficiency 70.0% → 95.4% (100 questions × 3 runs)",
+        "desc": "I thought wrong evidence makes the whole answer untrustworthy, so I replaced evidence selection with Jev. At adoption, GPT cost about 2.5× more and tuning search weights kept scores flat. I later re-evaluated on a set I wrote and reviewed with my team, fixed a request-batching bug and cut candidates from 300 to 200."
+      },
+      {
+        "title": "Designing the agent execution environment: user-defined skills behind approval",
+        "desc": "Users repeat different tasks, so I let them define their own Skills. I judged that users can't trust AI that changes documents freely, so code checks permissions and scope, and changes apply only after approval. Code checks missed omitted requests, so drafts get a semantic evaluation and one rewrite at most."
+      },
+      {
+        "title": "Building data pipelines: 96.1% body text and 99.3% table cells restored across 15 PDFs; drug conversion cost about 94% below the $200 estimate ($11.18 spent)",
+        "desc": "Broken tables and equations lose the figures answers rely on, so I used AnyDoc for body text and read table and equation regions separately. I split drug information into sentence blocks and consolidated duplicates, reducing the 2025 dataset from about 1GB to 326MB. Since conversion did not need real-time responses, Batch API, priced 50% below the standard API at the time, kept about 44,000 records within budget."
+      }
+    ],
     "projectsTitle": "Projects",
     "detailLabel": "Portfolio details",
     "groups": [
@@ -851,6 +866,23 @@
         "role": "Team project of 3 developers + a designer | AI lead",
         "dates": "2026.04 - 2026.12.10",
         "cases": [
+          {
+            "title": "PDF to Markdown, keeping tables and equations",
+            "rows": [
+              [
+                "Problem",
+                "When tables and equations in uploaded papers broke, the figures that answers rely on could not be used."
+              ],
+              [
+                "Judgment",
+                "I extracted body text with the fast AnyDoc and gave table and equation regions a separate path that reads them from the original."
+              ],
+              [
+                "Result",
+                "Restored 96.1% of body text and 99.3% of table cells across 15 PDFs of different types."
+              ]
+            ]
+          },
           {
             "title": "RAG that turns stored documents into knowledge: measuring and improving quality",
             "rows": [
@@ -962,6 +994,23 @@
             ]
           },
           {
+            "title": "LLM tracing and sensitive-data boundaries",
+            "rows": [
+              [
+                "Problem",
+                "When quality dropped, I could not see whether generation, evaluation or retry went wrong, and tracing could send user documents and personal data out."
+              ],
+              [
+                "Judgment",
+                "I made the quality loop visible step by step and kept the agent that touches user documents out of tracing."
+              ],
+              [
+                "Result",
+                "I rebuilt the evaluation loop as a LangGraph graph traced per node, disabled tracing for the agent graph and kept raw text out of saved state. Numeric personal data in prompt logs is masked."
+              ]
+            ]
+          },
+          {
             "title": "Cancelling and recovering AI tasks",
             "rows": [
               [
@@ -1004,6 +1053,23 @@
             ]
           },
           {
+            "title": "An AI medication chatbot using personal health profiles",
+            "rows": [
+              [
+                "Problem",
+                "Users describe symptoms in different words from drug indications, which made search hard, and the health data needed for personalization could not go to external AI."
+              ],
+              [
+                "Judgment",
+                "Symptoms were too many and overlapping for a synonym dictionary, so I used semantic search; profile filtering had too many cases, so profile decisions stay in internal code. I chose Weaviate as lighter than Milvus, and Spring AI for orchestration because the backend was Spring, avoiding the load of a separate Python container."
+              ],
+              [
+                "Result",
+                "Users find drug information from natural-language symptoms, while pregnancy, current medications and underlying conditions are judged in internal code and left out of external LLM inputs."
+              ]
+            ]
+          },
+          {
             "title": "A dietary supplement recommendation chatbot built from feedback",
             "rows": [
               [
@@ -1026,19 +1092,45 @@
     "extrasTitle": "Other projects and activities",
     "extras": [
       {
-        "title": "Contributor to Rhwp, an open-source HWP/HWPX viewer",
-        "badge": "2026.06",
-        "desc": "Automated the whole flow with Claude Code, from analyzing improvements and planning to code changes, commits, pushes and PRs. 7 PRs merged."
-      },
-      {
         "title": "Weekly automated check of AI model prices and deprecations",
         "badge": "2026.10",
         "desc": "A GitHub Actions workflow that checks model prices and provider deprecation schedules every week and reports differences as GitHub issues."
       },
       {
+        "title": "Contributor to Rhwp, an open-source HWP/HWPX viewer",
+        "badge": "2026.06",
+        "desc": "Automated the whole flow with Claude Code, from analyzing improvements and planning to code changes, commits, pushes and PRs. 7 PRs merged.",
+        "links": [
+          {
+            "label": "PR #1213 merged",
+            "url": "https://github.com/edwardkim/rhwp/pull/1213"
+          },
+          {
+            "label": "PR #1351 submitted",
+            "url": "https://github.com/edwardkim/rhwp/pull/1351"
+          }
+        ]
+      },
+      {
+        "title": "Pilltip booth at SK AI SUMMIT and K-ICT WEEK in Busan",
+        "badge": "2025.11 / 2025.07",
+        "desc": "Represented Pusan National University, demonstrating the service to more than 100 visitors and answering technical questions. Most of the 10 pieces of feedback asked for health supplement coverage."
+      },
+      {
         "title": "APPTIVE, an IT development club at Pusan National University",
         "badge": "2025.03 - 2026.01",
         "desc": "After building a Spring backend and deploying it on AWS EC2 as a mentee, I became a mentor: revised the curriculum around backend fundamentals, prepared mentoring material and ran code reviews."
+      },
+      {
+        "title": "945-day Baekjoon problem-solving streak",
+        "badge": "2022.02 - 2025.07",
+        "desc": "Aiming for one problem a day, reached a longest streak of 945 consecutive days on solved.ac. 1,659 problems solved, solved.ac Platinum IV.",
+        "links": [
+          {
+            "label": "Solutions repository",
+            "url": "https://github.com/Martinel2/BaekJoon"
+          }
+        ]
       }
     ],
     "skillsTitle": "Skills",
@@ -1063,6 +1155,12 @@
         "org": "Pusan National University",
         "year": "2026.02",
         "description": "GPA 4.12 / 4.5 (Transfer)"
+      },
+      {
+        "title": "Withdrew",
+        "org": "Daegu University",
+        "year": "2022.02",
+        "description": "GPA 4.2 / 4.5"
       }
     ],
     "certificationsTitle": "Certification",
@@ -1075,6 +1173,7 @@
     ],
     "awardsTitle": "Awards",
     "awards": [
+      "APPTIVE Backend Mentor Merit Award (2026.01)",
       "Capstone Design Gold Award, College of Information and Biomedical Engineering, Pusan National University (2025.10)",
       "Busan DATA WEEK Top Excellence Award, Busan Techno Park (2025.09)",
       "AI LAUNCH Career School Startup Hackathon Encouragement Award, KRYPTON X x Root Impact x Google.org (2025.09)",

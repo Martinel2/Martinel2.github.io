@@ -351,18 +351,20 @@ def resume_parts():
     groups = ''.join(f'<article class="resume-project cv-group" id="{g["id"]}"><div class="cv-job"><h3>{e(g["org"])}</h3><span>{e(g["dates"])}</span></div>'
                      f'<p class="cv-role">{e(g["role"])} <a class="cv-detail" href="portfolio/{g["id"]}.html">{e(R["detailLabel"])}</a></p>' + ''.join(case(k) for k in g['cases']) + '</article>' for g in R['groups'])
     section = lambda title, body, attrs='': f'<section class="resume-section"{attrs}><h2>{e(title)}</h2>{body}</section>'
-    extras = section(R['extrasTitle'], ''.join(f'<div class="cv-extra"><p><strong>{e(x["title"])}</strong><span>{e(x["badge"])}</span></p><p>{e(x["desc"])}</p></div>' for x in R['extras']), ' id="activities"')
+    links = lambda x: (f'<p class="cv-links">' + ' '.join(f'<a href="{e(l["url"])}">{e(l["label"])} ↗</a>' for l in x['links']) + '</p>') if x.get('links') else ''
+    highlights = section(R['highlightsTitle'], ''.join(f'<div class="cv-extra"><p><strong>{e(x["title"])}</strong></p><p>{e(x["desc"])}</p></div>' for x in R['highlights']), ' id="highlights"')
+    extras = section(R['extrasTitle'], ''.join(f'<div class="cv-extra"><p><strong>{e(x["title"])}</strong><span>{e(x["badge"])}</span></p><p>{e(x["desc"])}</p>{links(x)}</div>' for x in R['extras']), ' id="activities"')
     skills = section(R['skillsTitle'], ''.join(f'<p class="cv-line"><strong>{e(x["category"])}</strong> {e(x["items"])}</p>' for x in R['skills']), ' id="skill-list"')
     education = section(R['educationTitle'], ''.join(f'<div class="cv-edu"><p><strong>{e(x["title"])}</strong> {e(x["org"])}<span>{e(x["year"])}</span></p><p class="cv-muted">{e(x["description"])}</p></div>' for x in R['education']))
     certs = section(R['certificationsTitle'], ''.join(f'<p class="cv-line">{e(x["title"])} <span class="cv-muted">{e(x["org"])}</span><span>{e(x["year"])}</span></p>' for x in R['certifications']))
     awards = section(R['awardsTitle'], ''.join(f'<p class="cv-line">{e(a)}</p>' for a in R['awards']))
-    return {'header': header, 'projects': section(R['projectsTitle'], groups, ' id="projects-list"'), 'extras': extras, 'skills': skills,
+    return {'header': header, 'highlights': highlights, 'projects': section(R['projectsTitle'], groups, ' id="projects-list"'), 'extras': extras, 'skills': skills,
             'education': education, 'awards': f'<div class="cv-two">{certs}{awards}</div>'}
 
 
 def resume():
     p = resume_parts()
-    body = f'<div class="resume-shell cv">{p["header"]}{p["projects"]}{p["extras"]}{p["skills"]}{p["education"]}{p["awards"]}</div>'
+    body = f'<div class="resume-shell cv">{p["header"]}{p["highlights"]}{p["projects"]}{p["extras"]}{p["skills"]}{p["education"]}{p["awards"]}</div>'
     (SITE / 'resume.html').write_text(page('이력서', '김재형 | AI Engineer / Backend Engineer. 프로젝트, 기술, 오픈소스 기여, 수상과 학력.', body, True))
 
 
