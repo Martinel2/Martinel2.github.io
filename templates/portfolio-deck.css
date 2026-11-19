@@ -234,3 +234,65 @@ html[lang="en"] .cover h1{font-size:36px}
 .contents.denser .groups li span{font-size:13.5px}.contents.denser .groups li{padding:1px 0}
 .contents.dense .groups li b{font-size:24px;line-height:1.2}.contents.denser .groups li b{font-size:22px}.contents.denser .groups li span{line-height:1.35}
 .contents.dense .slide-title{margin-bottom:12px}.contents.dense .group{padding-bottom:6px}
+
+/* 팀 발표 자료(진짜진짜 최종.pdf) 디자인: 흰 바탕에 옅은 파랑, 노랑 번짐, 회색 영문 라벨, 굵은 짙은 회색 제목, #4F84F1 강조 */
+:root{--ink:#2f3237;--muted:#80858e;--line:#e4e7ee;--blue:#4f84f1;--pale:#f3f6fe;--soft:#f7f8ff;--soft-line:#d3ddfd}
+.slide{background:radial-gradient(ellipse 50% 60% at 85% 22%,rgba(197,212,252,.38),transparent 70%),radial-gradient(ellipse 45% 50% at 20% 92%,rgba(255,241,206,.32),transparent 70%),#fdfdfd;color:var(--ink);padding:52px 72px 58px}
+.slide>footer{left:72px;right:72px;color:#b3b7bf}
+.eyebrow{font-size:15px;font-weight:400;letter-spacing:0;text-transform:none;color:#9a9ea7}
+.slide-title{font-size:30px;letter-spacing:-.4px;color:var(--ink);margin:8px 0 24px}
+.tags span{background:var(--pale);color:#4b6fc4;border:1px solid #dbe5fd}
+
+/* 강조 장(프로젝트, 사례 소개): 발표 자료의 어두운 장 */
+.dark{background:radial-gradient(ellipse 60% 70% at 8% 10%,rgba(46,64,96,.85),transparent 70%),radial-gradient(ellipse 55% 60% at 95% 95%,rgba(40,70,78,.75),transparent 70%),#1c1b20;color:#f3f4f6}
+.dark .eyebrow{color:#a7acb6}.dark .muted{color:#b4b8c0}.dark>footer{color:#6f7480}
+.dark .tags span{background:transparent;border:1px solid rgba(255,255,255,.25);color:#d9dce2}
+.dark a{color:#9dbcfa}
+
+/* 표지: 밝은 바탕, 큰 제목, 오른쪽 노트북 화면 */
+.dark.cover{background:radial-gradient(ellipse 50% 60% at 85% 22%,rgba(197,212,252,.38),transparent 70%),radial-gradient(ellipse 45% 50% at 30% 80%,rgba(255,241,206,.4),transparent 70%),#fdfdfd;color:var(--ink)}
+.dark.cover>footer{color:#b3b7bf}
+.cover .eyebrow{color:#9a9ea7}
+.cover h1{font-size:40px;line-height:1.28;letter-spacing:-1px;color:#2f3237}
+.cover .intro>p{color:#4a4e55}
+.cover .who{border-top:1px solid #e3e5ea;color:#4a4e55}.cover .who strong{color:#2f3237}
+.cover .who .muted,.cover .muted{color:#80858e}
+.cover .highlights::before{content:'';display:block;height:250px;margin:-10px 0 4px;background:url('assets/projects/fruition-laptop.webp') center/contain no-repeat}
+.cover .highlights div{background:var(--soft);border:1px solid var(--soft-line);border-radius:10px;padding:12px 18px}
+.cover .highlights strong{color:#2f3237;font-size:15.5px;margin:0}
+.cover .highlights span{color:#80858e}
+
+/* 목차: 왼쪽 큰 Contents., 오른쪽 점선 목록 */
+.contents .body{display:grid;grid-template-columns:400px 1fr;grid-template-rows:auto auto 1fr;column-gap:48px}
+.contents .eyebrow{grid-column:1;grid-row:1;margin-top:80px}
+.contents .slide-title{grid-column:1;grid-row:2;font-size:64px;letter-spacing:-1.5px;line-height:1.1;margin-top:10px}
+.contents .groups{grid-column:2;grid-row:1/4;display:flex!important;flex-direction:column;justify-content:center;gap:22px;margin:0}
+.contents .group{font-size:13px;font-weight:400;letter-spacing:1px;color:#9a9ea7;border:0;padding:0 0 2px}
+.contents .groups li{border:0;padding:7px 0}
+.contents .groups li a{align-items:baseline}
+.contents .groups li b{font-size:22px;font-weight:400;color:#8f949d;min-width:40px}
+.contents .groups li span{font-size:17px;font-weight:700;color:#2f3237;flex:0 1 auto;max-width:560px}
+.contents .groups li a::after{content:'';order:2;flex:1;min-width:30px;border-bottom:3px dotted #cfd2d8;margin:0 14px;transform:translateY(-6px)}
+.contents .groups li i{order:3;font-size:16px;color:#2f3237}
+
+/* 사례 소개 장 */
+.case-open .kicker b{background:transparent;border:1px solid #7fa6f5;color:#a9c4fa;border-radius:99px;padding:3px 14px;font-weight:700}
+.case-open .kicker{color:#a7acb6}
+.case-open .summary{color:#d9dce2}
+.case-open .meta{color:#a7acb6}
+.case-open .background{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.22);border-radius:14px}
+.case-open .background span{color:#a7acb6;font-weight:400;letter-spacing:.5px}
+.case-open .background.expected{background:rgba(79,132,241,.1);border-color:rgba(127,166,245,.35)}
+.case-open .stat div{background:transparent;border-top:1px solid rgba(255,255,255,.25);border-radius:0;padding:12px 4px 0;color:#f3f4f6}
+.case-open .stat small{color:#a7acb6}
+.case-open .stat strong{color:#ffffff;font-size:19px;font-weight:700;white-space:nowrap}
+
+.case-head b{background:transparent!important;border:1px solid var(--blue);color:var(--blue)!important;border-radius:99px!important;padding:2px 12px!important}
+.case-head{color:#80858e}
+
+/* 서비스 화면, 연락처 */
+.gallery figure img,.gallery .row img{background:transparent!important;border:0!important;border-radius:12px;box-shadow:none}
+.closing h2{font-size:40px}
+.cover .intro{flex:1.55}.cover .highlights{flex:1}
+html[lang="en"] .cover h1{font-size:34px}
+.cover.dense .highlights::before{height:170px}.cover.denser .highlights::before{display:none}

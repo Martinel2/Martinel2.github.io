@@ -86,7 +86,7 @@ export async function buildPortfolioPdf(browser, lang='ko') {
   const subList=subs=>subs?.length?`<ul class="toc-subs">${subs.map(s=>`<li>${esc(s)}</li>`).join('')}</ul>`:'';
   const entry=(n,title,id,subs)=>`<li><a href="#${id}"><b>${String(n).padStart(2,'0')}</b><span>${esc(title)}</span><i data-page="${id}"></i></a>${subList(subs)}</li>`;
   const more=[[data.closing.title,'beyond'],[data.closing.writingsTitle,'writings']];
-  slides.push(slide('contents',L.contents,`<p class="eyebrow">${L.cases}</p><h2 class="slide-title">${L.contents}</h2>${data.guide?`<p class="toc-guide">${esc(data.guide)}</p>`:''}
+  slides.push(slide('contents',L.contents,`<p class="eyebrow">${L.cases}</p><h2 class="slide-title">Contents.</h2>${data.guide?`<p class="toc-guide">${esc(data.guide)}</p>`:''}
     <div class="groups">${[...new Set(data.contents.map(c=>c.project))].map(project=>`<div><p class="group">${esc(project)}</p><ol>${data.contents.map((c,i)=>c.project===project?entry(i+1,c.title,`case-${i+1}`,c.subs):'').join('')}</ol></div>`).join('')}
     <div><p class="group">MORE</p><ol>${more.map(([t,id],k)=>entry(data.contents.length+k+1,t,id,data.extraSubs?.[k])).join('')}</ol></div></div>`));
   let caseNo=0;

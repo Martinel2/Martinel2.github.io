@@ -48,6 +48,8 @@ document.addEventListener('click', event => {
   const link = event.target.closest('a');
   if (link?.matches('.resume-download')) window.gtag?.('event', 'resume_download');
   if (link?.getAttribute('href')?.startsWith('mailto:')) window.gtag?.('event', 'contact_click');
+  const file = link?.getAttribute('href')?.match(/(resume|portfolio)\.(pdf|docx)/)?.[0];
+  if (file) window.gtag?.('event', 'document_download', { file });
   if (link?.closest('.project-figure')) window.gtag?.('event', 'project_image_open', { image: link.getAttribute('href').split('/').pop() });
 });
 
