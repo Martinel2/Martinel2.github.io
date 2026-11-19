@@ -16,8 +16,7 @@ for lang in ('ko', 'en'):
         expected = ''.join(json.loads(Path(f'artifacts/resume-docx-source{suffix}.json').read_text()))
         assert compact(actual) == compact(expected), 'DOCX text differs from PDF source'
         assert len(root.findall(".//w:sectPr", ns)) == 1
-        assert len(root.findall('.//w:drawing', ns)) == 7
-        assert root.findall('.//w:tbl', ns), 'Editable layout tables are missing'
+        assert not root.findall('.//w:drawing', ns), 'The case-style resume has no images'
         rels = ET.fromstring(archive.read('word/_rels/document.xml.rels'))
         links = [r.attrib['Target'] for r in rels if r.attrib.get('TargetMode') == 'External']
         assert links and all(url.startswith(('https://', 'mailto:')) for url in links)
@@ -26,4 +25,4 @@ for lang in ('ko', 'en'):
         if lang == 'en':
             assert not re.search('[가-힣]', actual), 'Untranslated English DOCX text'
             assert any('github.io/en/portfolio/' in url for url in links)
-print('PASS: KO/EN DOCX text parity, 1 flowing section, 7 images, editable tables, links and no editing lock')
+print('PASS: KO/EN DOCX text parity with the resume page, 1 flowing section, links and no editing lock')

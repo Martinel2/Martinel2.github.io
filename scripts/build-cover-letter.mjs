@@ -54,11 +54,10 @@ async function sectionHtml() {
   if (!blocks.length) throw new Error(`${source}에 본문이 없습니다`);
   // A block of "- " lines becomes a tight list; anything else is a paragraph.
   const render = block => block.startsWith('- ')
-    ? `<div class="resume-topic"><ul>${block.split('\n').map(l => l.replace(/^-\s*/, '').trim())
-        .filter(Boolean).map(l => `<li>${inline(l)}</li>`).join('')}</ul></div>`
+    ? `<ul>${block.split('\n').map(l => l.replace(/^-\s*/, '').trim())
+        .filter(Boolean).map(l => `<li>${inline(l)}</li>`).join('')}</ul>`
     : `<p>${inline(block.replace(/\s*\n\s*/g, ' '))}</p>`;
-  return `<section class="resume-section resume-lead"><h2>${escape(heading)}<span>MOTIVATION</span></h2>`
-    + `<div class="resume-content">${blocks.map(render).join('')}</div></section>`;
+  return `<section class="resume-section resume-lead"><h2>${escape(heading)}</h2>${blocks.map(render).join('')}</section>`;
 }
 
 const run = (cmd, argv, env) => new Promise((done, fail) => {
@@ -69,21 +68,14 @@ const run = (cmd, argv, env) => new Promise((done, fail) => {
 
 async function build() {
   const html = await readFile(resolve('site/resume.html'), 'utf8');
-  if (!html.includes('class="resume-shell"')) throw new Error('site/resume.html을 먼저 빌드하세요 (python3 build.py)');
-  // The résumé keeps its three pages; the letter follows as the last section.
-  const withLetter = html.replace('<div class="resume-end">', await sectionHtml() + '<div class="resume-end">');
-  // Evidence thumbnails come out of the markup rather than being hidden in CSS:
-  // the DOCX builder walks the DOM and would keep anything CSS only hides.
-  const withoutEvidence = withLetter
-    .replace(/<a class="evidence-thumb"[\s\S]*?<\/a>/g, '')
-    .replaceAll('class="evidence-row"', 'class="evidence-flat"');
-  if (withoutEvidence.includes('evidence-thumb')) throw new Error('증빙 썸네일을 모두 제거하지 못했습니다');
-
-  // The photo goes beside the hero text, before the first download button.
-  // The DOCX builder reads image sources off disk, so this stays a file, not a data URI.
-  const withPhoto = withoutEvidence.replace('<a class="button resume-download"',
-    '<img class="resume-photo" src="profile.jpg" alt="증명사진"><a class="button resume-download"');
-  if (withPhoto === withoutEvidence) throw new Error('이력서 hero에 사진을 넣을 위치를 찾지 못했습니다');
+  if (!html.includes('class="resume-shell')) throw new Error('site/resume.html을 먼저 빌드하세요 (python3 build.py)');
+  // The letter reads right after the name and contacts, before the projects.
+  const withLetter = html.replace('<section class="resume-section"', await sectionHtml() + '<section class="resume-section"');
+  if (withLetter === html) throw new Error('이력서에서 지원동기를 넣을 위치를 찾지 못했습니다');
+  // The photo sits left of the name, as in the company résumés. The DOCX builder reads it off disk.
+  const withPhoto = withLetter.replace('<div class="resume-hero cv-header">',
+    '<div class="resume-hero cv-header"><img class="resume-photo" src="profile.jpg" alt="증명사진">');
+  if (withPhoto === withLetter) throw new Error('이력서 머리말에 사진을 넣을 위치를 찾지 못했습니다');
 
   await rm(stage, {recursive: true, force: true});
   await mkdir(stage, {recursive: true});
@@ -91,20 +83,11 @@ async function build() {
   await symlink(resolve('site/assets'), resolve(stage, 'assets'), 'dir');
   await copyFile(photo, resolve(stage, 'profile.jpg'));
 
-  // Tighter print spacing keeps the letter and the résumé inside three pages; no content is cut.
-  const tighten = '.resume-section{margin-top:4px}.experience-row{margin-top:4px}'
-    + '.award-list>div{padding:0}'
-    + '.award-list p{line-height:1.3}'
-    // Profile photo beside the hero text.
-    + '.resume-hero{display:flex;align-items:flex-start;gap:14px}'
-    + '.resume-hero>div:first-child{flex:1;min-width:0}'
-    + '.resume-photo{flex:none;width:74px;height:95px;object-fit:cover;'
-    + 'border:1px solid #d5ddeb;border-radius:4px}'
-    + '.resume-topic li{margin-bottom:2px}.skill-rows>div{padding:3px 0}'
-    + '.scope-note{margin:3px 0}'
-    + '.resume-project{padding:9px 13px}.resume-project+.resume-project{margin-top:9px}';
+  const photoCss = '.cv-header{display:flex;gap:16px;align-items:center}'
+    + '.resume-photo{flex:none;width:70px;height:93px;object-fit:cover;border-radius:3px}'
+    + '.resume-lead p+p,.resume-lead ul{margin-top:4px}.resume-lead ul{padding-left:14px}';
   await run('node', ['scripts/build-resume-pdf.mjs'],
-    {RESUME_DIR: stage, RESUME_LANGS: 'ko', RESUME_EXTRA_CSS: tighten});
+    {RESUME_DIR: stage, RESUME_LANGS: 'ko', RESUME_EXTRA_CSS: photoCss});
 
   await mkdir(outDir, {recursive: true});
   for (const ext of ['pdf', 'docx']) {

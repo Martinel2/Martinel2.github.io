@@ -69,20 +69,15 @@ try{
 
  await page.$eval('#field-home-hero-greeting',input=>{input.value='반갑습니다,';input.dispatchEvent(new Event('input',{bubbles:true}));});
  assert.match(await page.$eval('#intro-preview',e=>e.textContent),/반갑습니다,/);
- // Resume editing order must follow the visible template, independently of text IDs.
- const template=readFileSync(new URL('../templates/resume.html',import.meta.url),'utf8');
- const order=[...template.matchAll(/@@(text\d+)@@/g)].map(m=>m[1]);
- for(let i=0;i<content.resume.length;i++){
-  const fields=content.resume[i].fields;
-  await page.click(`[data-path="resume.${i}"]`);
-  const actual=await page.$$eval('#fields textarea',inputs=>inputs.map(input=>({key:input.id.split('-').at(-1),value:input.value})));
-  assert.deepEqual(actual,order.filter(k=>k in fields).map(key=>({key,value:fields[key]})));
- }
- const projectIndex=content.resume.findIndex(s=>'text21' in s.fields);
- await page.click(`[data-path="resume.${projectIndex}"]`);
- assert.match(await page.$eval('label[for$="-text54"]',e=>e.textContent),/비용 산정 기준/);
- // Fruition 시작·RAG·Skill·PDF·평가 기준, Pilltip 시작·데이터 정제·챗봇·상세 링크
- assert.equal(await page.$$eval('#fields .group > .group',groups=>groups.length),9);
+ // The resume opens as one intro section plus one section per project and per list.
+ await page.click('[data-path="resume"]');
+ assert.equal(await page.$eval('#field-resume-role',e=>e.value),content.resume.role);
+ assert.equal(await page.$eval('#field-resume-tagline-0',e=>e.value),content.resume.tagline[0]);
+ assert.equal(await page.$('#field-resume-groups-0-org'),null,'Projects are edited in their own sections');
+ await page.click('[data-path="resume.groups.0"]');
+ const rows=await page.$$eval('#fields textarea[id$="-1"]',inputs=>inputs.filter(i=>/-rows-\d+-1$/.test(i.id)).length);
+ assert.equal(rows,content.resume.groups[0].cases.reduce((n,c)=>n+c.rows.length,0));
+ assert.match(await page.$eval('label[for="field-resume-groups-0-cases-0-rows-0-0"]',e=>e.textContent),/라벨/);
  await page.click('[data-path="overview"]');
 
  await page.$eval('#field-overview-title',input=>{input.value='테스트 소개 <안전>';input.dispatchEvent(new Event('input',{bubbles:true}));});

@@ -46,7 +46,7 @@ try {
       assert.deepEqual(broken, []);
       assert.equal(await page.$('.activity-gallery'),null);
       const evidence=await page.$$eval('.evidence-thumb img',async imgs=>{for(const i of imgs)i.loading='eager';await Promise.all(imgs.map(i=>i.decode()));return imgs.map(i=>({width:i.naturalWidth,height:i.getBoundingClientRect().height}));});
-      assert.equal(evidence.length,route.startsWith('/portfolio/')?0:route.startsWith('/portfolio')?2:7);
+      assert.equal(evidence.length,route==='/portfolio.html'?2:0);
       assert.ok(evidence.every(i=>i.width>0&&i.height<=120),'Evidence thumbnails must load at compact sizes');
 
       if (route === '/') {
@@ -179,10 +179,12 @@ try {
         }
       } else {
         // The AI row leads the skills section on purpose; every row needs a label and a list.
-        const skills = await page.$$eval('.skill-rows > div', rows => rows.map(row => ({
+        const skills = await page.$$eval('#skill-list .cv-line', rows => rows.map(row => ({
           label: row.querySelector('strong')?.textContent.trim() || '',
-          list: row.querySelector('p')?.textContent.trim() || '',
+          list: row.textContent.replace(row.querySelector('strong')?.textContent || '', '').trim(),
         })));
+        // Each case keeps the Daangn resume shape: a title, then labelled rows.
+        assert.ok(await page.$$eval('.cv-case', cs => cs.length >= 9 && cs.every(c => c.querySelector('h4') && c.querySelectorAll('dt').length >= 3)));
         assert.ok(skills.length >= 3 && skills.every(row => row.label && row.list), 'Every skill row needs a label and a list');
         assert.match(skills[0].label, /^AI/, 'The AI skill row must come first');
         await page.evaluate(() => { window.print = () => { window.printInvoked = true; }; });

@@ -1,17 +1,33 @@
 @font-face{font-family:Resume;src:url('assets/fonts/Pretendard-Regular.woff2')}@font-face{font-family:Resume;src:url('assets/fonts/Pretendard-Bold.woff2');font-weight:700}
-@page{size:A4;margin:0}*{box-sizing:border-box}body{margin:0;font-family:Resume,sans-serif;color:#203047;font-size:10px;line-height:1.45}a{color:#315cbb;text-decoration:none}p,h1,h2,h3,h4,ul{margin:0}p,li{white-space:pre-line}
-.sheet{width:210mm;height:297mm;padding:13mm 14mm 16mm;position:relative;break-after:page}.sheet:last-child{break-after:auto}footer{position:absolute;bottom:8mm;left:14mm;right:14mm;font-size:8px;color:#7d8da3}footer span{float:right}
-section{margin-top:15px}h2{font-size:12px;letter-spacing:1px;margin:0 0 9px;border-bottom:2px solid #6a80bd;padding-bottom:5px}h3{font-size:17px}h4{font-size:11px;color:#315cbb;margin:9px 0 3px}.resume-hero{background:#eff3fc;border:1px solid #d5ddeb;border-top:3px solid #5278c9;border-radius:9px;padding:13px 16px}.eyebrow{font-size:15px;font-weight:700;color:#315cbb}.resume-hero h1{font-size:17px;margin:5px 0}.resume-hero h1 br{display:none}.resume-role{font-size:10px;color:#315cbb;margin-bottom:5px}.contact-line{display:flex;gap:14px;margin-top:8px;font-size:9px}
-.profile-list{list-style:none;padding:10px 13px;background:#f5f7fc;border-radius:7px}.profile-list li+li{margin-top:6px}.profile-list strong{font-size:10px}.profile-list p{color:#526179}.resume-project{border:1px solid #dce2ec;border-radius:8px;padding:12px 15px}.resume-project-title{display:flex;justify-content:space-between;align-items:baseline;gap:10px}.resume-project-title>span{font-size:9px;color:#607089}.role{color:#607089;margin:3px 0 6px}.scope-note{font-size:8.5px;color:#657185;margin:5px 0}.resume-topic .topic-intro{font-size:9px;color:#607089;margin-bottom:3px}.resume-topic ul{padding-left:13px}.resume-topic li{margin-bottom:5px}.resume-topic li:last-child{margin:0}.text-link{font-size:9px;display:inline-block;margin-right:10px}.resume-project>.text-link{margin-top:5px}
-.resume-section{margin-top:18px}.experience-row{display:grid;grid-template-columns:105px 1fr;gap:12px;margin-top:8px}.experience-row>span{color:#657185;font-size:9px}.experience-row h3{font-size:12px;margin-bottom:3px}.evidence-row{display:grid;grid-template-columns:60px minmax(0,1fr);gap:12px;align-items:start}.evidence-thumb{display:block;border:1px solid #dce2ec;border-radius:4px;overflow:hidden;background:white}.evidence-thumb img{display:block;width:100%;height:70px;object-fit:contain}.evidence-thumb span{display:none}.skill-rows>div{display:grid;grid-template-columns:95px 1fr;gap:12px;padding:6px 0;border-bottom:1px solid #e6ebf2}.skill-rows strong{font-size:10px}.award-list>div{display:grid;grid-template-columns:70px 1fr;gap:10px;padding:8px 0;border-bottom:1px solid #e6ebf2}.award-list>div>span{color:#657185;font-size:9px}.award-list p{white-space:normal}
-
-.profile-list li{white-space:normal}.resume-topic h4{margin-top:7px}
-
-html[lang="en"] body{line-height:1.4}
-html[lang="en"] section{margin-top:10px}
-html[lang="en"] .resume-project{padding:10px 14px}
-html[lang="en"] .resume-topic h4{margin-top:5px}
-html[lang="en"] .resume-topic li{margin-bottom:4px}
-html[lang="en"] .resume-hero{padding:10px 14px}
-.field-label{font-weight:700;color:#c0392b}.field-label[data-label="해결"],.field-label[data-label="Solution"]{color:#1f6feb}.field-label[data-label="성과"],.field-label[data-label="Result"]{color:#1e8449}.field-label[data-label="판단"],.field-label[data-label="Decision"]{color:#b9770e}
-.resume-project+.resume-project{margin-top:14px}
+/* 당근에 낸 사례형 이력서(career-ops case-cv)와 같은 인쇄 짜임 */
+@page{size:A4;margin:13mm 14mm 15mm}
+*{box-sizing:border-box;margin:0;padding:0;font-variant-ligatures:none}
+body{font-family:Resume,sans-serif;font-size:10.5px;line-height:1.62;color:#22262e;word-break:keep-all;overflow-wrap:break-word}
+a{color:inherit;text-decoration:none}
+.cv-header{padding-bottom:10px;border-bottom:2px solid #2b3f6b;margin-bottom:12px}
+.cv-header h1{font-size:24px;color:#2b3f6b;line-height:1.15}
+.cv-title{font-size:12.5px;font-weight:700;color:#2b3f6b;margin-top:2px}
+.cv-contacts{font-size:10px;color:#4d5563;margin-top:6px}
+.cv-contacts a{color:#2b3f6b;font-weight:700;text-decoration:underline;text-underline-offset:2px}
+.cv-sep{color:#b6bdc8;margin:0 4px}
+.resume-section>h2{font-size:13.5px;color:#2b3f6b;border-bottom:1px solid #d5dbe4;padding-bottom:4px;margin:18px 0 10px;break-after:avoid}
+.cv-group{margin-bottom:16px}
+.cv-job{display:flex;justify-content:space-between;align-items:baseline;break-after:avoid}
+.cv-job h3{font-size:13px;color:#1d2230}
+.cv-job>span{font-size:10px;color:#6b7482;white-space:nowrap;margin-left:12px}
+.cv-role{font-size:11px;font-weight:700;color:#39404d;break-after:avoid}
+.cv-detail{color:#2b3f6b;margin-left:4px;font-size:10px}
+.cv-case{border-left:2px solid #d9dfe8;padding:2px 0 2px 12px;margin-top:13px;break-inside:avoid}
+.cv-case h4{font-size:12px;color:#2b3f6b;margin-bottom:4px;line-height:1.45}
+.cv-rows{display:grid;grid-template-columns:max-content 1fr;column-gap:10px;row-gap:3px}
+.cv-rows dt{font-size:9.5px;font-weight:700;color:#8a93a2;padding-top:1px}
+.cv-extra{margin-bottom:6px;break-inside:avoid}
+.cv-extra strong{color:#2b3f6b;font-size:11px}
+.cv-extra p:first-child,.cv-edu p:first-child,.cv-line{display:flex;gap:6px;align-items:baseline}
+.cv-extra p>span,.cv-edu p>span,.cv-line>span:last-child{font-size:10px;color:#6b7482;margin-left:auto;white-space:nowrap}
+.cv-extra p>span{margin-left:6px}
+.cv-line>strong{color:#2b3f6b;min-width:74px}
+.cv-muted{color:#5c6574}
+#skill-list,.cv-two>section{break-inside:avoid}
+.cv-two{display:flex;gap:28px}.cv-two>section{flex:1}.cv-two>section:first-child{flex:0 0 36%}
+html[lang="en"] body{font-size:10px;line-height:1.55}html[lang="en"] .cv-case{margin-top:11px}

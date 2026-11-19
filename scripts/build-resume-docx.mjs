@@ -1,171 +1,83 @@
 import {readFile, writeFile} from 'node:fs/promises';
 import {fileURLToPath, pathToFileURL} from 'node:url';
 import {resolve} from 'node:path';
-import {Document, Packer, Paragraph, TextRun, Tab, ExternalHyperlink, ImageRun, Table, TableRow, TableCell, WidthType, BorderStyle, Footer, PageNumber, TabStopType, AlignmentType, TableLayoutType} from 'docx';
+import {Document, Packer, Paragraph, TextRun, Tab, ExternalHyperlink, ImageRun, Footer, PageNumber, TabStopType, BorderStyle} from 'docx';
 
-// Word flows freely, so read resume.html in reading order instead of the fixed PDF pages:
-// every project first, then skills, activities, education and awards.
-const LABEL_COLORS={'문제':'C0392B','Problem':'C0392B','해결':'1F6FEB','Solution':'1F6FEB','성과':'1E8449','Result':'1E8449','판단':'B9770E','Decision':'B9770E'};
-// CSS px × 1.5 = half-points, so the Word text matches templates/resume-pdf.css exactly.
-const SIZE={period:14,name:23,h1:26,role:15,h2:18,h3:18,h3big:26,h4:17,body:15,note:14,small:14};
-const COLOR={text:'203047',accent:'315CBB',muted:'607089'};
-const LINE=218;
-// line-height 1.45 (1.4 for English) applied to each run's own size.
-const lineFor=(size,lang)=>Math.round(size*(lang==='en'?14:14.5));
+// 이력서 데이터(content.json의 resume)를 당근 이력서와 같은 짜임의 편집 가능한 Word로 만든다.
+const NAVY='2B3F6B',GRAY='6B7482',LABEL='8A93A2',INK='22262E';
+const RIGHT=9638; // A4 본문 폭(좌우 여백 14mm)의 오른쪽 탭
+const SITE='https://martinel2.github.io/';
 
 export async function buildResumeDocx(page, lang = 'ko') {
-  const name=lang==='en'?'Jaehyeong Kim':'김재형';
   const dir=process.env.RESUME_DIR||(lang==='en'?'site/en':'site');
   const suffix=lang==='en'?'-en':'';
+  const R=JSON.parse(await readFile(lang==='en'?'content.en.json':'content.json','utf8')).resume;
+  const base=SITE+(lang==='en'?'en/':'');
+  // 테스트가 Word 글자를 웹 이력서 글자와 맞춰 보도록, 페이지에 보이는 글자를 그대로 남긴다.
   const source=await page.browser().newPage();
   await source.goto(pathToFileURL(resolve(dir,'resume.html')).href,{waitUntil:'load'});
-  await source.$$eval('img',imgs=>Promise.all(imgs.map(img=>{img.loading='eager';return img.decode();})));
-  const {blocks,text}=await source.evaluate(({name,lang})=>{
-    const base='https://martinel2.github.io/'+(lang==='en'?'en/':'');
-    const root=document.querySelector('.resume-shell').cloneNode(true);
-    root.querySelectorAll('.resume-download,.resume-end,.resume-section>h2>span,.evidence-thumb>span').forEach(e=>e.remove());
-    root.querySelectorAll('a').forEach(a=>a.href=new URL(a.getAttribute('href'),base).href);
-    const hero=root.querySelector('.resume-hero');
-    hero.querySelector('.eyebrow').textContent=name+' | AI Engineer / Backend Engineer';
-    hero.querySelectorAll('p:not(.eyebrow)').forEach(e=>e.remove()); // the eyebrow already carries the title
-    hero.querySelectorAll('h1 br').forEach(e=>e.replaceWith(document.createTextNode(' ')));
-    root.querySelector('.resume-section .resume-content').querySelectorAll('p').forEach(e=>e.remove());
-    // Same section order as the PDF: summary, projects, skills, activities, education, awards.
-    const all=[...root.querySelectorAll(':scope>.resume-section')];
-    const lead=all.filter(el=>el.classList.contains('resume-lead'));
-    const sections=all.filter(el=>!el.classList.contains('resume-lead'));
-    // No forced break before activities: the PDF flow stopped forcing one, so neither does Word.
-    sections[0].querySelector('h2').textContent='SUMMARY';sections[1].querySelector('h2').textContent='PROJECTS & EXPERIENCE';
-    const ordered=[hero,...lead,sections[0],sections[1],sections[2],sections[3],sections[5],sections[4],...sections.slice(6)];
-    document.body.append(...ordered.map(el=>{const box=document.createElement('div');box.append(el);box.hidden=false;return box;}));
-
-    const inline=node=>{
-      if(node.nodeType===Node.TEXT_NODE)return node.textContent.trim()?[{text:node.textContent}]:(/\n/.test(node.textContent)?[{text:'\n'}]:node.textContent?[{text:' '}]:[]);
-      if(node.nodeType!==Node.ELEMENT_NODE)return [];
-      if(node.tagName==='BR')return [{text:'\n'}];
-      if(node.tagName==='IMG')return [{image:node.src,width:node.naturalWidth,height:node.naturalHeight}];
-      if(node.matches('.field-label'))return [{text:node.textContent,label:node.textContent.replace(':','')}];
-      return [...node.childNodes].flatMap(inline).map(run=>({...run,
-        ...(node.tagName==='STRONG'?{bold:true}:{}),
-        ...(node.tagName==='A'?{url:node.href}:{})}));
-    };
-    const walk=node=>{
-      if(node.nodeType!==Node.ELEMENT_NODE)return [];
-      if(node.tagName==='A'&&node.previousElementSibling?.tagName==='A')return [];
-      if(node.tagName==='A'&&node.nextElementSibling?.tagName==='A'){
-        const runs=[];for(let link=node;link?.tagName==='A';link=link.nextElementSibling)runs.push(...inline(link),{text:'   '});
-        return [{style:'links',runs}];
-      }
-      if(node.matches('.resume-hero'))return [{box:'hero',children:[...node.children].flatMap(walk)}];
-      if(node.matches('.resume-project-title'))return [{columns:[[{style:'h3big',runs:inline(node.children[0])}],[{style:'period',align:'right',title:true,runs:inline(node.children[1])}]],widths:[78,22],title:true}];
-      if(node.matches('.evidence-row'))return [{columns:[...node.children].map(walk),widths:[9,91]}];
-      if(node.matches('.experience-row,.skill-rows>div,.award-list>div')){
-        // Lead column widths follow the CSS grid: 105px, 95px and 70px of a 688px text column.
-        const lead=node.matches('.award-list>div')?10:node.matches('.skill-rows>div')?14:15;
-        const columns=[...node.children].map(walk);
-        // Flatten an evidence image into this row; nested tables render poorly outside Word.
-        const evidence=columns[1].length===1&&columns[1][0].widths?.length===2?columns[1][0]:null;
-        return [{columns:evidence?[columns[0],...evidence.columns]:columns,widths:evidence?[lead,9,100-lead-9]:[lead,100-lead]}];
-      }
-      if(node.matches('h1,h2,h3,h4,p,li,a,span,strong')&&!node.querySelector('p,div,ul')){
-        const style=node.matches('.eyebrow')?'name':node.matches('.resume-role')?'role':node.tagName.toLowerCase();
-        return [{style,note:node.matches('.scope-note,.topic-intro,.role'),pageBreak:node.dataset.pageBreak==='1',runs:inline(node)}];
-      }
-      // A bare image outside an evidence row, such as the local build's profile photo.
-      if(node.tagName==='IMG')return [{style:'p',runs:inline(node)}];
-      if(node.tagName==='LI'){
-        // One bullet paragraph per item, so its problem/solution/result lines share the bullet's indent.
-        const parts=[...node.children].flatMap(walk), main=parts.filter(b=>!b.note);
-        const plain=!!node.closest('.profile-list'); // list-style:none in the CSS
-        return [{style:'li',plain,runs:main.flatMap((b,i)=>i?[{text:'\n'},...b.runs]:b.runs)},...parts.filter(b=>b.note).map(b=>({...b,indent:true}))];
-      }
-      return [...node.children].flatMap(walk);
-    };
-    const blocks=[...document.body.children].slice(-ordered.length).flatMap(box=>[...box.children].flatMap(walk));
-    const text=[...document.body.children].slice(-ordered.length).map(box=>box.innerText).join('\n');
-    return {blocks,text};
-  },{name,lang});
+  const {text,lead,photo}=await source.$eval('.resume-shell',el=>{const c=el.cloneNode(true);c.querySelectorAll('.cv-actions,.resume-photo').forEach(e=>e.remove());
+    c.querySelector('.cv-header').after(...c.querySelectorAll('.resume-lead'));
+    // A cover-letter build (scripts/build-cover-letter.mjs) adds a photo and .resume-lead sections to the page.
+    return {text:[c.textContent],photo:el.querySelector('.resume-photo')?.src||'',
+      lead:[...el.querySelectorAll('.resume-lead')].map(s=>({title:s.querySelector('h2').textContent,items:[...s.querySelectorAll('p,li')].map(e=>({text:e.textContent,li:e.tagName==='LI'}))}))};});
   await source.close();
-  await writeFile(`artifacts/resume-docx-source${suffix}.json`,JSON.stringify([text]));
+  await writeFile(`artifacts/resume-docx-source${suffix}.json`,JSON.stringify(text));
 
-  const noBorder={style:BorderStyle.NONE,size:0,color:'FFFFFF'};
-  const rule={style:BorderStyle.SINGLE,size:4,color:'E3E8F0'};
-  const pageWidth=11906-2*794; // 14mm side margins, as in the PDF
-  const run=(text,opts)=>new TextRun({text,...opts});
+  const run=(text,o={})=>new TextRun({text,color:INK,...o});
+  const link=(text,url,o={})=>new ExternalHyperlink({link:url,children:[run(text,{color:NAVY,bold:true,underline:{},...o})]});
+  const P=(children,o={})=>new Paragraph({children,...o});
+  const h2=t=>P([run(t,{bold:true,size:27,color:NAVY})],{spacing:{before:300,after:120},keepNext:true,border:{bottom:{style:BorderStyle.SINGLE,size:6,color:'D5DBE4',space:3}}});
+  const right=(left,date,o={})=>P([...left,run('\t'+(date||''),{color:GRAY,size:20})],{tabStops:[{type:TabStopType.RIGHT,position:RIGHT}],...o});
+  const body=[];
 
-  async function contents(block,size,color,heading) {
-    const lines=[[]];
-    for(const r of block.runs) {
-      if(r.image) {
-        const ratio=Math.min(60/r.width,60/r.height);
-        lines.at(-1).push(new ImageRun({type:r.image.endsWith('.png')?'png':'jpg',data:await readFile(fileURLToPath(r.image)),transformation:{width:Math.round(r.width*ratio),height:Math.round(r.height*ratio)}}));
-        continue;
-      }
-      r.text.split('\n').forEach((part,i)=>{
-        if(i)lines.push([]);
-        if(!part)return;
-        const opts={bold:heading||r.bold,size:r.period?SIZE.small:size,color:r.url?COLOR.accent:r.period?COLOR.muted:color};
-        if(r.label)Object.assign(opts,{bold:true,color:LABEL_COLORS[r.label]||COLOR.accent});
-        const item=new TextRun({...opts,children:part.split('\t').flatMap((t,j)=>j?[new Tab(),t]:[t])});
-        lines.at(-1).push(r.url?new ExternalHyperlink({link:r.url,children:[item]}):item);
-      });
+  if(photo)body.push(P([new ImageRun({type:'jpg',data:await readFile(fileURLToPath(photo)),transformation:{width:70,height:93},
+    floating:{horizontalPosition:{relative:'margin',align:'right'},verticalPosition:{relative:'margin',align:'top'},wrap:{type:1}}})]));
+  body.push(P([run(R.name,{bold:true,size:48,color:NAVY})]));
+  body.push(P([run(R.role,{bold:true,size:25,color:NAVY})],{spacing:{after:60}}));
+  const contacts=[['kkuldangi2@gmail.com','mailto:kkuldangi2@gmail.com'],[R.links.portfolio,base+'portfolio.html'],[R.links.github,'https://github.com/Martinel2'],
+    [R.links.blog,'https://velog.io/@kkuldangi3/posts'],[R.links.linkedin,'https://www.linkedin.com/in/%EC%9E%AC%ED%98%95-%EA%B9%80-b75920345/']];
+  body.push(P(contacts.flatMap(([t,u],i)=>[...(i?[run('  |  ',{color:'B6BDC8'})]:[]),link(t,u)]),
+    {spacing:{after:160},border:{bottom:{style:BorderStyle.SINGLE,size:12,color:NAVY,space:6}}}));
+
+  for(const l of lead){
+    body.push(h2(l.title));
+    for(const x of l.items)body.push(P([run(x.text,{size:21})],{spacing:{after:60},...(x.li?{bullet:{level:0}}:{})}));
+  }
+  body.push(h2(R.projectsTitle));
+  for(const g of R.groups){
+    body.push(right([run(g.org,{bold:true,size:26,color:'1D2230'})],g.dates,{spacing:{before:160},keepNext:true}));
+    body.push(P([run(g.role+' ',{bold:true,size:22,color:'39404D'}),link(R.detailLabel,base+'portfolio/'+g.id+'.html',{underline:undefined,size:20})],{keepNext:true}));
+    for(const k of g.cases){
+      body.push(P([run(k.title,{bold:true,size:24,color:NAVY})],{spacing:{before:200,after:60},keepNext:true}));
+      for(const [lab,txt] of k.rows)body.push(P([run(lab,{bold:true,size:19,color:LABEL}),new TextRun({children:[new Tab()]}),run(txt,{size:21})],
+        {indent:{left:680,hanging:680},tabStops:[{type:TabStopType.LEFT,position:680}],spacing:{after:40}}));
     }
-    const filled=lines.filter(line=>line.length);
-    return filled.length?filled:[[]];
   }
-
-  async function paragraphs(blocks,width=pageWidth) {
-    const result=[];
-    for(const block of blocks) {
-      if(block.box||block.columns) {
-        const columns=block.columns||[block.children], widths=block.widths||[100], hero=block.box==='hero';
-        const cells=[];
-        for(let i=0;i<columns.length;i++) {
-          const cellWidth=Math.round(width*widths[i]/100);
-          const children=await paragraphs(columns[i],cellWidth-(hero?480:87));
-          if(!children.length||children.at(-1) instanceof Table)children.push(new Paragraph({children:[]}));
-          cells.push(new TableCell({children,width:{size:cellWidth,type:WidthType.DXA},
-            margins:hero?{top:195,bottom:195,left:240,right:240}:block.title?{top:204,bottom:44,left:0,right:0}:{top:44,bottom:44,left:0,right:i?0:87},
-            ...(hero?{shading:{fill:'EFF3FC'}}:{})}));
-        }
-        const inner=block.title;
-        result.push(new Table({width:{size:width,type:WidthType.DXA},columnWidths:widths.map(w=>Math.round(width*w/100)),layout:TableLayoutType.FIXED,
-          borders:{top:noBorder,left:noBorder,right:noBorder,insideHorizontal:noBorder,insideVertical:noBorder,bottom:hero||inner?noBorder:rule},
-          rows:[new TableRow({cantSplit:true,children:cells})]}));
-        continue;
-      }
-      const style=block.style, heading=['name','h1','h2','h3','h3big','h4'].includes(style);
-      const size=block.note?SIZE.note:(SIZE[style]||SIZE.body);
-      const color=style==='period'?COLOR.muted:style==='h4'||style==='h2'||style==='h1'||style==='name'?COLOR.accent:heading?COLOR.text:block.note||style==='role'?COLOR.muted:COLOR.text;
-      const lines=await contents(block,size,color,heading);
-      const children=lines.flatMap((line,i)=>i?[new TextRun({break:1}),...line]:line);
-      const spacing={
-        h1:{before:75,after:75},name:{before:0,after:0},role:{before:0,after:90},
-        h2:{before:240,after:135},h3:{before:0,after:0},h3big:{before:0,after:0},h4:{before:105,after:45},
-        links:{before:75,after:0},li:{before:0,after:75},
-      }[style]||(block.note?{before:0,after:60}:{before:0,after:0});
-      result.push(new Paragraph({children,keepNext:heading||block.title,pageBreakBefore:!!block.pageBreak,...(block.align==='right'?{alignment:AlignmentType.RIGHT}:{}),
-        spacing:{...spacing,line:lineFor(size,lang)},
-        ...(style==='li'&&!block.plain?{bullet:{level:0},indent:{left:195,hanging:195}}:{}),
-        ...(block.indent?{indent:{left:195}}:{}),
-        ...(style==='h2'?{border:{bottom:{style:BorderStyle.SINGLE,size:12,color:'6A80BD',space:4}}}:{})}));
-    }
-    return result;
+  body.push(h2(R.extrasTitle));
+  for(const x of R.extras){
+    body.push(right([run(x.title,{bold:true,size:22,color:NAVY})],x.badge,{keepNext:true}));
+    body.push(P([run(x.desc,{size:21})],{spacing:{after:100}}));
   }
-
-  // Bold the title line of each problem/solution/result item so it reads as a sub-heading.
-  for(const block of blocks)if(block.style==='li'&&block.runs.some(r=>r.label)&&!block.runs[0].label){
-    const cut=block.runs.findIndex(r=>r.text?.includes('\n'));
-    for(let i=0;i<=cut;i++)if(i<cut||!block.runs[i].label)block.runs[i]={...block.runs[i],bold:true};
+  body.push(h2(R.skillsTitle));
+  for(const s of R.skills)body.push(P([run(s.category+'  ',{bold:true,size:21,color:NAVY}),run(s.items,{size:21})]));
+  body.push(h2(R.educationTitle));
+  for(const e of R.education){
+    body.push(right([run(e.title,{bold:true,size:21}),run(' '+e.org,{size:21})],e.year,{keepNext:true}));
+    if(e.description)body.push(P([run(e.description,{size:21,color:'5C6574'})]));
   }
+  body.push(h2(R.certificationsTitle));
+  for(const c of R.certifications)body.push(right([run(c.title,{size:21}),run(' '+c.org,{size:21,color:'5C6574'})],c.year));
+  body.push(h2(R.awardsTitle));
+  for(const a of R.awards)body.push(P([run(a,{size:21})]));
 
-  const footer=new Footer({children:[new Paragraph({tabStops:[{type:TabStopType.RIGHT,position:pageWidth}],children:[
-    run(name+' | AI Engineer / Backend Engineer',{size:12,color:'7D8DA3'}),new TextRun({children:[new Tab()]}),
-    new TextRun({children:[PageNumber.CURRENT,' / ',PageNumber.TOTAL_PAGES],size:12,color:'7D8DA3'})]})]});
-  const doc=new Document({creator:name,title:name+(lang==='en'?' Resume':' 이력서'),
-    styles:{default:{document:{run:{font:{ascii:'Malgun Gothic',hAnsi:'Malgun Gothic',eastAsia:'Malgun Gothic',cs:'Malgun Gothic'},size:SIZE.body,color:COLOR.text,language:{value:lang==='en'?'en-US':'ko-KR',eastAsia:'ko-KR'}},paragraph:{spacing:{after:0,line:LINE}}}}},
-    sections:[{properties:{page:{size:{width:11906,height:16838},margin:{top:737,bottom:907,left:794,right:794,footer:454}}},
-      footers:{default:footer},children:await paragraphs(blocks)}]});
+  const footer=new Footer({children:[new Paragraph({tabStops:[{type:TabStopType.RIGHT,position:RIGHT}],children:[
+    new TextRun({text:R.name+' | '+R.role,size:16,color:'7D8DA3'}),new TextRun({children:[new Tab()]}),
+    new TextRun({children:[PageNumber.CURRENT,' / ',PageNumber.TOTAL_PAGES],size:16,color:'7D8DA3'})]})]});
+  const doc=new Document({creator:R.name,title:R.name+(lang==='en'?' Resume':' 이력서'),
+    styles:{default:{document:{run:{font:{ascii:'Malgun Gothic',hAnsi:'Malgun Gothic',eastAsia:'Malgun Gothic',cs:'Malgun Gothic'},size:21,color:INK,
+      language:{value:lang==='en'?'en-US':'ko-KR',eastAsia:'ko-KR'}},paragraph:{spacing:{line:312}}}}},
+    sections:[{properties:{page:{size:{width:11906,height:16838},margin:{top:737,bottom:850,left:794,right:794,footer:454}}},footers:{default:footer},children:body}]});
   await writeFile(dir+'/resume.docx',await Packer.toBuffer(doc));
-  console.log(`Built editable ${dir}/resume.docx in reading order (projects → skills).`);
+  console.log(`Built editable ${dir}/resume.docx from the resume data.`);
 }

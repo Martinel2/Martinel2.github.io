@@ -823,183 +823,264 @@
       "description": "Human decisions, independent review and unfinished issues across five repositories."
     }
   ],
-  "resume": [
-    {
-      "title": "Introduction",
-      "fields": {
-        "text1": "RESUME / JAEHYEONG KIM",
-        "text2": "I build services that use AI",
-        "text3": "to make people’s lives better.",
-        "text4": "AI Engineer | Backend Engineer",
-        "text5": "I enjoy taking a deep dive into problems.",
-        "text6": "I lead the AI work on Fruition, a team-built, LLM Wiki-based knowledge workspace. I have designed evaluation, approval and rollback so AI does not answer from wrong evidence or change users' documents on its own. On evaluation sets I wrote and reviewed with my team, I raised RAG answer accuracy from 71.7% to 93.0% and AI document-editing success from 85.6% to 88.9%.",
-        "text7": "kkuldangi2@gmail.com",
-        "text8": "GitHub ↗",
-        "text9": "Blog ↗",
-        "text10": "Download resume PDF ↓",
-        "text131": "Download resume Word ↓"
-      }
+  "resume": {
+    "name": "Jaehyeong Kim",
+    "role": "AI Engineer",
+    "tagline": [
+      "I build services that use AI",
+      "to make people’s lives better."
+    ],
+    "about": [
+      "I enjoy taking a deep dive into problems.",
+      "I lead the AI work on Fruition, a team-built, LLM Wiki-based knowledge workspace. I have designed evaluation, approval and rollback so AI does not answer from wrong evidence or change users' documents on its own. On evaluation sets I wrote and reviewed with my team, I raised RAG answer accuracy from 71.7% to 93.0% and AI document-editing success from 85.6% to 88.9%."
+    ],
+    "links": {
+      "portfolio": "Portfolio",
+      "github": "GitHub",
+      "blog": "Blog",
+      "linkedin": "LinkedIn"
     },
-    {
-      "title": "Highlights",
-      "fields": {
-        "text11": "Highlights ",
-        "text12": "01 / PROFILE",
-        "text13": "Improving RAG evidence selection: answer accuracy 71.7% → 93.0%, evidence sufficiency 70.0% → 95.4% (100 questions × 3 runs)",
-        "text14": "I thought wrong evidence makes the whole answer untrustworthy, so I replaced evidence selection with Jev. At adoption, GPT cost about 2.5× more and tuning search weights kept scores flat. I later re-evaluated on a set I wrote and reviewed with my team, fixed a request-batching bug and cut candidates from 300 to 200.",
-        "text15": "Designing the agent execution environment: user-defined skills behind approval",
-        "text16": "Users repeat different tasks, so I let them define their own Skills. I judged that users can't trust AI that changes documents freely, so code checks permissions and scope, and changes apply only after approval. Code checks missed omitted requests, so drafts get a semantic evaluation and one rewrite at most.",
-        "text17": "Building data pipelines: 96.1% body text and 99.3% table cells restored across 15 PDFs; drug conversion cost about 94% below the $200 estimate ($11.18 spent)",
-        "text18": "Broken tables and equations lose the figures answers rely on, so I used AnyDoc for body text and read table and equation regions separately. I split drug information into sentence blocks and consolidated duplicates, reducing the 2025 dataset from about 1GB to 326MB. Since conversion did not need real-time responses, Batch API, priced 50% below the standard API at the time, kept about 44,000 records within budget."
+    "pdfLabel": "Download resume PDF ↓",
+    "docxLabel": "Download resume Word ↓",
+    "projectsTitle": "Projects",
+    "detailLabel": "Portfolio details",
+    "groups": [
+      {
+        "id": "fruition",
+        "org": "Fruition, an LLM Wiki-based AI knowledge workspace / AI SW Maestro 17th cohort",
+        "role": "Team project of 3 developers + a designer | AI lead",
+        "dates": "2026.04 - 2026.12.10",
+        "cases": [
+          {
+            "title": "RAG that turns stored documents into knowledge: measuring and improving quality",
+            "rows": [
+              [
+                "Problem",
+                "Standard RAG, which picks the top 8 evidence passages, missed the expected evidence for 76 of 90 questions."
+              ],
+              [
+                "Judgment",
+                "I judged the bottleneck to be the embedding model failing to tell synonyms apart during selection."
+              ],
+              [
+                "Choice",
+                "Standard RAG now only filters evidence candidates, and the decision model Jev picks the final evidence."
+              ],
+              [
+                "Result",
+                "On 100 questions I reviewed myself, answer accuracy rose from 71.7% to 93.0%. Responses slowed from 0.23 s to 1.14 s, but I judged accuracy to be the core of the product and adopted Jev despite the slower response."
+              ]
+            ]
+          },
+          {
+            "title": "Per-request model routing: performance versus cost",
+            "rows": [
+              [
+                "Problem",
+                "Misrouting sent questions into document editing, and routing alone took 9 seconds."
+              ],
+              [
+                "Judgment",
+                "I replaced GPT-5-nano writing the conditions itself with Jev choosing from fixed options, and compared both on the same 98 requests."
+              ],
+              [
+                "Result",
+                "The old method got 77 of 98 right and Jev got 81. Median decision time fell from 8.967 s to 0.658 s, and the API cost for 100 questions from about $0.0891 to $0.0408."
+              ],
+              [
+                "Decision",
+                "Jev kept accuracy similar while cutting time and cost sharply, so I made it the routing model."
+              ]
+            ]
+          },
+          {
+            "title": "Agent Skills defined without code, with human-in-the-loop",
+            "rows": [
+              [
+                "Problem",
+                "Building every repeated task users wanted as a feature was impossible, and AI editing documents at will could frustrate users."
+              ],
+              [
+                "Judgment",
+                "Users define Skills in natural language without code, and code handles masking of sensitive data. For prompt injection, I referred to the published Claude system prompt so risky requests are refused, and code or instructions inside documents are read as plain text, never executed. Edits apply only after the user approves."
+              ],
+              [
+                "Result",
+                "I confirmed the answer that masked sensitive data cannot be read by the AI, the responses to prompt injection attempts, and that documents do not change before approval."
+              ]
+            ]
+          },
+          {
+            "title": "MCP that connects external Agents to Fruition’s knowledge and delegates permissions",
+            "rows": [
+              [
+                "Problem",
+                "During the alpha test I designed a per-token pricing model, but API costs were too high to win payments from users."
+              ],
+              [
+                "Judgment",
+                "The survey showed many users already subscribe to AI tools, so I judged that letting them use their subscribed models through MCP while Fruition charges a fee would benefit both sides, and designed and built MCP."
+              ],
+              [
+                "Result",
+                "Codex and Claude Code can search Fruition’s documents and Wiki and even propose edits. Each connection binds the user, workspace and allowed scope, and I confirmed that a revoked connection is blocked with 403."
+              ]
+            ]
+          },
+          {
+            "title": "Coding agent orchestration and cross-checking",
+            "rows": [
+              [
+                "Problem",
+                "While fixing a hardcoded AI model, I had Claude find everything similar to review, which surfaced dozens of problems across 5 repositories, each with several possible fixes."
+              ],
+              [
+                "Judgment",
+                "Agents laid out trade-offs and implemented; I made the judgments and decisions. A multi-agent setup verified changed code right away, and verification ran in a new session that only judged whether the work matched the plan."
+              ],
+              [
+                "Result",
+                "I opened 78 PRs in 3 days, and all were merged."
+              ]
+            ]
+          },
+          {
+            "title": "Finding the right number of Kubernetes workers",
+            "rows": [
+              [
+                "Problem",
+                "Running the AI pipeline that turns documents into a Wiki sequentially made later documents wait for external AI responses, and adding workers also increased API calls and memory."
+              ],
+              [
+                "Judgment",
+                "I split the work with Kafka, which can re-read messages and keeps order within a key, so AI jobs run asynchronously while duplicates are blocked by ID."
+              ],
+              [
+                "Result",
+                "Going from 1 to 4 workers cut analysis time from 282.11 s to 73.89 s. Concurrent AI requests inside a worker and embedding on the same GPU got slower the more I added, so I set separate scaling criteria per step."
+              ]
+            ]
+          },
+          {
+            "title": "Cancelling and recovering AI tasks",
+            "rows": [
+              [
+                "Problem",
+                "An AI task saves documents, folders, Wiki pages and Skills several times between model calls, so stopping execution left part of a cancelled task behind. Yet a run spanning the core DB, AI DB and object storage could not be wrapped in one long transaction."
+              ],
+              [
+                "Judgment",
+                "I decided to revert even committed changes. Asking the model for the reverse operation could not guarantee original values, approval scope or idempotency, and locking the whole service in one transaction could not survive long runs and failures across the model, HTTP and object storage, so I rejected both."
+              ],
+              [
+                "Result",
+                "In tests on real workers, with model calls set to fail during recovery, cancellation finished without calling the model or gateway once. Cancelling a task that organizes 2 folders and 6 documents at each of 9 points restored the original state, and a new worker continued recovery with the same idempotency key after a lost response."
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "pilltip",
+        "org": "Pilltip, a personalized AI medication-safety service / Pusan National University capstone",
+        "role": "Team project of 3 developers + a designer | Java and Spring Boot backend and AI features",
+        "dates": "2025.03 - 2025.12",
+        "cases": [
+          {
+            "title": "Reframing a cost problem as data cleaning: 94% below the estimate",
+            "rows": [
+              [
+                "Problem",
+                "Rewriting 44,000 drug records into plain language with an LLM was estimated at about $200, over budget."
+              ],
+              [
+                "Judgment",
+                "Analysis of 100 source records showed about 70% duplication, so I treated each sentence as a block: sentences with the same meaning were marked as duplicates, keyed and removed, and the converted sentences were mapped back by key. Since real-time processing was unnecessary and the goal was saving cost, I converted every drug with the Batch API, 50% cheaper than the standard API."
+              ],
+              [
+                "Result",
+                "Data shrank from 1 GB to 326 MB, and processing estimated at $200 was completed for an actual $11.18."
+              ]
+            ]
+          },
+          {
+            "title": "A dietary supplement recommendation chatbot built from feedback",
+            "rows": [
+              [
+                "Problem",
+                "While running our exhibition booth, we were asked to add dietary supplements to the app. Unlike drug data, public supplement data was fragmented, and the same ingredient was sometimes named differently."
+              ],
+              [
+                "Judgment",
+                "Using AI, I hardcoded mappings that unify every supplement ingredient name in the data and normalized the fragmented data on that basis. I also used AI to express each benefit in varied wording and embedded it for search."
+              ],
+              [
+                "Result",
+                "When a user types “my eyes feel blurry”, the chatbot recommends only lutein supplements that are safe for that user."
+              ]
+            ]
+          }
+        ]
       }
-    },
-    {
-      "title": "Projects",
-      "fields": {
-        "text19": "Projects ",
-        "text20": "02 / PROJECTS",
-        "text21": "Fruition",
-        "text22": "2026.04 ~ Present",
-        "text23": "LLM Wiki-based AI workspace | AI SW Maestro, 17th cohort | Deployed on AWS EKS, alpha testing",
-        "text24": "Team project (3 + designer) / AI lead",
-        "text25": "How it started: a teammate’s pain point with managing documents, refined through design thinking. Saved documents could not be found when needed.\nTeam: me (all AI), 1 backend (Spring backend), 1 frontend & DevOps (frontend, MSA deployment on AWS), external designer, 3 mentors\nIntellectual property: Software copyright registration completed; patent application filed with a provisional specification.",
-        "text114": "PDF → Markdown: 96.1% body text, 99.3% table cells restored",
-        "text115": "Converted uploaded PDFs into Markdown that keeps tables and equations, so they can be searched and cited in answers.",
-        "text26": "PDF → Markdown conversion\nProblem: Broken tables and equations in paper PDFs made the figures behind Wiki pages and answers unusable\nDecision: Repairing only detected damage missed errors, and full AI conversion lacked table/equation accuracy and was costly, so I split processing by content type. Body text uses fast AnyDoc extraction; repair moved from an sLLM to commercial LLM APIs to avoid GPU server costs\nSolution: Extracted body text with AnyDoc and repaired only garbled parts with AI, read table/equation regions separately, and kept original figures\nResult: In the adoption experiment (4 PDFs), restoration rose from about 45% with Docling alone to about 90%. Across 15 PDFs by type × 3 runs: headings 97.6%, body text 96.1%, table cells 99.3%, equations 100%, images 91.3% (AI-judged)",
-        "text28": "Parallel Wiki generation\nProblem: Documents were processed one at a time, so large uploads waited long for their Wiki.\nDecision: Compared worker count, concurrent requests and GPU parallelism. More workers helped while waiting on external AI; more concurrent requests and GPU parallelism were slower, so I dropped them. Accepted about 4x memory, since EKS can spread services.\nSolution: Distributed per-document jobs over Kafka with up to 4 workers.\nResult: Analysis of 4 documents fell from 282.11s to 73.89s (about 74% faster).",
-        "text116": "Improving retrieval for grounded AI answers",
-        "text117": "Finds the document evidence AI answers need, and attaches none to questions the documents cannot answer.",
-        "text27": "Evidence selection for RAG\nProblem: In a service that answers from documents, retrieval missed evidence and attached evidence to unanswerable questions, undermining trust.\nDecision: At adoption, GPT selection cost about 2.5x and took longer; tuning weights and RRF gave similar scores across settings, so I adopted Jev, which picks only from fixed options and had first been validated on request routing (77 → 81 of 98 correct).\nSolution: Two stages: BGE-M3, the best Korean semantic model in benchmarks, and BM25 for exact terms gather candidates and Jev picks the final evidence. Compared on identical candidates with blind cross-grading, then cut candidates to 300 and compared 4, 6, 8 and 10 parallel batches, choosing 8 with no accuracy difference. Later cut candidates to 200 after re-comparing on the real-world set.\nResult: On 100 questions × 3 runs that I wrote and reviewed with my team, answer accuracy 71.7% → 93.0% and evidence sufficiency 70.0% → 95.4%. Wrong answers 7.3% → 1.0% against plain RAG. Average end-to-end response 5.5s (plain RAG 4.3s).",
-        "text118": "User-defined agent Skills with approval-based execution",
-        "text119": "Recurring tasks are saved and reused as Skills, and AI-made changes apply only after the user approves them.",
-        "text29": "User-defined task instructions (Skills)\nProblem: Recurring tasks differ by user, so they cannot all be built as features, and AI edits arrived with parts of the request missing, leaving repeatable work to chance\nDecision: AI drafts instructions, code checks permissions and scope, and the user decides publishing and applying. Code format checks missed omitted requests, so I added LLM semantic evaluation\nSolution: Authoring, review and publishing of natural-language instructions with checks against bypassing permission or approval; preview and separate approval before changes; semantic evaluation with at most one rewrite. Generation, evaluation and rewrite run as LangGraph nodes for step-level tracing, and published Skills are stored as immutable versions in PostgreSQL\nResult: Documents stayed unchanged before approval",
-        "text30": "Jev-based request routing\nProblem: Misrouting a question as an edit led to the wrong action, directly hurting the service's reliability.\nDecision: Jev picks only from fixed options, which fits routing; as a newly released model it was validated first on low-risk routing.\nSolution: Applied Jev to choose task type and conditions, and compared it with the existing approach and GPT-5-nano on the same 98 requests.\nResult: Fully correct decisions rose from 77 to 81 (GPT-5-nano 63); median decision time fell from 8.967s to 0.658s.",
-        "text143": "Conversation memory and edit input scope\nProblem: Sending whole conversations and documents to the model raises cost and latency, adding to users' prepaid cost and waiting time.\nDecision: Recent turns need full text while older ones need only the gist; edits need only the target and its surroundings.\nSolution: Keep the last six messages verbatim with a rolling summary for older ones, and send only the target lines plus context for edits.\nResult: Edit input for a 1,000-line document cut to 5.58% of the source.",
-        "text144": "Bounding the edit input\nProblem: sending a whole document to the model drives up cost and latency.\nSolution: send only the target line range plus surrounding context, and reject ranges that straddle a table or code-block boundary. A benchmark tracks input size against the source and average and p95 time.",
-        "text35": "MSA: Splitting only by feature would keep DB load the same while adding hops, so I proposed splitting by data ownership and co-designed boundaries and communication with teammates and mentors.",
-        "text36": "All figures are from internal evaluations.",
-        "text37": "PDF conversion ↗",
-        "text39": "Parallel document processing ↗",
-        "text40": "Agent execution environment ↗",
-        "text43": "RAG evidence selection ↗",
-        "text44": "Pilltip",
-        "text45": "2025.03 ~ 2025.12",
-        "text46": "Personalized AI medication service | Pusan National University capstone",
-        "text47": "Team project (3 + designer) / Core backend, data preparation",
-        "text112": "How it started: drug information is scattered, making it hard to check whether a medicine is safe for your current health condition.\nTeam: me (backend & AI), 1 Android (Kotlin app), 1 backend & security (user DB, login, questionnaires, AES-GCM), designer. The features below are my work.",
-        "text122": "Drug data preparation pipeline",
-        "text123": "Rewrote about 44,000 drug records in plain language, converting each repeated sentence once and reusing it per drug.",
-        "text50": "Problem: Rewriting about 44,000 drug records as-is was estimated at about $200 in API costs, more than the budget allowed for covering every drug.\nDecision: Instead of covering fewer drugs, convert each repeated sentence once. The job needed no real-time response, so Batch API traded waiting time for lower cost.\nSolution: Split text into sentence blocks, merged exact duplicates, converted via GPT Batch API and mapped results back to each drug. Reproduced in 2026 with PySpark, which parallelizes across cores and scales out, to measure each step.",
-        "text51": "Result: Actual API spending was $11.18 versus about $200 estimated (about 94% below the estimate); the 2025 dataset was reduced from about 1GB to 326MB. In the reproduction, exact deduplication cut text from 744MB to 44.1MB (−94.1%).",
-        "text54": "Estimated cost versus actual spending; preprocessing labor is excluded.",
-        "text124": "AI medication chatbot using health profiles",
-        "text125": "Found drug and medication information from natural-language symptoms. Evaluated health profiles internally, separately from information sent to external AI.",
-        "text52": "Problem: Users checking whether a drug is safe describe symptoms in different words from drug indications, and the health data needed for personalization could not go to external AI.\nDecision: A synonym dictionary had too many overlapping symptoms, so I used semantic search; filtering the profile had too many cases, so profile decisions stay internal. Weaviate was chosen as lighter than Milvus, and Spring AI ran orchestration on the Spring backend to avoid a separate Python container.\nSolution: Weaviate semantic search and AI orchestration route to drug search, medication risk and dosage paths; pregnancy, current medications and underlying conditions are judged in internal code.\nResult: Personalized symptom-based search with those profile fields excluded from external LLM inputs.",
-        "text126": "Backend feature implementation",
-        "text127": "Built server features for drug search, risk information, medication reminders and logs, and family profiles. Integrated with teammates responsible for the mobile app, users and security.",
-        "text48": "Designed the drug database on Java and Spring Boot with search, autocomplete and DUR risk display. Elasticsearch handles partial matching and autocomplete and Redis caches repeated risk lookups, cutting search responses from 5-7s to 0.8s on average.",
-        "text49": "Built FCM medication reminders and logs, deep-link friend invites and family profile switching, and kept API docs, meeting notes and ADRs in Notion to share decisions.",
-        "text137": "Feature work driven by feedback from live exhibitions",
-        "text138": "We ran the booth twice as Pusan National University’s representative exhibition team, demonstrating to more than 100 visitors and collecting 10 pieces of feedback. Most asked for health supplements, so I built that within the data we already had.",
-        "text139": "Health-supplement support\nProblem: Most feedback at the first exhibition asked to check health supplements too, but the service covered only drugs.\nDecision: Turn the request into the next scope right away, but support only the data we had and avoid implying full coverage.\nSolution: Extended search and autocomplete, caution and interaction info, medication reminders and logs, and chatbot answers to health supplements.\nResult: Exhibition requests became shipped features, without full coverage like drugs.",
-        "text140": "Feedback I could not act on\nSomeone pointed out that the service would be better off running in containers, but I could not adopt it inside the capstone timeline. On Fruition I designed the AI services around a container-based deployment from the start.",
-        "text55": "Data pipeline case study ↗",
-        "text56": "Personalization case study ↗",
-        "text145": "LLM tracing and sensitive-data boundaries\nProblem: When quality dropped, I could not see whether generation, evaluation or retry went wrong, and tracing could send user documents and personal data out.\nDecision: Make the quality loop visible step by step, and keep the agent that touches user documents out of tracing.\nSolution: Rebuilt the evaluation loop as a LangGraph graph traced per node; disabled tracing for the agent graph and kept raw text out of saved state; masked numeric personal data in prompt logs.",
-        "text146": "Execution reliability and LLM tracing",
-        "text147": "Undoing changes an AI task already saved, and making each stage of a run inspectable. Execution spans several stores and cannot be one transaction, so recovery runs as reverse actions.",
-        "text148": "AI job cancellation and rollback\nProblem: AI jobs save documents, folders and Wiki pages several times between model calls; if cancelling leaves partial changes, users cannot trust AI with work.\nDecision: Asking the model to undo cannot guarantee original values and a global lock cannot handle failures, so I chose reverse rollback from execution records.\nSolution: Save the cancel state first to block later writes, then restore children first in reverse order; rebuild merged Wiki pages without the cancelled contribution.\nResult: Cancelling a two-folder, six-document task at each of 9 points restored the original state, with no model calls during rollback.",
-        "text149": "Recovering without erasing other tasks’ contributions\nProblem: a concept page merges contributions from several documents, so an older snapshot would erase valid contributions from other documents.\nSolution: record operations, revisions and per-document contributions append-only, then reassemble with only the target contribution excluded. Soft delete instead of removal keeps the audit trail.",
-        "text150": "MCP integration with external AI tools",
-        "text151": "In the alpha test, token-usage pricing was too expensive for users, and 8 of 16 survey respondents were paying 30,000 KRW or more a month for AI services. So I connected the Codex and Claude Code that users already subscribe to with Fruition retrieval and change proposals, and Fruition takes a fee. Web approval and the existing storage paths stay as they were.",
-        "text152": "Problem: External AI needed access to documents and Wiki pages without authority to approve its own changes.\nDecision: External models draft proposals; Fruition controls authorization, approval, storage and billing.\nSolution: OAuth connections scoped to users and workspaces, source-version and permission checks before writes, explicit web approval and receipts for duplicate-safe billing.\nResult: Verified ingestion, search, edit proposals, web approval, storage and rereading in both real clients using synthetic documents. Confirmed 21 tools in Claude Code and blocked Codex access after disconnection. Expanded PDF, Skill and meeting flows still require full native verification.",
-        "text153": "MCP integration case study ↗",
-        "text154": "Coding agent orchestration across five repositories",
-        "text155": "Agents investigated and implemented; I chose trade-offs, set scope and verified review findings.",
-        "text156": "Problem: Cross-service changes risked partial implementation and reviews against outdated decisions.\nSolution: Grouped work by scope, recorded decisions and reviewed from a fresh session; required file and line evidence for findings.\nResult: Created 78 PRs across five repositories over two days. The final plan-alignment snapshot was 43/45; found 7 unfinished issues among 31 closed and reopened them. Figures are from my retrospective; created PRs are not merged or deployed features.",
-        "text157": "Coding agent case study ↗"
+    ],
+    "extrasTitle": "Other projects and activities",
+    "extras": [
+      {
+        "title": "Contributor to Rhwp, an open-source HWP/HWPX viewer",
+        "badge": "2026.06",
+        "desc": "Automated the whole flow with Claude Code, from analyzing improvements and planning to code changes, commits, pushes and PRs. 7 PRs merged."
+      },
+      {
+        "title": "Weekly automated check of AI model prices and deprecations",
+        "badge": "2026.10",
+        "desc": "A GitHub Actions workflow that checks model prices and provider deprecation schedules every week and reports differences as GitHub issues."
+      },
+      {
+        "title": "APPTIVE, an IT development club at Pusan National University",
+        "badge": "2025.03 - 2026.01",
+        "desc": "After building a Spring backend and deploying it on AWS EC2 as a mentee, I became a mentor: revised the curriculum around backend fundamentals, prepared mentoring material and ran code reviews."
       }
-    },
-    {
-      "title": "Skills",
-      "fields": {
-        "text57": "Skills ",
-        "text58": "03 / SKILLS",
-        "text59": "Backend",
-        "text60": "Java, Spring Boot, Python",
-        "text61": "AI ",
-        "text62": "&",
-        "text63": " Search",
-        "text64": "LangChain, LangGraph, Spring AI, RAG, LLM Evaluation, Prompt injection defense, MCP, OAuth",
-        "text65": "LangSmith, Elasticsearch, Weaviate",
-        "text66": "Data ",
-        "text67": "&",
-        "text68": " Infra",
-        "text69": "MySQL, PostgreSQL, Redis, Kafka",
-        "text70": "Docker, Docker Compose, GitHub Actions"
+    ],
+    "skillsTitle": "Skills",
+    "skills": [
+      {
+        "category": "AI",
+        "items": "LangChain, LangGraph, Spring AI, RAG, MCP, LLM Evaluation, LangSmith"
+      },
+      {
+        "category": "Backend",
+        "items": "Python, FastAPI, Java, Spring Boot"
+      },
+      {
+        "category": "Data, Infra",
+        "items": "PostgreSQL, Redis, Kafka, Elasticsearch, Weaviate, AWS (EC2, EKS, S3, CloudWatch), Docker, GitHub Actions"
       }
-    },
-    {
-      "title": "Activities & contributions",
-      "fields": {
-        "text71": "Activities & contributions ",
-        "text72": "04 / EXPERIENCE",
-        "text73": "2026.06 ~ 2026.06",
-        "text74": "Rhwp open-source contributions",
-        "text75": "Gave Claude Code a work plan and contribution rules to automate the flow from issue analysis to PR, including HWP/HWPX save-error fixes; 7 PRs merged. Listed as a contributor.",
-        "text76": "PR #1213 | Merged ↗",
-        "text77": "PR #1351 | Submitted ↗",
-        "text78": "2025.03 ~ 2026.01",
-        "text79": "APPTIVE, Pusan National University",
-        "text80": "Backend mentee and mentor. Led 6 mentoring and code-review sessions for 12 mentees. Helped revise the curriculum to strengthen HTTP, Servlet, REST API and database foundations.",
-        "text130": "APPTIVE Backend Mentor Merit Award | 2026.01.09",
-        "text81": "2025.11 / 2025.07",
-        "text82": "SK AI SUMMIT, K-ICT WEEK in Busan",
-        "text83": "Represented Pusan National University at the Pilltip booth, demonstrating the service to more than 100 visitors and answering technical questions. Most of the 10 pieces of feedback asked for health supplement coverage.",
-        "text132": "2022.02 ~ 2025.07",
-        "text133": "945-day Baekjoon problem-solving streak",
-        "text134": "Aiming for one problem a day, I reached a longest streak of 945 consecutive days on solved.ac. 1,659 problems solved, solved.ac Platinum IV. Solutions are recorded in a GitHub repository.",
-        "text136": "Baekjoon solutions repository ↗"
+    ],
+    "educationTitle": "Education",
+    "education": [
+      {
+        "title": "B.S., School of Computer Science and Engineering, College of Information and Biomedical Engineering",
+        "org": "Pusan National University",
+        "year": "2026.02",
+        "description": "GPA 4.12 / 4.5 (Transfer)"
       }
-    },
-    {
-      "title": "Awards",
-      "fields": {
-        "text84": "Awards ",
-        "text85": "05 / AWARDS",
-        "text86": "2025.10",
-        "text87": "Capstone Design Gold Award",
-        "text88": "Software & AI division / College of Information and Biomedical Engineering, Pusan National University",
-        "text89": "2025.09",
-        "text90": "Busan DATA WEEK Top Excellence Award",
-        "text91": "Data utilization case competition / Busan Techno Park",
-        "text92": "2025.09",
-        "text93": "AI LAUNCH Career School Startup Hackathon Encouragement Award",
-        "text94": "KRYPTON X x Root Impact x Google.org",
-        "text95": "2025.08",
-        "text96": "SW University Digital Competition Sponsor Award",
-        "text97": "SW University Council"
+    ],
+    "certificationsTitle": "Certification",
+    "certifications": [
+      {
+        "title": "Engineer Information Processing",
+        "org": "HRD Korea",
+        "year": "2025.09"
       }
-    },
-    {
-      "title": "Education & certification",
-      "fields": {
-        "text98": "Education & certification ",
-        "text99": "06 / EDUCATION",
-        "text100": "2022.02 ~ 2026.02 (Transfer)",
-        "text101": "Pusan National University",
-        "text102": "GPA 4.12 / 4.5",
-        "text103": "2019.03 ~ 2022.02 (Withdrew)",
-        "text104": "Daegu University",
-        "text105": "GPA 4.2 / 4.5",
-        "text106": "2025.09",
-        "text107": "Engineer Information Processing",
-        "text108": "Human Resources Development Service of Korea",
-        "text109": "Want to follow my thinking in more detail?",
-        "text110": "Follow my thinking ↗"
-      }
-    }
-  ],
+    ],
+    "awardsTitle": "Awards",
+    "awards": [
+      "Capstone Design Gold Award, College of Information and Biomedical Engineering, Pusan National University (2025.10)",
+      "Busan DATA WEEK Top Excellence Award, Busan Techno Park (2025.09)",
+      "AI LAUNCH Career School Startup Hackathon Encouragement Award, KRYPTON X x Root Impact x Google.org (2025.09)",
+      "SW University Digital Competition Sponsor Award, SW University Council (2025.08)"
+    ]
+  },
   "overview": {
     "eyebrow": "Retrieval, execution and data processing for LLM services",
     "title": "I build services that use AI\nto make people’s lives better.",

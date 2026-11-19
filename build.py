@@ -26,11 +26,6 @@ DATA = json.loads((ROOT / "content.json").read_text())
 CONTENT_VERSION = hashlib.sha256((ROOT / "content.json").read_bytes() + (ROOT / "templates/resume-pdf.css").read_bytes() + (ROOT / "scripts/build-resume-pdf.mjs").read_bytes() + (ROOT / "scripts/build-resume-docx.mjs").read_bytes()).hexdigest()[:10]
 
 
-def resume_text(value):
-    text = escape(value)
-    return re.sub(r'(?m)^(문제|해결|성과|판단|Problem|Solution|Result|Decision):[ \t]*', r'<strong class="field-label" data-label="\1">\1:</strong> ', text)
-
-
 # Layered hills that close the dark sky band at the top of home and portfolio.
 HILLS = ('<svg class="hills" viewBox="0 0 1440 200" preserveAspectRatio="none" aria-hidden="true" focusable="false">'
          '<path class="hill-back" d="M0 92C120 40 250 30 380 70S600 140 760 96 1010 18 1170 52 1360 96 1440 70V200H0Z"/>'
@@ -341,41 +336,62 @@ def portfolio():
         (SITE / 'portfolio' / f'{c["id"]}.html').write_text(page(c['short'], c['summary'], case_page(c, i, cases[i - 2] if i > 1 else None, cases[i] if i < len(cases) else None), path=f'portfolio/{c["id"]}.html', body_class='case-page'))
 
 
+def resume_parts():
+    """이력서 데이터(content.json의 resume)를 당근 이력서와 같은 사례형 마크업으로 만든다."""
+    R = DATA['resume']
+    e = escape
+    sep = ' <span class="cv-sep">|</span> '
+    contacts = sep.join([f'<a href="mailto:kkuldangi2@gmail.com">kkuldangi2@gmail.com</a>', f'<a href="portfolio.html">{e(R["links"]["portfolio"])}</a>',
+                         f'<a href="https://github.com/Martinel2">{e(R["links"]["github"])}</a>', f'<a href="https://velog.io/@kkuldangi3/posts">{e(R["links"]["blog"])}</a>',
+                         f'<a href="https://www.linkedin.com/in/%EC%9E%AC%ED%98%95-%EA%B9%80-b75920345/">{e(R["links"]["linkedin"])}</a>'])
+    header = (f'<div class="resume-hero cv-header"><div><h1>{e(R["name"])}</h1><p class="cv-title">{e(R["role"])}</p><p class="cv-contacts">{contacts}</p></div>'
+              f'<div class="cv-actions"><a class="button resume-download" href="resume.pdf" download="김재형_이력서.pdf">{e(R["pdfLabel"])}</a>'
+              f'<a class="button resume-download" href="resume.docx" download="김재형_이력서.docx">{e(R["docxLabel"])}</a></div></div>')
+    case = lambda k: f'<div class="cv-case"><h4>{e(k["title"])}</h4><dl class="cv-rows">' + ''.join(f'<dt>{e(lab)}</dt><dd>{e(txt)}</dd>' for lab, txt in k['rows']) + '</dl></div>'
+    groups = ''.join(f'<article class="resume-project cv-group" id="{g["id"]}"><div class="cv-job"><h3>{e(g["org"])}</h3><span>{e(g["dates"])}</span></div>'
+                     f'<p class="cv-role">{e(g["role"])} <a class="cv-detail" href="portfolio/{g["id"]}.html">{e(R["detailLabel"])}</a></p>' + ''.join(case(k) for k in g['cases']) + '</article>' for g in R['groups'])
+    section = lambda title, body, attrs='': f'<section class="resume-section"{attrs}><h2>{e(title)}</h2>{body}</section>'
+    extras = section(R['extrasTitle'], ''.join(f'<div class="cv-extra"><p><strong>{e(x["title"])}</strong><span>{e(x["badge"])}</span></p><p>{e(x["desc"])}</p></div>' for x in R['extras']), ' id="activities"')
+    skills = section(R['skillsTitle'], ''.join(f'<p class="cv-line"><strong>{e(x["category"])}</strong> {e(x["items"])}</p>' for x in R['skills']), ' id="skill-list"')
+    education = section(R['educationTitle'], ''.join(f'<div class="cv-edu"><p><strong>{e(x["title"])}</strong> {e(x["org"])}<span>{e(x["year"])}</span></p><p class="cv-muted">{e(x["description"])}</p></div>' for x in R['education']))
+    certs = section(R['certificationsTitle'], ''.join(f'<p class="cv-line">{e(x["title"])} <span class="cv-muted">{e(x["org"])}</span><span>{e(x["year"])}</span></p>' for x in R['certifications']))
+    awards = section(R['awardsTitle'], ''.join(f'<p class="cv-line">{e(a)}</p>' for a in R['awards']))
+    return {'header': header, 'projects': section(R['projectsTitle'], groups, ' id="projects-list"'), 'extras': extras, 'skills': skills,
+            'education': education, 'awards': f'<div class="cv-two">{certs}{awards}</div>'}
+
+
 def resume():
-    fields = {key: value for section in DATA['resume'] for key, value in section['fields'].items()}
-    body = re.sub(r'@@(text\d+)@@', lambda match: resume_text(fields[match[1]]), (ROOT / 'templates/resume.html').read_text())
+    p = resume_parts()
+    body = f'<div class="resume-shell cv">{p["header"]}{p["projects"]}{p["extras"]}{p["skills"]}{p["education"]}{p["awards"]}</div>'
     (SITE / 'resume.html').write_text(page('이력서', '김재형 | AI Engineer / Backend Engineer. 프로젝트, 기술, 오픈소스 기여, 수상과 학력.', body, True))
 
 
 
 def home():
-    fields = {key: value for section in DATA['resume'] for key, value in section['fields'].items()}
-    t = lambda n: escape(fields['text' + str(n)])
+    R = DATA['resume']
+    t = {2: escape(R['tagline'][0]), 3: escape(R['tagline'][1]), 5: escape(R['about'][0]), 6: escape(R['about'][1])}.__getitem__
+    parts = resume_parts()
     projects = ''
     for project in DATA['projects']:
         links = ''.join(f'<a class="text-link" href="{escape(link["url"])}">{escape(link["label"])} ↗</a>' for link in project.get('links', []))
         target = 'resume.html#' + project['name'].lower()
-        role_key = 24 if project['name'] == 'Fruition' else 47
         affiliation = escape(project['affiliation'])
-        role = escape(fields['text' + str(role_key)].split(' / ', 1)[-1])
+        role = escape(next(g['role'] for g in R['groups'] if g['id'] == project['name'].lower()).split(' | ')[-1])
         details = f'<a class="read-more" href="{target}">{home_text("projectLabels", "detailsLabel")}</a>'
         cover = project['cover']
         projects += f'<article class="home-project"><h3><a href="{escape(target)}">{escape(project["name"])}</a></h3><dl class="project-meta"><div><dt>{home_text("projectLabels", "affiliationLabel")}</dt><dd>{affiliation}</dd></div><div><dt>{home_text("projectLabels", "roleLabel")}</dt><dd>{role}</dd></div></dl><p>{escape(project["description"])}</p><a class="project-cover" href="{escape(target)}"><img src="{escape(cover["src"])}" alt="{escape(cover["alt"])}" width="{cover["width"]}" height="{cover["height"]}" loading="lazy"></a><div class="project-links">{links}</div>{details}</article>'
-    resume_body = re.sub(r'@@(text\d+)@@', lambda match: resume_text(fields[match[1]]), (ROOT / 'templates/resume.html').read_text())
+    resume_body = parts['projects']
     dialogs = ''
-    for match in re.finditer(r'<article class="resume-project" id="([^"]+)">.*?</article>', resume_body, re.S):
+    for match in re.finditer(r'<article class="resume-project[^"]*" id="([^"]+)">.*?</article>', resume_body, re.S):
         project_id, article = match[1], match[0]
         article = article.replace('<h3>', f'<h3 id="{project_id}-title">', 1)
         dialogs += f'<dialog class="project-dialog" id="{project_id}-dialog" aria-labelledby="{project_id}-title"><form method="dialog"><button class="button" autofocus>닫기 ×</button></form>{article}</dialog>'
-    sections = re.findall(r'<section class="resume-section".*?</section>', resume_body, re.S)
     # Skills become tag pills in the sidebar, one group per resume row.
-    skill_groups = ''.join(f'<div class="skill-group"><p>{m[1]}</p><div class="tags">' + ''.join(f'<span>{x.strip()}</span>' for x in re.split(r',|<br>', m[2]) if x.strip()) + '</div></div>' for m in re.finditer(r'<strong>(.*?)</strong>\s*<p>(.*?)</p>', sections[2], re.S))
-    skills_title = re.search(r'<h2>(.*?)<span>', sections[2], re.S)[1].strip()
-    skills = f'<section class="side-section" id="skills"><p class="eyebrow">{home_text("sections", "skillsEyebrow")}</p><h2 class="visually-hidden">{skills_title}</h2>{skill_groups}</section>'
+    skill_groups = ''.join(f'<div class="skill-group"><p>{escape(x["category"])}</p><div class="tags">' + ''.join(f'<span>{escape(v.strip())}</span>' for v in re.split(r',(?![^()]*\))', x['items']) if v.strip()) + '</div></div>' for x in R['skills'])
+    skills = f'<section class="side-section" id="skills"><p class="eyebrow">{home_text("sections", "skillsEyebrow")}</p><h2 class="visually-hidden">{escape(R["skillsTitle"])}</h2>{skill_groups}</section>'
     core = [c for c in DATA['cases'] if c['id'] in ('fruition-jev-evidence', 'fruition-agent', 'fruition-document', 'pilltip-data', 'pilltip-personalization')]
     core_list = '<section class="side-section"><p class="eyebrow">핵심 사례</p><ul class="arrow-list">' + ''.join(f'<li><a href="portfolio/{c["id"]}.html">{escape(c["short"])}</a></li>' for c in core) + '</ul></section>'
-    background = ''.join(sections[3:6]).replace('class="resume-section"', 'class="home-section home-background-section"')
-    background = re.sub(r'<h2>(.*?)<span>.*?</span>\s*</h2>', r'<h2>\1</h2>', background, flags=re.S)
+    background = '<div class="cv">' + (parts['extras'] + parts['education'] + parts['awards']).replace('class="resume-section"', 'class="home-section home-background-section"') + '</div>'
     portfolio_html = (SITE / 'portfolio.html').read_text()
     writings = re.search(r'<section class="more-work writings"[^>]*>.*?</section>', portfolio_html, re.S)[0].replace(' id="writings"', '')
     actions = ''
@@ -400,7 +416,7 @@ if __name__ == '__main__':
         LANG = language
         source = ROOT / ('content.en.json' if LANG == 'en' else 'content.json')
         DATA = json.loads(source.read_text())
-        CONTENT_VERSION = hashlib.sha256(source.read_bytes() + (ROOT / 'templates/resume.html').read_bytes() + (ROOT / 'templates/resume-pdf.css').read_bytes() + (ROOT / 'scripts/build-resume-pdf.mjs').read_bytes() + (ROOT / 'scripts/build-resume-docx.mjs').read_bytes() + (ROOT / 'ui.en.json').read_bytes() + (ROOT / 'build.py').read_bytes() + (ROOT / 'site/assets/style.css').read_bytes() + (ROOT / 'scripts/build-portfolio-pdf.mjs').read_bytes() + (ROOT / 'templates/portfolio-deck.css').read_bytes()).hexdigest()[:10]
+        CONTENT_VERSION = hashlib.sha256(source.read_bytes() + (ROOT / 'templates/resume-pdf.css').read_bytes() + (ROOT / 'scripts/build-resume-pdf.mjs').read_bytes() + (ROOT / 'scripts/build-resume-docx.mjs').read_bytes() + (ROOT / 'ui.en.json').read_bytes() + (ROOT / 'build.py').read_bytes() + (ROOT / 'site/assets/style.css').read_bytes() + (ROOT / 'scripts/build-portfolio-pdf.mjs').read_bytes() + (ROOT / 'templates/portfolio-deck.css').read_bytes()).hexdigest()[:10]
         SITE = ROOT / 'site' / ('en' if LANG == 'en' else '')
         SITE.mkdir(exist_ok=True)
         portfolio()
