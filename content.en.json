@@ -237,7 +237,7 @@
           "33 PostgreSQL integration + 6 unit/contract"
         ]
       ],
-      "tradeoff": "Deployed to production (main) on 2026-11-10. The MCP server on main now has 31 tools, including PDF conversion, Skills, meeting notes and document upload. On the production server I ran, with Codex and Claude Code, the ingestion, search, edit-proposal and approval flow, plus PDF conversion, Skill lookup and definition proposals, and document upload. The meeting tools are covered by unit tests only, and Wiki cleanup proposals (lint) have no successful real run on record. Editing a source does not update the Wiki automatically: the document is flagged for re-ingestion, and re-ingesting applies only the changed blocks. Test quotes are not production prices.",
+      "tradeoff": "Deployed to production (main) on 2026-11-10. The MCP server on main now has 31 tools, including PDF conversion, Skills, meeting notes and document upload, and I confirmed they all work on the production server with Codex and Claude Code. Editing a source does not update the Wiki automatically, though: the document is flagged for re-ingestion, and re-ingesting applies only the changed blocks. Test quotes are not production prices.",
       "image": {
         "src": "assets/projects/fruition-mcp-claude-tools.png",
         "alt": "The 21 Fruition MCP tools discovered in Claude Code",
